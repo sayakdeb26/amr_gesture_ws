@@ -34,7 +34,8 @@ Tracking confidence threshold (Default：0.5)
 │  app.py
 │  keypoint_classification.ipynb
 │  point_history_classification.ipynb
-│  
+│  mediapipe_hand_keypoint_test.py
+|  mediapipe_pose_estimation_test.py  
 ├─model
 │  ├─keypoint_classifier
 │  │  │  keypoint.csv
@@ -56,6 +57,9 @@ Tracking confidence threshold (Default：0.5)
 
 ### main.py
 This is the main program for inference.<br>
+
+### mediapipe_hand_keypoint_test.py && mediapipe_pose_estimation_test.py
+This is the test version of program from Google Hand landmarks detection.<br>
 
 ### keypoint_classification.ipynb
 This is a model training script for static gesture recognition.
@@ -102,3 +106,5 @@ The image of the model prepared in "[keypoint_classification.ipynb](keypoint_cla
 
 # License 
 hand-gesture-recognition-using-mediapipe is under [Apache v2 license](LICENSE).
+### utils/cvfpscalc.py
+This is a module for FPS measurement.
