@@ -30,10 +30,9 @@ Detection confidence threshold (Default：0.5)
 Tracking confidence threshold (Default：0.5)
 
 # Directory
-<pre>
 │  main.py
 │  keypoint_classification.ipynb
-│  
+│  point_history_classification.ipynb
 │  
 ├─model
 │  ├─keypoint_classifier
@@ -55,13 +54,11 @@ Tracking confidence threshold (Default：0.5)
 </pre>
 ### main.py
 This is the main program for inference.<br>
-In addition, learning data (key points) for hand sign recognition,<br>
-You can also collect training data (index finger coordinate history) for finger gesture recognition.
 
 ### keypoint_classification.ipynb
 This is a model training script for static gesture recognition.
 
-### point_history_classification.ipynb
+### point_history_classification.ipynb(work in progress)
 This is a model training script for dynamic gesture recognition.
 
 ### model/keypoint_classifier
@@ -84,21 +81,22 @@ The following files are stored.
 This is a module for FPS measurement.
 
 # Training
-Static hand recognition and dynamic gesture recognition can add and change training data and retrain the model.
+Static and dynamic gesture recognition can add and change training data and retrain the model.
 
 
-#### 2.Model training
+#### Model training
 Open "[keypoint_classification.ipynb](keypoint_classification.ipynb)" in Jupyter Notebook and execute from top to bottom.<br>
 To change the number of training data classes, change the value of "NUM_CLASSES = 4" <br>and modify the label of "model/keypoint_classifier/keypoint_classifier_label.csv" as appropriate.<br><br>
 
-#### X.Model structure
+#### Model structure
 The image of the model prepared in "[keypoint_classification.ipynb](keypoint_classification.ipynb)" is as follows.
 <img src="https://user-images.githubusercontent.com/37477845/102246723-69c76a00-3f42-11eb-8a4b-7c6b032b7e71.png" width="50%"><br><br>
 
 
 # Reference
 * [MediaPipe](https://mediapipe.dev/)
+* Kazuhito Takahashi(https://twitter.com/KzhtTkhs)
 
- 
+
 # License 
 hand-gesture-recognition-using-mediapipe is under [Apache v2 license](LICENSE).
