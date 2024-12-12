@@ -30,7 +30,8 @@ Detection confidence threshold (Default：0.5)
 Tracking confidence threshold (Default：0.5)
 
 # Directory
-│  main.py
+<pre>
+│  app.py
 │  keypoint_classification.ipynb
 │  point_history_classification.ipynb
 │  
@@ -52,6 +53,7 @@ Tracking confidence threshold (Default：0.5)
 └─utils
     └─cvfpscalc.py
 </pre>
+
 ### main.py
 This is the main program for inference.<br>
 
