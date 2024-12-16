@@ -3,7 +3,7 @@ Estimate hand pose using MediaPipe (Python version).<br>
 This repository contains the following contents.
 
 
-* Hand sign recognition model(TFLite)
+* Dynamic gesture recognition model(TFLite)
 * Learning data for hand sign recognition and notebook for model training
 
 # Requirements
