@@ -81,3 +81,5 @@ The image of the model prepared in "[keypoint_classification.ipynb](keypoint_cla
 * [MediaPipe](https://mediapipe.dev/)
 * Kazuhito Takahashi(https://twitter.com/KzhtTkhs)
 
+# details
+[wiki](https://git.faps.uni-erlangen.de/Dokumentation/robotik/human-roboter-interaction-kolamero/-/wikis/home)
