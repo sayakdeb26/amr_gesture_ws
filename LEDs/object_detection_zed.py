@@ -37,7 +37,8 @@ if zed_error != sl.ERROR_CODE.SUCCESS:
 
 #Create object container and runtime parameters
 objects = sl.Objects()                                                  #Structure containing all the detected objects
-obj_runtime_param = sl.RuntimeParameters()
+#Used dedicated "ObjectDetectionRuntimeParameters" to set detection thresholds
+obj_runtime_param = sl.ObjectDetectionRuntimeParameters()
 obj_runtime_param.detection_confidence_threshold = 30
 
 cv2.namedWindow("ZED 2i Camera", cv2.WINDOW_AUTOSIZE)
