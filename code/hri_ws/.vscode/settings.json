@@ -1,0 +1,24 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/faps/hri_ws/install/micro_ros_msgs/local/lib/python3.10/dist-packages",
+        "/home/faps/hri_ws/install/led_controller/lib/python3.10/site-packages",
+        "/home/faps/led_ws/install/micro_ros_msgs/local/lib/python3.10/dist-packages",
+        "/home/faps/led_ws/build/led_controller",
+        "/home/faps/led_ws/install/led_controller/lib/python3.10/site-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages",
+        "",
+        "/home/faps/DynamixelSDK-main/python/src/"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/faps/hri_ws/install/micro_ros_msgs/local/lib/python3.10/dist-packages",
+        "/home/faps/hri_ws/install/led_controller/lib/python3.10/site-packages",
+        "/home/faps/led_ws/install/micro_ros_msgs/local/lib/python3.10/dist-packages",
+        "/home/faps/led_ws/build/led_controller",
+        "/home/faps/led_ws/install/led_controller/lib/python3.10/site-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages",
+        "",
+        "/home/faps/DynamixelSDK-main/python/src/"
+    ]
+}
