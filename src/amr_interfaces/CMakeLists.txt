@@ -14,8 +14,22 @@ set(MSG_FILES
   "msg/Diagnostics.msg"
 )
 
+set(SRV_FILES
+  "srv/UpsertGesture.srv"
+  "srv/SaveMapping.srv"
+  "srv/SwitchProfile.srv"
+  "srv/ReloadRepo.srv"
+)
+
+# If you added an action, list it here; otherwise leave empty or comment
+set(ACTION_FILES
+  # "action/TrainGesture.action"
+)
+
 rosidl_generate_interfaces(${PROJECT_NAME}
   ${MSG_FILES}
+  ${SRV_FILES}
+  ${ACTION_FILES}
   DEPENDENCIES builtin_interfaces std_msgs geometry_msgs
 )
 

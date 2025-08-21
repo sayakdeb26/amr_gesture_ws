@@ -1,0 +1,7 @@
+string repo_namespace
+string gesture_id
+string label
+string json_blob
+---
+bool ok
+string message
