@@ -1,0 +1,14 @@
+camera:
+  image_raw: /image_raw
+  camera_info: /camera_info
+perception:
+  keypoints: /keypoints
+classifiers:
+  gestures_static: /gestures
+  gestures_reflex: /gesture_fast
+vlm:
+  intent: /intent
+control:
+  cmd_vel: /cmd_vel
+  leds: /led_cmd
+  diagnostics: /diagnostics

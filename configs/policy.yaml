@@ -1,0 +1,12 @@
+thresholds:
+  conf_min_static: 0.85
+  conf_min_reflex: 0.90
+  conf_min_vlm: 0.70
+  vlm_latency_max_ms: 400
+  reflex_latency_max_ms: 120
+arbiter:
+  prefer_reflex: true
+  tie_breaker: safety
+  vlm_on_unknown_only: true
+logging:
+  diagnostics_rate_hz: 5

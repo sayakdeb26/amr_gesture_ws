@@ -1,14 +1,16 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import time
-from inference import load_model, infer_one
+from .inference import load_model, infer_one
 
 app = FastAPI()
 model = load_model()
 
+
 class Payload(BaseModel):
-    frames: list[str]          # file paths or base64 strings
+    frames: list[str]
     context: dict | None = None
+
 
 @app.post("/infer")
 def infer(payload: Payload):
