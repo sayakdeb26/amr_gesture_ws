@@ -1,18 +1,44 @@
+<<<<<<< HEAD
 “This workspace contains the AMR Gesture Recognition stack: perception (VLM), context bus, gesture classifiers, intent interfaces, repo manager, and trainer UI.”
 
 # amr_gesture_ws
 VLM_gesture _control
+=======
+# AMR Gesture Recognition Workspace
+
+This workspace contains the **AMR Gesture Recognition stack**, integrating multimodal perception (VLM-based), gesture classification, intent messaging, and UI support for training and diagnostics.  
+It is organized as a modular ROS 2 Humble workspace with dedicated packages for perception, context handling, repo management, LED feedback, and UI training.
+
+---
+
+## Quick Start
+
+### Prerequisites
+- Ubuntu 22.04 with **ROS 2 Humble**
+- Python 3.10+
+- Empy for IDL builds:
+  ```bash
+  sudo apt-get update
+  sudo apt-get install -y python3-empy
+
+>>>>>>> 611ca37 (docs: README polish + local changes)
 
 amr_gesture_ws/
-├─ src/ # ROS 2 packages
-│ ├─ amr_interfaces/ # msgs/srvs (Keypoints, Gesture, Intent, Diagnostics; UpsertGesture, SaveMapping, SwitchProfile, ReloadRepo)
-│ ├─ repo_manager_pkg/ # JSON repo + profiles manager (services + Diagnostics)
-│ ├─ ... # (arbiter_pkg, perception_pkg, etc. stubs)
-├─ cloud/
-│ └─ video_llava_service/ # FastAPI sidecar (local VLM) → /infer
-├─ configs/ # topics.yaml, policy.yaml (includes repo path + profile)
-├─ data/
-│ └─ repo/profiles/base/ # gestures.json, mappings.json (persisted)
-├─ models/ # (place model weights here; Git LFS-recommended)
-├─ Makefile # ros-build, vlm-run, lint, fmt
-└─ README.md
+├── src/                  # ROS 2 packages
+│   ├── amr_interfaces        # Custom msg/srv definitions (e.g., Intent.msg)
+│   ├── arbiter_pkg           # Arbitration logic for multi-intent handling
+│   ├── context_bus_pkg       # Publishes context/state across nodes
+│   ├── gesture_classifiers_pkg # Lightweight classifiers for gesture mapping
+│   ├── led_manager_pkg       # LED feedback + control logic
+│   ├── perception_pkg        # VLM/Vision pipeline for gesture detection
+│   ├── repo_manager_pkg      # Profiles repository manager (JSON/SQL-backed)
+│   └── trainer_ui_pkg        # Training/diagnostics user interface
+├── configs/              # YAML configs for models, bus, and profiles
+├── cloud/                # (Optional) Cloud integration hooks
+├── data/                 # Sample datasets / logs
+├── models/               # Pretrained model weights (gitignored)
+├── tools/                # Utility scripts
+├── build/ install/ log/  # Colcon build outputs
+├── README.md             # This file
+└── LICENSE
+
