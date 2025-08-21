@@ -1,0 +1,10 @@
+[flake8]
+max-line-length = 100
+extend-ignore = E203, W503
+per-file-ignores =
+    src/arbiter_pkg/setup.py: E501
+    src/context_bus_pkg/setup.py: E501
+    src/gesture_classifiers_pkg/setup.py: E501
+    src/led_manager_pkg/setup.py: E501
+    src/perception_pkg/setup.py: E501
+    src/trainer_ui_pkg/setup.py: E501
