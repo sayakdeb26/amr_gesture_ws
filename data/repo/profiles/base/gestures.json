@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "profile": "base",
+  "updated_at": "",
+  "gestures": {
+    "WAVE_STOP": {
+      "label": "WAVE_STOP",
+      "samples": [],
+      "features": {},
+      "thresholds": { "conf_min": 0.8 }
+    }
+  }
+}

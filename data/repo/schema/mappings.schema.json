@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["version", "profile", "mappings"],
+  "properties": {
+    "version": { "type": "integer" },
+    "profile": { "type": "string" },
+    "updated_at": { "type": "string" },
+    "mappings": { "type": "object" }
+  }
+}

@@ -10,3 +10,7 @@ arbiter:
   vlm_on_unknown_only: true
 logging:
   diagnostics_rate_hz: 5
+
+repo:
+  root_dir: "./data/repo"
+  active_profile: "base"
