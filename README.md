@@ -1,27 +1,7 @@
-<<<<<<< HEAD
-“This workspace contains the AMR Gesture Recognition stack: perception (VLM), context bus, gesture classifiers, intent interfaces, repo manager, and trainer UI.”
-
-# amr_gesture_ws
-VLM_gesture _control
-=======
-# AMR Gesture Recognition Workspace
-
 This workspace contains the **AMR Gesture Recognition stack**, integrating multimodal perception (VLM-based), gesture classification, intent messaging, and UI support for training and diagnostics.  
 It is organized as a modular ROS 2 Humble workspace with dedicated packages for perception, context handling, repo management, LED feedback, and UI training.
 
 ---
-
-## Quick Start
-
-### Prerequisites
-- Ubuntu 22.04 with **ROS 2 Humble**
-- Python 3.10+
-- Empy for IDL builds:
-  ```bash
-  sudo apt-get update
-  sudo apt-get install -y python3-empy
-
->>>>>>> 611ca37 (docs: README polish + local changes)
 
 amr_gesture_ws/
 ├── src/                  # ROS 2 packages
@@ -41,4 +21,3 @@ amr_gesture_ws/
 ├── build/ install/ log/  # Colcon build outputs
 ├── README.md             # This file
 └── LICENSE
-
