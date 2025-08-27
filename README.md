@@ -56,3 +56,12 @@ ermöglichen?
 - Wie kann mit kontinuierlichem Lernen die Kollaboration
 zwischen Mensch und mobilem Roboter intuitiver und
 nutzerfreundlicher gestaltet werden?
+
+
+### Nutzung des Codes
+1. Starten des LED Moduls
+   ESP anstecken
+   - ros2 launch bringup LED.launch.py    
+   ggf boot Taste des Esp drücken   
+   in neuem Terminal:
+   - ros2 launch zed_display_rviz2 display_zed_cam.launch.py camera_model:=zed2i 
