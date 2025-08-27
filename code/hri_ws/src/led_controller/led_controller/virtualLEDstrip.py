@@ -16,7 +16,7 @@ class DirectionLEDVisualizer(Node):
         # ROS2 Subscription to 'directionLEDs' topic
         self.subscription = self.create_subscription(
             Int32MultiArray,
-            'LED_strip',
+            '/LED_strip',
             self.direction_leds_callback,
             10
         )
@@ -49,6 +49,10 @@ class DirectionLEDVisualizer(Node):
     def direction_leds_callback(self, msg):
         """Update LEDs based on incoming ROS2 message."""
         led_data = msg.data
+
+        # 🔹 Erst alle LEDs ausschalten
+        for circle in self.led_circles:
+            circle.set_facecolor((0, 0, 0))  # schwarz
 
         # Iterate through the LED data (format: [id, r, g, b, brightness])
         for i in range(0, len(led_data), 5):

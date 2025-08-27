@@ -24,7 +24,9 @@ setup(
             'record_gesture = gesture_detection.record_gesture:main',
             'initial_training_action = gesture_detection.initial_training_action:main',
             'keypoint_detection = gesture_detection.keypoint_detection:main',
-            'get_gestures_service = gesture_detection.get_gestures_service:main'
+            'get_gestures_service = gesture_detection.get_gestures_service:main',
+            'gestures_rviz = gesture_detection.gestures_rviz:main',
+            'keypoint_visualizer = gesture_detection.keypoint_visualizer:main'
         ],
     },
 )

@@ -15,7 +15,7 @@ class DirectionLED(Node):
             self.cmd_vel_callback,
             10
         )
-        self.led_publisher = self.create_publisher(Int32MultiArray, 'directionLEDs', 10)
+        self.led_publisher = self.create_publisher(Int32MultiArray, '/directionLEDs', 10)
         
         # Timer, um LEDs nach 3 Sekunden Inaktivität auszuschalten
         self.timeout_timer = self.create_timer(3.0, self.turn_off_leds)

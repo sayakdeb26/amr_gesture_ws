@@ -1,7 +1,6 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32, MultiArrayDimension, Int32MultiArray
-# from zed_interfaces.msg import ObjectsStamped
 from zed_msgs.msg import ObjectsStamped
 
 class PersonLocatorLED(Node):
@@ -20,12 +19,12 @@ class PersonLocatorLED(Node):
 
         self.zed_subscription = self.create_subscription(
             ObjectsStamped,
-            '/zed2/zed_node/obj_det/objects',
+            '/zed/zed_node/obj_det/objects',
             self.zed_callback,
             10
         )
         
-        self.led_publisher = self.create_publisher(Int32MultiArray, 'personLEDs', 10)
+        self.led_publisher = self.create_publisher(Int32MultiArray, '/personLEDs', 10)
         self.pose_publisher = self.create_publisher(Float32, '/person_x_pose', 10)
 
         self.timeout_timer = self.create_timer(3.0, self.timeout_callback)
@@ -33,33 +32,37 @@ class PersonLocatorLED(Node):
     
     def zed_callback(self, msg: ObjectsStamped):
         for obj in msg.objects:
-            if obj.label == "person":
-                x = obj.position.x
+            if obj.label == "PERSON":
+                # X-Wert aus der 3D-Position verwenden
+                x_value = float(obj.position[0])  # position = [x, y, z]
+                
+                # Optional: Werte auf -1 bis 1 normalisieren (abhängig von deinem LED-Mapping)
+                # Beispiel: Kamera erkennt x in -2m bis 2m
+                # x_normalized = self.constrain(x_value / 2.0, -1.0, 1.0)
+
                 pose_msg = Float32()
-                pose_msg.data = x
+                pose_msg.data = x_value
                 self.pose_publisher.publish(pose_msg)
-                self.get_logger().info(f'Published person X pose: {x}')
-                break  # Only handle the first detected person
+                self.last_msg_time = self.get_clock().now()
+                self.get_logger().info(f'Published person X pose: {x_value:.3f}')
+                break  # Nur die erste Person
+
 
     def x_pose_callback(self, msg: Float32):
         self.last_msg_time = self.get_clock().now()
-        led_data = []
         x_pose = msg.data
-        
         if x_pose is None:
             return
         
+        # LED zentral positionieren
         central_led = int(self.map_value(self.constrain(x_pose, -1.0, 1.0), -1.0, 1.0, 0, self.num_leds - 1))
-        
         start_led = max(0, central_led - 1)
         end_led = min(self.num_leds - 1, central_led + 1)
         
+        led_data = []
         for led_id in range(self.num_leds):
             if start_led <= led_id <= end_led:
-                led_data.append([led_id, 0, 125, 0, 255])  # Green
-            else:
-                led_data.append([led_id, 0, 0, 0, 0])  # Off
-
+                led_data.append([led_id, 0, 125, 0, 255])  # grün
         self.publish_leds(led_data)
         self.get_logger().info(f'Setting LEDs {start_led}-{end_led} to green')
     

@@ -14,7 +14,7 @@ class StoppingLED(Node):
             self.stopping_callback,
             10
         )
-        self.led_publisher = self.create_publisher(Int32MultiArray, 'stoppingLEDs', 10)
+        self.led_publisher = self.create_publisher(Int32MultiArray, '/stoppingLEDs', 10)
 
     def stopping_callback(self, msg: Bool):
         if msg.data:
@@ -24,7 +24,7 @@ class StoppingLED(Node):
         else:
             # Alle LEDs aus
             led_data = [[led_id, 0, 0, 0, 0] for led_id in range(self.num_leds)]
-            self.get_logger().info('Not stopping: no stopping lights')
+            # self.get_logger().info('Not stopping: no stopping lights')
 
         self.publish_led_data(led_data)
 
