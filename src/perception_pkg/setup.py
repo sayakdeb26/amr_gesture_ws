@@ -3,19 +3,20 @@ from setuptools import setup
 package_name = 'perception_pkg'
 
 setup(
-    name='perception_pkg',  # <-- underscore, not dash
+    name=package_name,
     version='0.0.1',
-    packages=[package_name],
+    packages=[package_name],  # folder perception_pkg/ is the Python package
     data_files=[
         ('share/ament_index/resource_index/packages', ['resource/perception_pkg']),
         ('share/' + package_name, ['package.xml']),
-        ('share/' + package_name + '/launch', ['launch/perception.launch.py']),
+        # add launch files later if you want them installed:
+        # ('share/' + package_name + '/launch', ['launch/perception.launch.py']),
     ],
-    install_requires=['setuptools', 'rclpy', 'requests'],
+    install_requires=['setuptools', 'requests'],
     zip_safe=False,
     maintainer='Sayak',
     maintainer_email='sayak.deb26@gmail.com',
-    description='Perception node that calls the local VLM HTTP service and publishes amr_interfaces/Intent.',
+    description='Perception node that calls VLM and publishes intents/unknowns.',
     license='MIT',
     entry_points={
         'console_scripts': [

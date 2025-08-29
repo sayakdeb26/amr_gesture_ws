@@ -1,36 +1,15 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.5)
 project(amr_interfaces)
 
 find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(builtin_interfaces REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(geometry_msgs REQUIRED)
 
-set(MSG_FILES
-  "msg/Keypoints.msg"
-  "msg/Gesture.msg"
-  "msg/Intent.msg"
-  "msg/Diagnostics.msg"
-)
-
-set(SRV_FILES
-  "srv/UpsertGesture.srv"
-  "srv/SaveMapping.srv"
-  "srv/SwitchProfile.srv"
-  "srv/ReloadRepo.srv"
-)
-
-# If you added an action, list it here; otherwise leave empty or comment
-set(ACTION_FILES
-  # "action/TrainGesture.action"
-)
-
+# List ALL your .msg files here
 rosidl_generate_interfaces(${PROJECT_NAME}
-  ${MSG_FILES}
-  ${SRV_FILES}
-  ${ACTION_FILES}
-  DEPENDENCIES builtin_interfaces std_msgs geometry_msgs
+  "msg/Intent.msg"
+  "msg/UnknownGesture.msg"
+  DEPENDENCIES builtin_interfaces
 )
 
 ament_export_dependencies(rosidl_default_runtime)

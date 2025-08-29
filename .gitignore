@@ -1,8 +1,11 @@
 build/
 install/
 log/
-.venv/
+amr_db/
 __pycache__/
 *.pyc
-.env
-models/
+*.pyo
+.vscode/
+.idea/
+*.swp
+*.swo

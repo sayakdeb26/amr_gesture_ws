@@ -1,11 +1,9 @@
 from setuptools import setup
-
 package_name = 'ui_kiosk_pkg'
-
 setup(
     name=package_name,
     version='0.0.1',
-    packages=[package_name],  # folder ui_kiosk_pkg/ is the Python package
+    packages=[package_name],  # Python package folder
     data_files=[
         ('share/ament_index/resource_index/packages', ['resource/ui_kiosk_pkg']),
         ('share/' + package_name, ['package.xml']),
@@ -17,9 +15,7 @@ setup(
     maintainer_email='sayak.deb26@gmail.com',
     description='UI kiosk node for user confirmation of VLM predictions.',
     license='MIT',
-    entry_points={
-        'console_scripts': [
-            'ui_kiosk_node = ui_kiosk_pkg.ui_kiosk_node:main',
-        ],
-    },
+    entry_points={'console_scripts': [
+        'ui_kiosk_node = ui_kiosk_pkg.ui_kiosk_node:main',
+    ]},
 )

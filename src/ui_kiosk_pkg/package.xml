@@ -5,13 +5,8 @@
   <description>UI kiosk node for user confirmation of VLM predictions.</description>
   <maintainer email="sayak.deb26@gmail.com">Sayak</maintainer>
   <license>MIT</license>
-
   <buildtool_depend>ament_python</buildtool_depend>
-
   <exec_depend>rclpy</exec_depend>
   <exec_depend>std_msgs</exec_depend>
-
-  <export>
-    <build_type>ament_python</build_type>
-  </export>
+  <export><build_type>ament_python</build_type></export>
 </package>

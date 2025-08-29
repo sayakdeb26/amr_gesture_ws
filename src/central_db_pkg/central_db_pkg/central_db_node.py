@@ -6,29 +6,28 @@ from pathlib import Path
 
 import rclpy
 from rclpy.node import Node
-
 from amr_interfaces.msg import Intent  # /intents_raw
 
 class CentralDBNode(Node):
     def __init__(self):
         super().__init__('central_db_node')
+        # Database paths
         self.base_dir = Path(os.getenv('AMR_DB_DIR', str(Path.home() / 'amr_db')))
         self.base_dir.mkdir(parents=True, exist_ok=True)
-
         self.intents_log = self.base_dir / 'intents.jsonl'
         self.samples_dir = self.base_dir / 'samples'
         self.samples_dir.mkdir(parents=True, exist_ok=True)
 
-        self.sub_intents = self.create_subscription(
-            Intent, '/intents_raw', self.on_intent, 10
-        )
+        # Subscriptions
+        self.sub_intents = self.create_subscription(Intent, '/intents_raw', self.on_intent, 10)
 
-        self.get_logger().info(f'central_db_node up. DB @ {self.base_dir}')
+        self.get_logger().info(f'central_db_node running. DB @ {self.base_dir}')
 
     def on_intent(self, msg: Intent):
+        # Save intent to JSON lines
         rec = {
             'ts': time.time(),
-            'stamp': {'sec': int(msg.stamp.sec), 'nsec': int(msg.stamp.nanosec)},
+            'stamp': {'sec': msg.stamp.sec, 'nsec': msg.stamp.nanosec},
             'label': msg.label,
             'confidence': float(msg.confidence),
             'latency_ms': int(msg.latency_ms),
@@ -44,6 +43,3 @@ def main():
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
-
-if __name__ == '__main__':
-    main()
