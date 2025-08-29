@@ -4,6 +4,7 @@ from typing import List, Dict, Any
 from pydantic import BaseModel
 from tempfile import NamedTemporaryFile
 from PIL import Image
+from fastapi import UploadFile, File, Form
 import io
 import os
 
@@ -66,3 +67,23 @@ async def infer_bytes(
             pass
 
     return result
+    
+# ADD this endpoint:
+@app.post("/infer_clip")
+async def infer_clip(
+    clip: UploadFile = File(...),               # e.g., MP4 uploaded
+    context: str = Form("{}")                   # optional JSON string
+):
+    """
+    T0 stub: accepts a short video file and returns a dummy intent.
+    In T1 you’ll load the clip, sample frames, run VLM, etc.
+    """
+    # Read the bytes to /tmp (or later, /data/clips)
+    content = await clip.read()
+    tmp_path = f"/tmp/{clip.filename}"
+    with open(tmp_path, "wb") as f:
+        f.write(content)
+
+    # TODO (T1): real inference on sampled frames
+    # For now return a safe dummy that mirrors your /infer style
+    return {"label": "WAVE_STOP", "conf": 0.84, "lat_ms": 0, "via": "infer_clip"}

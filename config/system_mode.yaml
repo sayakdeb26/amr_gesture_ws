@@ -1,0 +1,3 @@
+/**:
+  ros__parameters:
+    system_mode: "operation"   # operation | teaching
