@@ -87,3 +87,9 @@ async def infer_clip(
     # TODO (T1): real inference on sampled frames
     # For now return a safe dummy that mirrors your /infer style
     return {"label": "WAVE_STOP", "conf": 0.84, "lat_ms": 0, "via": "infer_clip"}
+    
+@app.get("/healthz")
+def healthz():
+    return {"ok": True}
+
+    

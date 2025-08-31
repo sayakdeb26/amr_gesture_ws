@@ -9,6 +9,8 @@ find_package(builtin_interfaces REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Intent.msg"
   "msg/UnknownGesture.msg"
+  "msg/ConfirmRequest.msg"
+  "msg/ConfirmReply.msg"
   DEPENDENCIES builtin_interfaces
 )
 
