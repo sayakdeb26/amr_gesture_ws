@@ -11,6 +11,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/UnknownGesture.msg"
   "msg/ConfirmRequest.msg"
   "msg/ConfirmReply.msg"
+  "msg/TrainingExample.msg"
+
   DEPENDENCIES builtin_interfaces
 )
 
