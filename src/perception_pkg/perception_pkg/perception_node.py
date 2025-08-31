@@ -1,148 +1,215 @@
 #!/usr/bin/env python3
 import os
+import json
 import time
-from pathlib import Path
-import requests
+import subprocess
+from typing import Optional, Dict, Tuple
 
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import QoSProfile
 from builtin_interfaces.msg import Time
 
+import requests
+
 from amr_interfaces.msg import (
-    UnknownGesture,   # /lstm/unknown
-    ConfirmRequest,   # /vlm/confirm_request
-    ConfirmReply,     # /ui/confirm_reply
-    Intent,           # /intents_raw
-    TrainingExample,  # /lstm/training_example  (T1.2)
+    UnknownGesture,
+    Intent,
+    ConfirmRequest,
+    ConfirmReply,
+    TrainingExample,
 )
 
+def now_stamp(node: Node) -> Time:
+    return node.get_clock().now().to_msg()
+
+def _probe_clip(path: str) -> Tuple[float, int]:
+    """Return (fps, frames). Uses ffprobe if present; else (0.0, 0)."""
+    try:
+        out = subprocess.check_output([
+            'ffprobe', '-v', 'error',
+            '-select_streams', 'v:0',
+            '-show_entries', 'stream=avg_frame_rate,nb_frames',
+            '-of', 'json', path
+        ], stderr=subprocess.STDOUT, text=True, timeout=3)
+        data = json.loads(out)
+        streams = data.get('streams', [])
+        if not streams:
+            return 0.0, 0
+        st = streams[0]
+        fps = 0.0
+        fr = st.get('avg_frame_rate') or '0/1'
+        if isinstance(fr, str) and '/' in fr:
+            num, den = fr.split('/', 1)
+            try:
+                num = float(num)
+                den = float(den) if float(den) != 0 else 1.0
+                fps = num / den
+            except Exception:
+                fps = 0.0
+        frames = 0
+        nb = st.get('nb_frames')
+        if nb is not None and str(nb).isdigit():
+            frames = int(nb)
+        return float(fps), int(frames)
+    except Exception:
+        return 0.0, 0
+
 class PerceptionNode(Node):
-    def __init__(self) -> None:
+    def __init__(self):
         super().__init__('perception_node')
 
-        # Env configuration (simple)
-        self.vlm_url = os.getenv('VLM_URL', 'http://127.0.0.1:8000')
-        self.test_clip = os.getenv('PERCEPTION_TEST_CLIP', '')
-        self.confirm_timeout_s = float(os.getenv('CONFIRM_TIMEOUT_S', '8'))
-        self.auto_approve_on_timeout = os.getenv('AUTO_APPROVE_ON_TIMEOUT', '1') in ('1', 'true', 'True')
+        # Config
+        self.vlm_url = os.environ.get('VLM_URL', 'http://127.0.0.1:8000')
+        self.test_clip = os.environ.get('PERCEPTION_TEST_CLIP')  # absolute path to a test video
+        self.confirm_timeout_s = float(os.environ.get('CONFIRM_TIMEOUT_S', '8'))
+        self.auto_approve_on_timeout = os.environ.get('AUTO_APPROVE_ON_TIMEOUT', '0') == '1'
 
-        # Subs / pubs
-        self.sub_unknown = self.create_subscription(
-            UnknownGesture, '/lstm/unknown', self.on_unknown_gesture, 10
-        )
-        self.pub_confirm_req = self.create_publisher(ConfirmRequest, '/vlm/confirm_request', 10)
-        self.sub_confirm_reply = self.create_subscription(
-            ConfirmReply, '/ui/confirm_reply', self.on_confirm_reply, 10
-        )
-        self.pub_intents = self.create_publisher(Intent, '/intents_raw', 10)
-        self.pub_training = self.create_publisher(TrainingExample, '/lstm/training_example', 10)
-
-        self._pending = None  # holds (stamp, label, conf, clip_path)
-
-        clip_note = self.test_clip if self.test_clip else '<none>'
         self.get_logger().info(
-            f'perception_node up. VLM_URL={self.vlm_url}, test_clip={clip_note}, '
-            f'confirm_timeout={self.confirm_timeout_s:.1f}s, auto_approve={self.auto_approve_on_timeout}'
+            f'perception_node up. VLM_URL={self.vlm_url}, '
+            f'test_clip={self.test_clip if self.test_clip else "<none>"}, '
+            f'confirm_timeout={self.confirm_timeout_s:.1f}s, '
+            f'auto_approve={self.auto_approve_on_timeout}'
         )
         if not self.test_clip:
             self.get_logger().warn('No PERCEPTION_TEST_CLIP set; live capture not implemented yet.')
 
-    # --- Callbacks ---
+        # Pub/Sub
+        qos = QoSProfile(depth=10)
+        self.pub_intents = self.create_publisher(Intent, '/intents_raw', qos)
+        self.pub_confirm_req = self.create_publisher(ConfirmRequest, '/vlm/confirm_request', qos)
+        self.pub_training = self.create_publisher(TrainingExample, '/lstm/training_example', qos)
 
-    def on_unknown_gesture(self, msg: UnknownGesture) -> None:
-        # Choose a clip path (for now we use a dummy/test file)
+        self.sub_unknown = self.create_subscription(
+            UnknownGesture, '/lstm/unknown', self.on_unknown_gesture, qos
+        )
+        self.sub_confirm = self.create_subscription(
+            ConfirmReply, '/ui/confirm_reply', self.on_confirm_reply, qos
+        )
+
+        # state for confirmation handshake
+        self.pending: Optional[Dict] = None
+        self.timeout_timer = None
+
+        # quick health check
+        try:
+            r = requests.get(f'{self.vlm_url}/healthz', timeout=2)
+            if r.status_code == 200:
+                self.get_logger().info('VLM /healthz OK')
+        except Exception as e:
+            self.get_logger().warn(f'VLM /healthz failed: {e}')
+
+    # ------------------ callbacks ------------------
+
+    def on_unknown_gesture(self, msg: UnknownGesture):
+        # 1) Prepare a clip (for now always self.test_clip)
         clip_path = self.test_clip
-        if not clip_path or not Path(clip_path).exists():
-            self.get_logger().error(f'No test clip available at {clip_path!r}. Skipping VLM call.')
+        if not clip_path or not os.path.isfile(clip_path):
+            self.get_logger().warn('No valid test clip; cannot call VLM.')
             return
 
-        # Call VLM sidecar
-        label, conf, lat_ms = self.call_vlm_infer_clip(clip_path)
-        self.get_logger().info(f'VLM result: {label} conf={conf:.2f} lat={lat_ms}ms')
+        # 2) Call VLM
+        try:
+            with open(clip_path, 'rb') as f:
+                files = {'clip': ('clip.mp4', f, 'video/mp4')}
+                resp = requests.post(f'{self.vlm_url}/infer_clip', files=files, data={'context': '{}'}, timeout=10)
+            data = resp.json()
+            label = data.get('label', 'UNKNOWN')
+            conf = float(data.get('conf', 0.0))
+            lat = int(data.get('lat_ms', 0))
+            self.get_logger().info(f'VLM result: {label} conf={conf:.2f} lat={lat}ms')
+        except Exception as e:
+            self.get_logger().error(f'VLM call failed: {e}')
+            return
 
-        # Ask UI to confirm
+        # 3) Ask user to confirm
         req = ConfirmRequest()
-        req.stamp = self.get_clock().now().to_msg()
+        req.stamp = now_stamp(self)
         req.label = label
-        req.confidence = float(conf)
-#       req.source = 'vlm-http'
+        req.confidence = conf
         self.pub_confirm_req.publish(req)
+        self.get_logger().info(f'Published /vlm/confirm_request: label={label} conf={conf:.2f}')
 
-        # Remember pending request to match the reply
-        self._pending = (req.stamp, label, float(conf), clip_path)
+        # store pending
+        self.pending = {
+            'label': label,
+            'conf': conf,
+            'lat_ms': lat,
+            'clip_path': clip_path,
+            'ts': time.time(),
+        }
 
-        # Arm a timeout timer
-        self.create_timer(self.confirm_timeout_s, self._timeout_once)
+        # 4) start timeout
+        if self.timeout_timer:
+            self.destroy_timer(self.timeout_timer)
+        self.timeout_timer = self.create_timer(self.confirm_timeout_s, self.on_confirm_timeout)
 
-    def on_confirm_reply(self, msg: ConfirmReply) -> None:
-        if self._pending is None:
+    def on_confirm_timeout(self):
+        if not self.pending:
             return
-        stamp, label, conf, clip = self._pending
-        self._pending = None
-
-        # Publish final intent (approved or rejected); for now we only publish when approved
-        if msg.approved:
-            final_label = msg.final_label if msg.final_label else label
-            self.publish_intent(final_label, conf, source='vlm-http')
-            # Also send a training example (T1.2)
-            self.publish_training_example(final_label, clip)
-            self.get_logger().info(f'Confirm reply: approved=True, final={final_label}')
-        else:
-            self.get_logger().info('Confirm reply: approved=False (dropped).')
-
-    # --- Helpers ---
-
-    def _timeout_once(self) -> None:
-        # One-shot: if still pending after timeout
-        if self._pending is None:
-            return
-        stamp, label, conf, clip = self._pending
-        self._pending = None
         if self.auto_approve_on_timeout:
-            self.publish_intent(label, conf, source='vlm-http')
-            self.publish_training_example(label, clip)
-            self.get_logger().warn('No confirm reply within timeout; AUTO-APPROVED.')
+            self.get_logger().warn('Timeout; auto-approving.')
+            self.publish_intent_and_example(self.pending['label'], True, self.pending['clip_path'])
         else:
             self.get_logger().warn('No confirm reply within timeout; dropping.')
+        # clear
+        self.pending = None
+        if self.timeout_timer:
+            self.destroy_timer(self.timeout_timer)
+            self.timeout_timer = None
 
-    def publish_intent(self, label: str, conf: float, source: str) -> None:
-        msg = Intent()
-        msg.stamp = self.get_clock().now().to_msg()
-        msg.label = label
-        msg.confidence = float(conf)
-        msg.latency_ms = 0
-        msg.source = source
-        self.pub_intents.publish(msg)
-        self.get_logger().info(f'Published /intents_raw: {label} ({conf:.2f})')
+    def on_confirm_reply(self, msg: ConfirmReply):
+        if not self.pending:
+            # stray reply
+            return
+        # stop timeout
+        if self.timeout_timer:
+            self.destroy_timer(self.timeout_timer)
+            self.timeout_timer = None
 
-    def publish_training_example(self, label: str, clip_path: str) -> None:
-        # Relay clip path & label to DB node
-        te = TrainingExample()
-        te.stamp = self.get_clock().now().to_msg()
-        te.label = label
-        te.clip_path = clip_path  # DB node will move/copy/symlink as configured
-        te.source = 'vlm-http'
-        self.pub_training.publish(te)
+        approved = bool(msg.approved)
+        final_label = msg.final_label.strip() if msg.final_label else self.pending['label']
+        self.publish_intent_and_example(final_label, approved, self.pending['clip_path'])
 
-    def call_vlm_infer_clip(self, clip_path: str):
-        url = f'{self.vlm_url.rstrip("/")}/infer_clip'
-        t0 = time.time()
-        with open(clip_path, 'rb') as f:
-            files = {'clip': (Path(clip_path).name, f, 'video/mp4')}
-            resp = requests.post(url, files=files, data={'context': '{}'}, timeout=60)
-        dt = int((time.time() - t0) * 1000)
-        resp.raise_for_status()
-        js = resp.json()
-        return js.get('label', 'UNKNOWN'), float(js.get('conf', 0.0)), dt
+        # clear
+        self.pending = None
 
-def main() -> None:
+    # ------------------ helpers ------------------
+
+    def publish_intent_and_example(self, label: str, approved: bool, clip_path: str):
+        # Always publish Intent when approved; drop otherwise
+        if approved:
+            it = Intent()
+            it.stamp = now_stamp(self)
+            it.label = label
+            it.confidence = float(self.pending.get('conf', 0.0)) if self.pending else 0.0
+            it.latency_ms = int(self.pending.get('lat_ms', 0)) if self.pending else 0
+            it.source = 'vlm-http'
+            self.pub_intents.publish(it)
+            self.get_logger().info(f'Published /intents_raw (APPROVED): {label} ({it.confidence:.2f})')
+
+            # Probe metadata for TrainingExample
+            fps, frames = _probe_clip(clip_path)
+
+            te = TrainingExample()
+            te.stamp = it.stamp
+            te.label = label
+            te.clip_path = clip_path  # absolute; central_db_node will copy/symlink
+            te.fps = float(fps)
+            te.frames = int(frames)
+            te.source = 'vlm-http'
+            te.notes = ''  # optional free text; keep empty for now
+            self.pub_training.publish(te)
+            self.get_logger().info(f'Published /lstm/training_example: {label} -> {clip_path} (fps={fps:.2f}, frames={frames})')
+        else:
+            self.get_logger().info('User rejected candidate; nothing published.')
+
+def main():
     rclpy.init()
     node = PerceptionNode()
-    try:
-        rclpy.spin(node)
-    finally:
-        node.destroy_node()
-        rclpy.shutdown()
+    rclpy.spin(node)
+    node.destroy_node()
+    rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
