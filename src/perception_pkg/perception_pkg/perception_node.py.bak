@@ -20,13 +20,11 @@ from amr_interfaces.msg import (
     TrainingExample,
 )
 
-# --- utils ---
-
 def now_stamp(node: Node) -> Time:
     return node.get_clock().now().to_msg()
 
 def _probe_clip(path: str) -> Tuple[float, int]:
-    """Return (fps, frames) via ffprobe if available; else (0.0, 0)."""
+    """Return (fps, frames). Uses ffprobe if present; else (0.0, 0)."""
     try:
         out = subprocess.check_output([
             'ffprobe', '-v', 'error',
@@ -39,7 +37,6 @@ def _probe_clip(path: str) -> Tuple[float, int]:
         if not streams:
             return 0.0, 0
         st = streams[0]
-        # fps
         fps = 0.0
         fr = st.get('avg_frame_rate') or '0/1'
         if isinstance(fr, str) and '/' in fr:
@@ -50,7 +47,6 @@ def _probe_clip(path: str) -> Tuple[float, int]:
                 fps = num / den
             except Exception:
                 fps = 0.0
-        # frames
         frames = 0
         nb = st.get('nb_frames')
         if nb is not None and str(nb).isdigit():
@@ -59,15 +55,13 @@ def _probe_clip(path: str) -> Tuple[float, int]:
     except Exception:
         return 0.0, 0
 
-# --- node ---
-
 class PerceptionNode(Node):
     def __init__(self):
         super().__init__('perception_node')
 
-        # Config (env)
+        # Config
         self.vlm_url = os.environ.get('VLM_URL', 'http://127.0.0.1:8000')
-        self.test_clip = os.environ.get('PERCEPTION_TEST_CLIP')  # absolute path to test video
+        self.test_clip = os.environ.get('PERCEPTION_TEST_CLIP')  # absolute path to a test video
         self.confirm_timeout_s = float(os.environ.get('CONFIRM_TIMEOUT_S', '8'))
         self.auto_approve_on_timeout = os.environ.get('AUTO_APPROVE_ON_TIMEOUT', '0') == '1'
 
@@ -93,11 +87,11 @@ class PerceptionNode(Node):
             ConfirmReply, '/ui/confirm_reply', self.on_confirm_reply, qos
         )
 
-        # State for confirm handshake
+        # state for confirmation handshake
         self.pending: Optional[Dict] = None
         self.timeout_timer = None
 
-        # Health check
+        # quick health check
         try:
             r = requests.get(f'{self.vlm_url}/healthz', timeout=2)
             if r.status_code == 200:
@@ -105,27 +99,20 @@ class PerceptionNode(Node):
         except Exception as e:
             self.get_logger().warn(f'VLM /healthz failed: {e}')
 
-    # --- callbacks ---
+    # ------------------ callbacks ------------------
 
     def on_unknown_gesture(self, msg: UnknownGesture):
-        # 1) Select clip (using test clip for now)
+        # 1) Prepare a clip (for now always self.test_clip)
         clip_path = self.test_clip
         if not clip_path or not os.path.isfile(clip_path):
             self.get_logger().warn('No valid test clip; cannot call VLM.')
             return
 
-        hint = (msg.hint or '').strip()
-
         # 2) Call VLM
         try:
             with open(clip_path, 'rb') as f:
                 files = {'clip': ('clip.mp4', f, 'video/mp4')}
-                resp = requests.post(
-                    f'{self.vlm_url}/infer_clip',
-                    files=files,
-                    data={'context': '{}'},
-                    timeout=10
-                )
+                resp = requests.post(f'{self.vlm_url}/infer_clip', files=files, data={'context': '{}'}, timeout=10)
             data = resp.json()
             label = data.get('label', 'UNKNOWN')
             conf = float(data.get('conf', 0.0))
@@ -135,42 +122,21 @@ class PerceptionNode(Node):
             self.get_logger().error(f'VLM call failed: {e}')
             return
 
-        # 3) Ask UI to confirm
-        req = ConfirmRequest()
-        req.stamp = now_stamp(self)
+        # 3) Ask user to confirm
+        # Build confirm request for the UI
+	req = ConfirmRequest()
+	req.stamp = now_stamp(self)
+	req.candidate_label = label          # <-- was: req.label
+	req.candidate_conf = float(conf)     # <-- was: req.conf (or similar)
+	req.hint = hint
 
-        # Label
-        if hasattr(req, 'candidate_label'):
-            req.candidate_label = label
-        elif hasattr(req, 'label'):
-            req.label = label
-        else:
-            self.get_logger().error('ConfirmRequest has no label field (expected candidate_label or label).')
-            return
+	# If your ConfirmRequest.msg includes a 'source' field, keep this line;
+	# otherwise delete it.
+	req.source = 'vlm-http'
 
-        # Confidence
-        if hasattr(req, 'candidate_conf'):
-            req.candidate_conf = float(conf)
-        elif hasattr(req, 'confidence'):
-            req.confidence = float(conf)
-        elif hasattr(req, 'conf'):
-            req.conf = float(conf)
-        else:
-            self.get_logger().warn('ConfirmRequest has no confidence field; continuing without it.')
-
-        # Hint (optional)
-        if hasattr(req, 'hint'):
-            req.hint = msg.hint if hasattr(msg, 'hint') else ''
-
-        self.pub_confirm_req.publish(req)
-
-        used_label_field = 'candidate_label' if hasattr(req, 'candidate_label') else 'label'
-        used_conf_field = 'candidate_conf' if hasattr(req, 'candidate_conf') else \
-                          ('confidence' if hasattr(req, 'confidence') else ('conf' if hasattr(req, 'conf') else 'none'))
-        self.get_logger().info(
-            f'sent /vlm/confirm_request: label={label} conf={conf:.2f} '
-            f'(fields used: {used_label_field}, {used_conf_field})'
-        )
+	self.pub_confirm_req.publish(req)
+	self.get_logger().info(
+ 	   f'sent /vlm/confirm_request: label={label} conf={conf:.2f}'
 
         # store pending
         self.pending = {
@@ -186,7 +152,6 @@ class PerceptionNode(Node):
             self.destroy_timer(self.timeout_timer)
         self.timeout_timer = self.create_timer(self.confirm_timeout_s, self.on_confirm_timeout)
 
-
     def on_confirm_timeout(self):
         if not self.pending:
             return
@@ -195,7 +160,7 @@ class PerceptionNode(Node):
             self.publish_intent_and_example(self.pending['label'], True, self.pending['clip_path'])
         else:
             self.get_logger().warn('No confirm reply within timeout; dropping.')
-        # Clear
+        # clear
         self.pending = None
         if self.timeout_timer:
             self.destroy_timer(self.timeout_timer)
@@ -205,21 +170,23 @@ class PerceptionNode(Node):
         if not self.pending:
             # stray reply
             return
-
+        # stop timeout
         if self.timeout_timer:
             self.destroy_timer(self.timeout_timer)
             self.timeout_timer = None
 
         approved = bool(msg.approved)
-        final_label = (msg.final_label or '').strip() or self.pending['label']
+        final_label = msg.final_label.strip() if msg.final_label else self.pending['label']
         self.publish_intent_and_example(final_label, approved, self.pending['clip_path'])
+
+        # clear
         self.pending = None
 
-    # --- helpers ---
+    # ------------------ helpers ------------------
 
     def publish_intent_and_example(self, label: str, approved: bool, clip_path: str):
+        # Always publish Intent when approved; drop otherwise
         if approved:
-            # Intent
             it = Intent()
             it.stamp = now_stamp(self)
             it.label = label
@@ -229,20 +196,19 @@ class PerceptionNode(Node):
             self.pub_intents.publish(it)
             self.get_logger().info(f'Published /intents_raw (APPROVED): {label} ({it.confidence:.2f})')
 
-            # TrainingExample
+            # Probe metadata for TrainingExample
             fps, frames = _probe_clip(clip_path)
+
             te = TrainingExample()
             te.stamp = it.stamp
             te.label = label
-            te.clip_path = clip_path
+            te.clip_path = clip_path  # absolute; central_db_node will copy/symlink
             te.fps = float(fps)
             te.frames = int(frames)
             te.source = 'vlm-http'
-            te.notes = ''
+            te.notes = ''  # optional free text; keep empty for now
             self.pub_training.publish(te)
-            self.get_logger().info(
-                f'Published /lstm/training_example: {label} -> {clip_path} (fps={fps:.2f}, frames={frames})'
-            )
+            self.get_logger().info(f'Published /lstm/training_example: {label} -> {clip_path} (fps={fps:.2f}, frames={frames})')
         else:
             self.get_logger().info('User rejected candidate; nothing published.')
 
