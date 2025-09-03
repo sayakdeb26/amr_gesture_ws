@@ -12,7 +12,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ConfirmRequest.msg"
   "msg/ConfirmReply.msg"
   "msg/TrainingExample.msg"
-
+  "msg/KeypointsWindow.msg"
   DEPENDENCIES builtin_interfaces
 )
 
