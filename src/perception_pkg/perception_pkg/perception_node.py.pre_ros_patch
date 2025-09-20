@@ -8,7 +8,7 @@ from typing import Optional, Dict, Tuple
 
 import rclpy
 from rclpy.node import Node
-from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
+from rclpy.qos import QoSProfile
 from builtin_interfaces.msg import Time
 
 import requests
@@ -59,8 +59,6 @@ def _probe_clip(path: str) -> Tuple[float, int]:
 class PerceptionNode(Node):
     def __init__(self):
         super().__init__('perception_node')
-        self._vlm_client = VLMClientROS(self)
-        self._vlm_transport = 'ros'
 
         # Config
         self.vlm_url = os.environ.get('VLM_URL', 'http://127.0.0.1:8000')
@@ -69,7 +67,11 @@ class PerceptionNode(Node):
         self.auto_approve_on_timeout = os.environ.get('AUTO_APPROVE_ON_TIMEOUT', '0') == '1'
 
         self.get_logger().info(
-
+        self._vlm_transport = self.get_parameter('vlm_transport').get_parameter_value().string_value
+        if self._vlm_transport == 'ros':
+            self._vlm_client = VLMClientROS(self)
+        else:
+            self._vlm_client = None
             f'perception_node up. VLM_URL={self.vlm_url}, '
             f'test_clip={self.test_clip if self.test_clip else "<none>"}, '
             f'confirm_timeout={self.confirm_timeout_s:.1f}s, '
@@ -80,8 +82,6 @@ class PerceptionNode(Node):
 
         # Pub/Sub
         qos = QoSProfile(depth=10)
-        qos.reliability = ReliabilityPolicy.RELIABLE
-        qos.durability = DurabilityPolicy.VOLATILE
         self.pub_intents = self.create_publisher(Intent, '/intents_raw', qos)
         self.pub_confirm_req = self.create_publisher(ConfirmRequest, '/vlm/confirm_request', qos)
         self.pub_training = self.create_publisher(TrainingExample, '/lstm/training_example', qos)
@@ -102,99 +102,76 @@ class PerceptionNode(Node):
             r = requests.get(f'{self.vlm_url}/healthz', timeout=2)
             if r.status_code == 200:
                 self.get_logger().info('VLM /healthz OK')
+        self._vlm_transport = self.get_parameter('vlm_transport').get_parameter_value().string_value
+        if self._vlm_transport == 'ros':
+            self._vlm_client = VLMClientROS(self)
+        else:
+            self._vlm_client = None
         except Exception as e:
             self.get_logger().warn(f'VLM /healthz failed: {e}')
 
     # ------------------ callbacks ------------------
 
-
-    def on_unknown_gesture(self, msg):
-        self.get_logger().info(f"🔥 on_unknown_gesture fired: src={getattr(msg, 'source', '')} hint={getattr(msg, 'hint', '')} conf={getattr(msg, 'confidence', 0.0):.2f} wf={getattr(msg, 'window_frames', 0)}")
-        # Expect: low-confidence event → call ROS VLM service → ask UI to confirm
-
-        clip_path = getattr(self, 'test_clip', '')  # current implementation uses a test clip file
-
+    def on_unknown_gesture(self, msg: UnknownGesture):
+        # 1) Prepare a clip (for now always self.test_clip)
+        clip_path = self.test_clip
         if not clip_path or not os.path.isfile(clip_path):
-
             self.get_logger().warn('No valid test clip; cannot call VLM.')
-
             return
 
-        
-
-        # Optional hint carried by message (if present)
-
-        label_hint = getattr(msg, 'hint', '') if msg is not None else ''
-
-        
-
-        # Call ROS VLM service
-
+        # 2) Call VLM
         try:
-
-            resp = self._vlm_client.infer(clip_path, label_hint)
-
-            label = resp.get('label', 'UNKNOWN')
-
-            conf = float(resp.get('confidence', 0.0))
-
-            lat  = int(resp.get('latency_ms', 0))
-
+            with open(clip_path, 'rb') as f:
+                files = {'clip': ('clip.mp4', f, 'video/mp4')}
+                resp = self._vlm_client.infer(clip_path, label_hint or "")
+            data = resp.json()
+            label = data.get('label', 'UNKNOWN')
+            conf = float(data.get('conf', 0.0))
+            lat = int(data.get('lat_ms', 0))
             self.get_logger().info(f'VLM result: {label} conf={conf:.2f} lat={lat}ms')
-
+        self._vlm_transport = self.get_parameter('vlm_transport').get_parameter_value().string_value
+        if self._vlm_transport == 'ros':
+            self._vlm_client = VLMClientROS(self)
+        else:
+            self._vlm_client = None
         except Exception as e:
-
             self.get_logger().error(f'VLM call failed: {e}')
-
             return
 
-        
+        # 3) Ask user to confirm
+        # Build confirm request for the UI
+	req = ConfirmRequest()
+	req.stamp = now_stamp(self)
+	req.candidate_label = label          # <-- was: req.label
+	req.candidate_conf = float(conf)     # <-- was: req.conf (or similar)
+	req.hint = hint
 
-        # Build and publish confirmation request to UI
+	# If your ConfirmRequest.msg includes a 'source' field, keep this line;
+	# otherwise delete it.
+	req.source = 'vlm-http'
 
-        try:
+	self.pub_confirm_req.publish(req)
+	self.get_logger().info(
+        self._vlm_transport = self.get_parameter('vlm_transport').get_parameter_value().string_value
+        if self._vlm_transport == 'ros':
+            self._vlm_client = VLMClientROS(self)
+        else:
+            self._vlm_client = None
+ 	   f'sent /vlm/confirm_request: label={label} conf={conf:.2f}'
 
-            req = ConfirmRequest()
+        # store pending
+        self.pending = {
+            'label': label,
+            'conf': conf,
+            'lat_ms': lat,
+            'clip_path': clip_path,
+            'ts': time.time(),
+        }
 
-            req.stamp = now_stamp(self)
-
-            # Field names vary across schemas — set what exists
-
-            if hasattr(req, 'candidate_label'):
-
-                req.candidate_label = label
-
-            elif hasattr(req, 'label'):
-
-                req.label = label
-
-            if hasattr(req, 'candidate_conf'):
-
-                req.candidate_conf = conf
-
-            elif hasattr(req, 'confidence'):
-
-                req.confidence = conf
-
-            if hasattr(req, 'hint'):
-
-                req.hint = label_hint
-
-            if hasattr(req, 'source'):
-
-                req.source = 'vlm-ros'
-
-        
-
-            self.pub_confirm_req.publish(req)
-
-            self.get_logger().info(f'sent /vlm/confirm_request: label={label} conf={conf:.2f}')
-
-        except Exception as e:
-
-            self.get_logger().error(f'ConfirmRequest publish failed: {e}')
-
-            return
+        # 4) start timeout
+        if self.timeout_timer:
+            self.destroy_timer(self.timeout_timer)
+        self.timeout_timer = self.create_timer(self.confirm_timeout_s, self.on_confirm_timeout)
 
     def on_confirm_timeout(self):
         if not self.pending:
@@ -202,6 +179,7 @@ class PerceptionNode(Node):
         if self.auto_approve_on_timeout:
             self.get_logger().warn('Timeout; auto-approving.')
             self.publish_intent_and_example(self.pending['label'], True, self.pending['clip_path'])
+        else:
             self.get_logger().warn('No confirm reply within timeout; dropping.')
         # clear
         self.pending = None
@@ -238,6 +216,11 @@ class PerceptionNode(Node):
             it.source = 'vlm-http'
             self.pub_intents.publish(it)
             self.get_logger().info(f'Published /intents_raw (APPROVED): {label} ({it.confidence:.2f})')
+        self._vlm_transport = self.get_parameter('vlm_transport').get_parameter_value().string_value
+        if self._vlm_transport == 'ros':
+            self._vlm_client = VLMClientROS(self)
+        else:
+            self._vlm_client = None
 
             # Probe metadata for TrainingExample
             fps, frames = _probe_clip(clip_path)
@@ -252,7 +235,18 @@ class PerceptionNode(Node):
             te.notes = ''  # optional free text; keep empty for now
             self.pub_training.publish(te)
             self.get_logger().info(f'Published /lstm/training_example: {label} -> {clip_path} (fps={fps:.2f}, frames={frames})')
+        self._vlm_transport = self.get_parameter('vlm_transport').get_parameter_value().string_value
+        if self._vlm_transport == 'ros':
+            self._vlm_client = VLMClientROS(self)
+        else:
+            self._vlm_client = None
+        else:
             self.get_logger().info('User rejected candidate; nothing published.')
+        self._vlm_transport = self.get_parameter('vlm_transport').get_parameter_value().string_value
+        if self._vlm_transport == 'ros':
+            self._vlm_client = VLMClientROS(self)
+        else:
+            self._vlm_client = None
 
 def main():
     rclpy.init()

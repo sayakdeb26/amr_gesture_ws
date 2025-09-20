@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>vlm_bridge_pkg</name>
+  <version>0.0.1</version>
+  <description>Bridge low-conf LSTM → VLM service → ConfirmRequest → Intent</description>
+  <maintainer email="sayak.deb26@gmail.com">sayak</maintainer>
+  <license>Apache-2.0</license>
+
+  <!-- BUILD TYPE -->
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <!-- RUNTIME DEPS -->
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>amr_interfaces</exec_depend>
+  <exec_depend>vlm_interfaces</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

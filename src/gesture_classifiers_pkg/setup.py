@@ -20,6 +20,7 @@ setup(
    entry_points={
     "console_scripts": [
         'lstm_node = gesture_classifiers_pkg.lstm_node:main',
+        'lstm_onnx_node = gesture_classifiers_pkg.lstm_onnx_node:main'
     ],
   },
 

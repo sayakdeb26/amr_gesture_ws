@@ -8,7 +8,7 @@ from typing import Optional, Dict, Tuple
 
 import rclpy
 from rclpy.node import Node
-from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
+from rclpy.qos import QoSProfile
 from builtin_interfaces.msg import Time
 
 import requests
@@ -80,8 +80,6 @@ class PerceptionNode(Node):
 
         # Pub/Sub
         qos = QoSProfile(depth=10)
-        qos.reliability = ReliabilityPolicy.RELIABLE
-        qos.durability = DurabilityPolicy.VOLATILE
         self.pub_intents = self.create_publisher(Intent, '/intents_raw', qos)
         self.pub_confirm_req = self.create_publisher(ConfirmRequest, '/vlm/confirm_request', qos)
         self.pub_training = self.create_publisher(TrainingExample, '/lstm/training_example', qos)
@@ -109,7 +107,7 @@ class PerceptionNode(Node):
 
 
     def on_unknown_gesture(self, msg):
-        self.get_logger().info(f"🔥 on_unknown_gesture fired: src={getattr(msg, 'source', '')} hint={getattr(msg, 'hint', '')} conf={getattr(msg, 'confidence', 0.0):.2f} wf={getattr(msg, 'window_frames', 0)}")
+
         # Expect: low-confidence event → call ROS VLM service → ask UI to confirm
 
         clip_path = getattr(self, 'test_clip', '')  # current implementation uses a test clip file
