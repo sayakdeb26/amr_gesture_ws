@@ -1,0 +1,5 @@
+wave_stop
+follow_me
+go_ahead
+point
+no_gesture

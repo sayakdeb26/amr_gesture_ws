@@ -1,0 +1,69 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <world name="amr_lab">
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+    <!-- A simple box "stand" with a camera on it -->
+    <model name="camera_stand">
+      <static>true</static>
+      <pose>0 0 0 0 0 0</pose>
+      <link name="base">
+        <inertial><mass>1.0</mass></inertial>
+        <collision name="collision">
+          <geometry><box><size>0.5 0.5 0.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.5 0.5 0.5</size></box></geometry>
+          <material><ambient>0.6 0.6 0.6 1</ambient></material>
+        </visual>
+      </link>
+
+      <link name="camera_link">
+        <pose>0 0 1.2 0 0 0</pose>
+        <sensor name="rgb_camera" type="camera">
+          <always_on>true</always_on>
+          <update_rate>30</update_rate>
+          <camera>
+            <horizontal_fov>1.3962634</horizontal_fov>
+            <image>
+              <width>640</width>
+              <height>480</height>
+              <format>R8G8B8</format>
+            </image>
+            <clip>
+              <near>0.05</near>
+              <far>50.0</far>
+            </clip>
+          </camera>
+          <plugin name="gazebo_ros_camera" filename="libgazebo_ros_camera.so">
+            <ros>
+              <namespace>/</namespace>
+            </ros>
+            <frame_name>camera_optical_frame</frame_name>
+            <camera_name>camera</camera_name>
+            <image_topic_name>image_raw</image_topic_name>
+            <camera_info_topic_name>camera_info</camera_info_topic_name>
+          </plugin>
+        </sensor>
+      </link>
+    </model>
+
+    <!-- Some visual targets in front of the camera -->
+    <model name="panel">
+      <static>true</static>
+      <pose>2 0 1 0 0 0</pose>
+      <link name="panel_link">
+        <visual name="panel_visual">
+          <geometry><box><size>1.5 0.1 1.5</size></box></geometry>
+          <material><ambient>0.2 0.2 0.8 1</ambient></material>
+        </visual>
+      </link>
+    </model>
+  </world>
+</sdf>
+

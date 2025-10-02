@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "retention": "indefinite",
+  "samples": [
+    {
+      "id": "seed-0001",
+      "label": "WAVE_STOP",
+      "source": "seed",
+      "clip_path": "",
+      "frames": [],
+      "added_ts": "2025-01-01T00:00:00Z",
+      "meta": { "approved": true, "mode": "operation" }
+    }
+  ]
+}

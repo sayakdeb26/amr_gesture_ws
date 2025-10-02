@@ -1,0 +1,7 @@
+v4l2_camera_node:
+  ros__parameters:
+    video_device: "/dev/video0"
+    image_size: [320, 240]
+    time_per_frame:
+      numerator: 1
+      denominator: 10

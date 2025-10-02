@@ -1,0 +1,10 @@
+build/
+install/
+log/
+*.pyc
+__pycache__/
+*.npz
+*.onnx
+*.mp4
+datasets/
+models/lstm/current/

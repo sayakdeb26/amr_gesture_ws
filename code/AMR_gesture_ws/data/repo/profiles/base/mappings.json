@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "profile": "base",
+  "updated_at": "",
+  "mappings": {
+    "WAVE_STOP": {
+      "action_topic": "/cmd_vel",
+      "action_type": "twist_preset",
+      "action_params": { "vx": 0.0, "wz": 0.0 }
+    }
+  }
+}
