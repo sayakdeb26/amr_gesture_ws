@@ -1,10 +1,28 @@
+# colcon artifacts
 build/
 install/
 log/
-*.pyc
+
+# python
 __pycache__/
+*.pyc
+.venv/
+.env
+
+# training / data
+datasets/
+models/lstm/jester*_prepared/
+models/lstm/export_*/
+models/lstm/current/
 *.npz
 *.onnx
-*.mp4
-datasets/
-models/lstm/current/
+*.pt
+
+# keep the runtime 27-class bundle
+!models/lstm/current_27/
+!models/lstm/current_27/latest.onnx
+!models/lstm/current_27/labels.txt
+!models/lstm/current_27/normalizer.json
+
+# misc
+.DS_Store
