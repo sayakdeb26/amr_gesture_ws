@@ -9,3 +9,29 @@ __pycache__/
 .idea/
 *.swp
 *.swo
+# python
+__pycache__/
+*.pyc
+
+# venvs & caches
+.venv/
+venv/
+env/
+*.egg-info/
+.cache/
+.huggingface/
+
+# model artifacts / large files
+models/
+checkpoints/
+*.onnx
+*.pt
+*.bin
+*.safetensors
+
+# videos & data
+data/
+!data/README.md
+
+# logs
+logs/
