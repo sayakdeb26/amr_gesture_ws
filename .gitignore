@@ -35,3 +35,23 @@ data/
 
 # logs
 logs/
+# build
+build/
+install/
+log/
+**/COLCON_IGNORE
+
+# datasets / weights
+datasets/
+data/
+*.npz
+weights/
+models/**/*.onnx
+models/**/*.pt
+models/**/*.pth
+
+# py + backups
+__pycache__/
+*.pyc
+*.pyo
+*.bak

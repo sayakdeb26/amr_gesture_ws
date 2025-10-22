@@ -1,55 +1,48 @@
-import argparse, json, torch
+import argparse, json, torch, sys
 from PIL import Image
-from transformers import AutoTokenizer, AutoModelForCausalLM
 from decord import VideoReader, cpu
+from transformers import AutoTokenizer, AutoModelForCausalLM, AutoImageProcessor
 
-def pick_dtype(device: str):
-    if device.startswith("cuda") and torch.cuda.is_available():
-        return torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
-    return torch.float32
-
-def load_frames_as_pil(path, num=1):
-    vr = VideoReader(path, ctx=cpu(0))
-    if num <= 1:
-        idxs = [int((len(vr)-1)//2)]
-    else:
-        import numpy as np
-        idxs = torch.linspace(0, len(vr)-1, steps=num).long().tolist()
-    return [Image.fromarray(vr[i].asnumpy()).convert("RGB") for i in idxs]
+def pick_frame(video_path):
+    vr = VideoReader(video_path, ctx=cpu(0))
+    mid = max(0, (len(vr) - 1)//2)
+    return Image.fromarray(vr[mid].asnumpy()).convert("RGB")
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--model", default="apple/FastVLM-1.5B")
 ap.add_argument("--clip", required=True)
-ap.add_argument("--device", default="cuda")
-ap.add_argument("--num_frames", type=int, default=1)
+ap.add_argument("--prompt", default="Describe the gesture briefly and return one label.")
+ap.add_argument("--device", default="cpu", choices=["cpu","cuda"])
 ap.add_argument("--max_new_tokens", type=int, default=64)
-ap.add_argument("--prompt", default="Describe the gesture briefly and return a single label name.")
 args = ap.parse_args()
 
-dtype = pick_dtype(args.device)
+device = "cuda" if (args.device=="cuda" and torch.cuda.is_available()) else "cpu"
+dtype  = torch.bfloat16 if (device=="cuda" and torch.cuda.is_bf16_supported()) else (torch.float16 if device=="cuda" else torch.float32)
 
-tok = AutoTokenizer.from_pretrained(args.model, trust_remote_code=True)
-model = AutoModelForCausalLM.from_pretrained(args.model, trust_remote_code=True, torch_dtype=dtype)
-model.to(args.device)
+tokenizer = AutoTokenizer.from_pretrained(args.model, trust_remote_code=True, use_fast=False)
+model = AutoModelForCausalLM.from_pretrained(args.model, trust_remote_code=True, torch_dtype=dtype).to(device)
 
-if args.device.startswith("cuda"):
-    torch.backends.cuda.matmul.allow_tf32 = True
-    torch.backends.cudnn.allow_tf32 = True
-    torch.set_float32_matmul_precision("high")
+# image -> CLIP image processor
+image_processor = AutoImageProcessor.from_pretrained("openai/clip-vit-large-patch14")
 
-user_text = f"<image>\n{args.prompt}"
-inputs = tok([user_text], return_tensors="pt").to(args.device)
+img = pick_frame(args.clip)
+pixel_values = image_processor(img, return_tensors="pt")["pixel_values"].to(device, dtype=dtype)
 
-images = load_frames_as_pil(args.clip, num=args.num_frames)
-images_arg = images[0] if len(images)==1 else images
+# *** STRING CHAT TEMPLATE WITH "<image>" ***
+messages = [{"role":"user","content":"<image>\n" + args.prompt.strip()}]
+input_ids = tokenizer.apply_chat_template(
+    messages, add_generation_prompt=True, tokenize=True, return_tensors="pt"
+).to(device)
+
+if not isinstance(input_ids, torch.Tensor):
+    print(json.dumps({"error":"tokenizer returned non-tensor input_ids"}))
+    sys.exit(1)
+
+# LLaVA-style expects a list of image tensors
+images_arg = [pixel_values]
 
 with torch.inference_mode():
-    out = model.generate(**inputs, images=images_arg, max_new_tokens=args.max_new_tokens)
+    out = model.generate(input_ids=input_ids, images=images_arg, max_new_tokens=args.max_new_tokens)
 
-text = tok.batch_decode(out, skip_special_tokens=True)[0].strip()
-print(json.dumps({
-    "label": text,
-    "rationale": text,
-    "device": args.device,
-    "dtype": str(dtype).replace("torch.", ""),
-}))
+text = tokenizer.decode(out[0], skip_special_tokens=True).strip()
+print(json.dumps({"label": text, "rationale": text, "confidence": 0.0}))
