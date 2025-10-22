@@ -80,9 +80,9 @@ class LstmOnnxNode(Node):
 
         # ---- subscriptions / pubs
         self.sub = self.create_subscription(
-            Float32MultiArray, '/features_84', self.on_features, 10
+            Float32MultiArray, '/intents_raw', self.on_features, 10
         )
-        self.pub_intent  = self.create_publisher(Intent, '/intents_local', 10)
+        self.pub_intent  = self.create_publisher(Intent, '/intents_raw', 10)
         self.pub_unknown = self.create_publisher(UnknownGesture, '/lstm/unknown', 10)
 
         # rolling window of features (expect 84 per frame when rank=3, else 2520 flat)
