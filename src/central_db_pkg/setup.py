@@ -5,6 +5,7 @@ setup(
     version='0.0.1',
     packages=[package_name],  # Python package folder
     data_files=[
+        ('share/central_db_pkg/launch', ['launch/amr_pipeline.launch.py']),
         ('share/ament_index/resource_index/packages', ['resource/central_db_pkg']),
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + '/launch', ['launch/central_db.launch.py']),

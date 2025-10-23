@@ -1,0 +1,19 @@
+{
+  "background": "NO_GESTURE",
+  "No gesture": "NO_GESTURE",
+  "Doing other things": "NO_GESTURE",
+
+  "Swipe Left":  "SWIPE_LEFT",
+  "Swipe Right": "SWIPE_RIGHT",
+  "Swipe Up":    "SWIPE_UP",
+  "Swipe Down":  "SWIPE_DOWN",
+
+  "Zooming In With Two Fingers":  "ZOOM_IN",
+  "Zooming Out With Two Fingers": "ZOOM_OUT",
+
+  "Rolling Hand Backward": "ROLL_BACK",
+  "Rolling Hand Forward":  "ROLL_FWD",
+
+  "Thumb Up":   "THUMB_UP",
+  "Thumb Down": "THUMB_DOWN"
+}

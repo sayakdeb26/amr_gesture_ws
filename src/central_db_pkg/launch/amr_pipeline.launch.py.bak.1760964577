@@ -1,0 +1,142 @@
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument, SetEnvironmentVariable, ExecuteProcess
+from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
+import os
+
+def generate_launch_description():
+    # knobs
+    conf_threshold   = LaunchConfiguration('conf_threshold')
+    min_frames       = LaunchConfiguration('min_frames')
+    model_frames     = LaunchConfiguration('model_frames')
+    deadline_s       = LaunchConfiguration('deadline_s')
+    stride           = LaunchConfiguration('stride')
+    buffer_seconds   = LaunchConfiguration('buffer_seconds')
+    target_fps       = LaunchConfiguration('target_fps')
+    width            = LaunchConfiguration('width')
+    height           = LaunchConfiguration('height')
+    camera_device    = LaunchConfiguration('camera_device')
+    approved_topic   = LaunchConfiguration('approved_topic')
+    local_topic      = LaunchConfiguration('local_topic')
+    weights_path     = LaunchConfiguration('weights_path')
+    labels_path      = LaunchConfiguration('labels_path')
+    normalizer_path  = LaunchConfiguration('normalizer_path')
+    background_label = LaunchConfiguration('background_label')
+    treat_bg_unknown = LaunchConfiguration('treat_background_as_unknown')
+
+    env_loglevel = SetEnvironmentVariable('RCUTILS_LOGGING_SEVERITY_THRESHOLD', 'INFO')
+
+    cam = Node(
+        package='v4l2_camera', executable='v4l2_camera_node',
+        namespace='camera', name='v4l2', output='screen',
+        parameters=[{
+            'video_device': camera_device,
+            'image_size': [640, 480],
+            'fps': 30,
+            'pixel_format': 'YUYV',
+            'output_encoding': 'bgr8',
+        }],
+    )
+
+    simpl = Node(
+        package='frame_simplifier_pkg', executable='simplifier_node',
+        name='frame_simplifier', output='screen',
+        parameters=[{
+            'in_topic': '/camera/image_raw',
+            'out_topic': '/frames/simplified',
+            'width': width, 'height': height, 'fps': target_fps,
+        }],
+    )
+
+    keyp = Node(
+        package='keypoint_extractor_pkg', executable='keypoint_extractor_node',
+        name='keypoint_extractor', output='screen',
+        parameters=[{
+            'source': 'ros', 'image_topic': '/frames/simplified',
+            'stride': stride, 'debug': False,
+        }],
+    )
+
+    lstm = Node(
+        package='gesture_classifiers_pkg', executable='lstm_onnx_node',
+        name='lstm_onnx_node', output='screen',
+        parameters=[{
+            'weights_path':  weights_path,
+            'labels_path':   labels_path,
+            'normalizer_path': normalizer_path,
+            'conf_threshold': conf_threshold,
+            'min_frames':     min_frames,
+            'model_frames':   model_frames,
+            'allow_stub':     False,   # << disable stub
+            'background_label': background_label,
+            'treat_background_as_unknown': treat_bg_unknown,
+        }],
+        remappings=[('/features_84', '/intents_raw')],
+    )
+
+    rec = Node(
+        package='vlm_recorder_pkg', executable='recorder_node',
+        name='recorder_node', output='screen',
+        parameters=[{
+            'image_topic': '/frames/simplified',
+            'buffer_seconds': buffer_seconds,  # give VLM context
+            'width': width, 'height': height,
+            'data_root': os.path.expanduser('~/amr_gesture_ws/data/training'),
+            'samples_subdir': 'samples',
+        }],
+    )
+
+    bridge = Node(
+        package='vlm_bridge_pkg', executable='bridge_node',
+        name='vlm_bridge_node', output='screen',
+        parameters=[{
+            'confirm_timeout_s': deadline_s,
+            'wait_clip_timeout_s': 10.0,  # wait long enough for recorder
+            'default_clip': '',
+        }],
+        remappings=[('/intents_raw', approved_topic)],
+    )
+
+    kiosk = Node(
+        package='ui_kiosk_pkg', executable='ui_kiosk_node',
+        name='ui_kiosk_node', output='screen',
+        parameters=[{
+            'host': '0.0.0.0', 'port': 8008,
+            'auto_approve': False, 'deadline_s': deadline_s,
+        }],
+    )
+
+    db = Node(
+        package='central_db_pkg', executable='central_db_node',
+        name='central_db_node', output='screen',
+        parameters=[{'subscribed_topic': approved_topic}],
+    )
+
+    monitor = ExecuteProcess(
+        cmd=['python3', '-u', os.path.expanduser('~/amr_gesture_ws/tools/pipeline_monitor.py')],
+        output='screen'
+    )
+
+    return LaunchDescription([
+        env_loglevel,
+        DeclareLaunchArgument('conf_threshold', default_value='0.45'),
+        DeclareLaunchArgument('min_frames',     default_value='8'),
+        DeclareLaunchArgument('model_frames',   default_value='30'),
+        DeclareLaunchArgument('deadline_s',     default_value='20.0'),
+        DeclareLaunchArgument('stride',         default_value='1'),
+        DeclareLaunchArgument('buffer_seconds', default_value='5.0'),   # was 1.0
+        DeclareLaunchArgument('target_fps',     default_value='10.0'),
+        DeclareLaunchArgument('width',          default_value='320'),
+        DeclareLaunchArgument('height',         default_value='240'),
+        DeclareLaunchArgument('camera_device',  default_value='/dev/video0'),
+        DeclareLaunchArgument('approved_topic', default_value='/intents_approved'),
+        DeclareLaunchArgument('local_topic',    default_value='/intents_local'),
+        # point to your 2520 bundle directory
+        DeclareLaunchArgument('weights_path',   default_value=os.path.expanduser('~/amr_gesture_ws/models/lstm/export_v3/model_2520.onnx')),
+        DeclareLaunchArgument('labels_path',    default_value=os.path.expanduser('~/amr_gesture_ws/models/lstm/export_v3/labels.txt')),
+        DeclareLaunchArgument('normalizer_path',default_value=os.path.expanduser('~/amr_gesture_ws/models/lstm/export_v3/normalizer.json')),
+        DeclareLaunchArgument('background_label', default_value='NO_GESTURE'),
+        DeclareLaunchArgument('treat_background_as_unknown', default_value='true'),
+        cam, simpl, keyp, bridge_features, bridge_features, bridge_features, lstm, rec, bridge, kiosk, db, monitor
+    ])
+

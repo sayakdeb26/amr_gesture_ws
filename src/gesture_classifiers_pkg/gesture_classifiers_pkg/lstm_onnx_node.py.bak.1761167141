@@ -1,0 +1,258 @@
+import time
+from typing import Optional, Tuple
+
+import numpy as np
+import onnxruntime as ort
+import rclpy
+from rclpy.node import Node
+
+from amr_interfaces.msg import Intent, UnknownGesture, KeypointsWindow
+
+
+class LstmOnnxNode(Node):
+    def _set_intent_fields(self, m, label: str, conf: float):
+        # label
+        if hasattr(m, 'label'): m.label = label
+        # confidence
+        if hasattr(m, 'confidence'): m.confidence = conf
+        # source (optional)
+        if hasattr(m, 'source'): m.source = 'lstm_onnx'
+        # stamp (builtin_interfaces/Time)
+        try:
+            if hasattr(m, 'stamp'):
+                from rclpy.clock import Clock
+                m.stamp = Clock().now().to_msg()
+        except Exception:
+            pass
+
+    def __init__(self):
+        super().__init__("lstm_onnx_node")
+
+        # -------- parameters
+        self.declare_parameter("weights_path", "")
+        self.declare_parameter("normalizer_path", "")
+        self.declare_parameter("labels_path", "")
+        self.declare_parameter("conf_threshold", 0.80)
+        self.declare_parameter("min_frames", 12)
+        self.declare_parameter("model_frames", 30)
+        self.declare_parameter("intra_threads", 3)
+        self.declare_parameter("allow_stub", False)
+        self.declare_parameter("background_label", "NO_GESTURE")
+        self.declare_parameter("treat_background_as_unknown", True)
+
+        self.conf_threshold = float(self.get_parameter("conf_threshold").value)
+        self.model_frames   = int(self.get_parameter("model_frames").value)
+        self.min_frames     = int(self.get_parameter("min_frames").value)
+        self.allow_stub     = bool(self.get_parameter("allow_stub").value)
+
+        # labels
+        self.labels = self._load_labels(self.get_parameter("labels_path").value)
+        self.bg_label = self.get_parameter("background_label").value or "NO_GESTURE"
+        self.bg_is_unknown = bool(self.get_parameter("treat_background_as_unknown").value)
+
+        # normalizer
+        self.mu, self.sigma = self._load_normalizer(self.get_parameter("normalizer_path").value)
+
+        # ---- ONNX session
+        self.session: Optional[ort.InferenceSession] = None
+        self.input_rank: Optional[int] = None  # 2 or 3
+        self.frames_needed: int = self.model_frames
+        self.feat_dim: Optional[int] = None    # expected per-frame feature dim (e.g., 126)
+
+        weights_path = self.get_parameter("weights_path").value
+        try:
+            if not weights_path:
+                raise RuntimeError("weights_path param is empty")
+            so = ort.SessionOptions()
+            so.intra_op_num_threads = int(self.get_parameter("intra_threads").value)
+            self.session = ort.InferenceSession(weights_path, sess_options=so, providers=["CPUExecutionProvider"])
+
+            # decide expected input layout
+            inp = self.session.get_inputs()[0]
+            ishape = tuple(int(d) if isinstance(d, (int, np.integer)) else None for d in inp.shape)
+            self.input_rank = len(ishape)
+
+            if self.input_rank == 3:
+                # [B, T, F]
+                T = ishape[1] if ishape[1] is not None else self.model_frames
+                F = ishape[2] if ishape[2] is not None else None
+                self.frames_needed = T
+                self.feat_dim = F
+                self.get_logger().info(f"ONNX loaded. input=x shape=['batch', {T}, {F}]")
+            elif self.input_rank == 2:
+                # [B, T*F] — we’ll flatten before inference
+                self.get_logger().info("ONNX loaded. input=x shape=['batch', T*F]")
+            else:
+                raise RuntimeError(f"Unsupported ONNX input rank: {self.input_rank}, shape={ishape}")
+        except Exception as e:
+            if self.allow_stub:
+                self.get_logger().warn(f"ONNX load failed ({e}); using STUB fallback")
+                self.session = None
+            else:
+                raise
+
+        # ---- I/O
+        self.sub_kp = self.create_subscription(
+            KeypointsWindow, "/lstm/keypoints_window", self.on_kpwin, 10
+        )
+        self.pub_intent      = self.create_publisher(Intent, "/intents", 10)
+        self.pub_intent_raw  = self.create_publisher(Intent, "/intents_raw", 10)
+        self.pub_unknown     = self.create_publisher(UnknownGesture, "/lstm/unknown", 10)
+
+    # --------------- utils ---------------
+
+def _load_labels(self, path: str):
+        if not path:
+            return []
+        try:
+            with open(path, "r") as f:
+                return [ln.strip() for ln in f if ln.strip()]
+        except Exception as e:
+            self.get_logger().warn(f"Could not load labels from {path}: {e}")
+            return []
+
+    def _load_normalizer(self, path: str):
+        try:
+            import json
+            with open(path, "r") as f:
+                j = json.load(f)
+            mu    = np.array(j.get("mu", []), dtype=np.float32) if "mu" in j else None
+            sigma = np.array(j.get("sigma", []), dtype=np.float32) if "sigma" in j else None
+            return mu, sigma
+        except Exception as e:
+            self.get_logger().warn(f"No/invalid normalizer at {path}: {e}")
+            return None, None
+
+    def _normalize(self, x: np.ndarray) -> np.ndarray:
+        # Accept mu/sigma of size F or T*F; broadcast if needed
+        if self.mu is None or self.sigma is None:
+            return x
+        s = np.where(self.sigma == 0, 1.0, self.sigma)
+
+        # x is (1, T, F)
+        T, F = x.shape[1], x.shape[2]
+
+        if self.mu.ndim == 1 and self.sigma.ndim == 1:
+            if self.mu.size == F:
+                # per-frame features
+                return (x - self.mu[None, None, :]) / s[None, None, :]
+            if self.mu.size == T * F:
+                mu = self.mu.reshape(T, F)
+                sg = s.reshape(T, F)
+                return (x - mu[None, :, :]) / sg[None, :, :]
+        return x
+
+    def _softmax(self, z):
+        z = z - np.max(z)
+        exp = np.exp(z)
+        return exp / np.sum(exp)
+
+    # --------------- callback ---------------
+    def on_kpwin(self, msg: KeypointsWindow):
+        try:
+            T = int(msg.frames)
+            J = int(msg.joints_per_frame)
+            arr = np.asarray(msg.data, dtype=np.float32).ravel()
+
+            if T <= 0 or J <= 0:
+                self.get_logger().warn(f"Bad KeypointsWindow header: T={T}, J={J}")
+                return
+
+            # how many numbers per frame in the message:
+            per_frame_raw = arr.size // T
+            if per_frame_raw % J != 0:
+                self.get_logger().warn(
+                    f"Bad KeypointsWindow size: got {arr.size} cannot factor into T={T}, J={J} (per_frame_raw={per_frame_raw})"
+                )
+                return
+
+            # coords per joint (2 for x,y or 3 for x,y,z)
+            C_in = per_frame_raw // J
+            if C_in not in (2, 3):
+                self.get_logger().warn(f"Unsupported coords per joint: {C_in} (expected 2 or 3)")
+                return
+
+            F_in = J * C_in
+            x = arr.reshape(1, T, F_in)  # (1, T, J*C_in)
+
+            # Conform feature dimension to model expectation
+            if self.input_rank == 3:
+                expected_F = self.feat_dim  # may be None if dynamic
+                if expected_F is not None and F_in != expected_F:
+                    if F_in == J * 2 and expected_F == J * 3:
+                        # pad z=0
+                        x = x.reshape(1, T, J, 2)
+                        z = np.zeros((1, T, J, 1), dtype=np.float32)
+                        x = np.concatenate([x, z], axis=-1).reshape(1, T, J * 3)
+                        F_in = J * 3
+                    elif F_in == J * 3 and expected_F == J * 2:
+                        # drop z
+                        x = x.reshape(1, T, J, 3)[:, :, :, :2].reshape(1, T, J * 2)
+                        F_in = J * 2
+                    else:
+                        self.get_logger().warn(
+                            f"Bad KeypointsWindow size: got {arr.size}, expected {self.frames_needed * expected_F} (T={self.frames_needed}, J={J}, F={expected_F})"
+                        )
+                        return
+
+            # Conform T to model expectation (pad/trim on the left)
+            if self.frames_needed and T != self.frames_needed:
+                if T < self.frames_needed:
+                    pad = np.zeros((1, self.frames_needed - T, F_in), dtype=np.float32)
+                    x = np.concatenate([pad, x], axis=1)
+                    T = self.frames_needed
+                else:
+                    x = x[:, -self.frames_needed:, :]
+                    T = self.frames_needed
+
+            # Normalize (keep rank-3)
+            x = self._normalize(x)
+
+            if self.session is None:
+                self._publish_unknown("onnx_stub")
+                return
+
+            # Flatten if model takes [B, T*F]
+            if self.input_rank == 2:
+                x = x.reshape(1, T * x.shape[2])
+
+            out = self.session.run(None, {self.session.get_inputs()[0].name: x})[0]  # (1, C)
+            probs = self._softmax(out[0])
+            idx = int(np.argmax(probs))
+            conf = float(probs[idx])
+            label = self.labels[idx] if 0 <= idx < len(self.labels) else f"class_{idx}"
+
+            if (self.bg_is_unknown and label == self.bg_label) or conf < self.conf_threshold or T < self.min_frames:
+                self._publish_unknown("low_conf_or_bg", conf)
+                return
+
+            msg_out = Intent()
+self._set_intent_fields(msg_out, label, conf)
+self.pub_intent_raw.publish(msg_out)
+self.pub_intent.publish(msg_out)
+
+        except Exception as e:
+            self.get_logger().error(f"Failed to parse /lstm/keypoints_window: {e}")
+            self._publish_unknown("parse_error")
+
+def main():
+    rclpy.init()
+    node = LstmOnnxNode()
+    rclpy.spin(node)
+    node.destroy_node()
+    rclpy.shutdown()
+
+if __name__ == "__main__":
+    main()
+    def _publish_unknown(self, hint: str, conf: float = 0.0, window_frames: int = 0):
+        m = UnknownGesture()
+        if hasattr(m, 'confidence'): m.confidence = float(conf)
+        if hasattr(m, 'window_frames'): m.window_frames = int(window_frames)
+        if hasattr(m, 'source'): m.source = 'lstm_onnx'
+        if hasattr(m, 'hint'): m.hint = str(hint)
+        try:
+            from rclpy.clock import Clock
+            if hasattr(m, 'stamp'): m.stamp = Clock().now().to_msg()
+        except Exception:
+            pass
+        self.pub_unknown.publish(m)

@@ -1,6 +1,6 @@
 from setuptools import setup
 from glob import glob
-package_name = 'vlm_ros'
+package_name = 'vlm_recorder_pkg'
 setup(
     name=package_name,
     version='0.0.0',
@@ -14,7 +14,7 @@ setup(
     zip_safe=True,
     maintainer='sayak',
     maintainer_email='sayak.deb26@gmail.com',
-    description='Stub VLM service provider for /vlm/infer',
+    description='Recorder: 4s@10fps ring buffer → MP4 on /lstm/unknown',
     license='MIT',
-    entry_points={'console_scripts': ['vlm_node = vlm_ros.vlm_node:main']},
+    entry_points={'console_scripts': ['recorder_node = vlm_recorder_pkg.recorder_node:main']},
 )

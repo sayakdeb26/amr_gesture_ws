@@ -1,30 +1,29 @@
 #!/usr/bin/env python3
 import os, cv2, torch
 from typing import List, Tuple
-from PIL import Image
 import rclpy
 from rclpy.node import Node
 from vlm_interfaces.srv import InferClip
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoProcessor, AutoTokenizer, AutoModelForCausalLM
 
-MODEL_ID = os.getenv("VLM_MODEL_ID", "apple/FastVLM-1.5B")
-FRAMES_TO_SAMPLE = int(os.getenv("VLM_FRAMES", "5"))
-MAX_NEW_TOKENS = int(os.getenv("VLM_MAX_NEW_TOKENS", "24"))
-PROMPT = os.getenv("VLM_PROMPT", "Classify the human hand gesture in this frame with a concise single label.")
-IMAGE_TOKEN_INDEX = -200  # per FastVLM
+MODEL_ID = os.getenv("VLM_MODEL_ID", "apple/FastVLM-1.5B-fp16")
+FRAMES_TO_SAMPLE = 5
+MAX_NEW_TOKENS = 24
+PROMPT = "Classify the human hand gesture in this frame with a concise single label."
 
 class VLMNode(Node):
     def __init__(self):
         super().__init__('vlm_node')
         self.get_logger().info(f"Loading {MODEL_ID} … (first run may download weights)")
+        torch.backends.cuda.matmul.allow_tf32 = True
         trust = True
+        self.processor = AutoProcessor.from_pretrained(MODEL_ID, trust_remote_code=trust)
+        self.tokenizer  = AutoTokenizer.from_pretrained(MODEL_ID, trust_remote_code=trust)
         dtype = torch.float16 if torch.cuda.is_available() else torch.float32
-        self.tok = AutoTokenizer.from_pretrained(MODEL_ID, trust_remote_code=trust)
         self.model = AutoModelForCausalLM.from_pretrained(
             MODEL_ID, torch_dtype=dtype, device_map="auto", trust_remote_code=trust
         )
         self.device = next(self.model.parameters()).device
-        self.img_proc = self.model.get_vision_tower().image_processor
         self.get_logger().info(f"FastVLM loaded on device: {self.device}")
         self.srv = self.create_service(InferClip, '/vlm/infer', self.handle_infer)
         self.get_logger().info('VLM service ready at /vlm/infer')
@@ -37,11 +36,10 @@ class VLMNode(Node):
         frames = self._sample_frames(clip_path, FRAMES_TO_SAMPLE)
         if not frames:
             resp.label = "UNKNOWN"; resp.confidence = 0.0; resp.rationale = "Could not decode frames."; return resp
-        preds=[]
+        preds = []
         for bgr in frames:
             rgb = bgr[:, :, ::-1]
-            pil = Image.fromarray(rgb)
-            text = self._infer_image(pil, PROMPT)
+            text = self._infer_image(rgb, PROMPT)
             if text: preds.append(text.strip())
         if not preds:
             resp.label = "UNKNOWN"; resp.confidence = 0.0; resp.rationale = "No output."; return resp
@@ -57,51 +55,25 @@ class VLMNode(Node):
         cap = cv2.VideoCapture(path)
         if not cap.isOpened(): return []
         total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) or 0
-        if total <= 0:
-            idxs = list(range(k))
-        else:
-            k = min(k, total)
-            idxs = [int((i+1)*total/(k+1)) for i in range(k)]
-        out=[]
+        idxs = list(range(min(k, total))) if not total or k >= total else [int((i+1)*total/(k+1)) for i in range(k)]
+        frames=[]
         for i in idxs:
             cap.set(cv2.CAP_PROP_POS_FRAMES, i)
             ok, f = cap.read()
-            if ok and f is not None: out.append(f)
-        cap.release()
-        return out
+            if ok and f is not None: frames.append(f)
+        cap.release(); return frames
 
     @torch.inference_mode()
-    def _infer_image(self, pil_img: Image.Image, user_prompt: str) -> str:
-        # Build chat string with the <image> placeholder (per HF card)
-        messages = [{"role": "user", "content": f"<image>\n{user_prompt}"}]
-        rendered = self.tok.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
-
-        # Split at the <image> marker
-        if "<image>" not in rendered:
-            return ""
-        pre, post = rendered.split("<image>", 1)
-
-        # Tokenize text around the image token (no extra specials)
-        pre_ids  = self.tok(pre,  return_tensors="pt", add_special_tokens=False).input_ids
-        post_ids = self.tok(post, return_tensors="pt", add_special_tokens=False).input_ids
-
-        # Insert the IMAGE token id where <image> was
-        img_tok = torch.tensor([[IMAGE_TOKEN_INDEX]], dtype=pre_ids.dtype)
-        input_ids = torch.cat([pre_ids, img_tok, post_ids], dim=1).to(self.device)
-        attention_mask = torch.ones_like(input_ids, device=self.device)
-
-        # Vision preprocessing via the model's own processor
-        px = self.img_proc(images=pil_img, return_tensors="pt")["pixel_values"]
-        px = px.to(self.device, dtype=self.model.dtype)
-
-        out_ids = self.model.generate(
-            inputs=input_ids,
-            attention_mask=attention_mask,
-            images=px,
-            max_new_tokens=MAX_NEW_TOKENS,
-        )
-        text = self.tok.decode(out_ids[0], skip_special_tokens=True).strip()
-        return text.splitlines()[0].strip()
+    def _infer_image(self, rgb, prompt: str) -> str:
+        inputs = self.processor(images=rgb, text=prompt, return_tensors="pt").to(self.device)
+        out_ids = self.model.generate(**inputs, max_new_tokens=MAX_NEW_TOKENS)
+        texts = self.tokenizer.batch_decode(out_ids, skip_special_tokens=True)
+        if texts:
+            t = texts[0].strip()
+            if t.lower().startswith(prompt.lower()):
+                t = t[len(prompt):].strip(" :\n")
+            return t.splitlines()[0].strip()
+        return ""
 
     def _aggregate(self, preds: List[str]) -> Tuple[str, float]:
         from collections import Counter

@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0
 """
-VLM Bridge:
+VLM Bridge (recorder-aware):
 - Listens for low-confidence LSTM events (/lstm/unknown)
-- Calls VLM service (/vlm/infer)
+- Waits for recorder's /recorder/clip_ready (JSON) to get the real clip_path
+- Calls VLM service (/vlm/infer) with that clip
 - Publishes a ConfirmRequest to the UI
 - Waits (confirm_timeout_s) for /ui/confirm_reply
 - On approval, publishes /intents_raw and (optionally) /db/training_example
 """
 
+import json
 import time
+import threading
 from typing import Optional, Dict
 
 import rclpy
@@ -18,6 +21,7 @@ from rclpy.task import Future
 from rclpy.qos import QoSProfile
 
 from builtin_interfaces.msg import Time as RosTime
+from std_msgs.msg import String
 from amr_interfaces.msg import UnknownGesture, ConfirmRequest, ConfirmReply, Intent
 from vlm_interfaces.srv import InferClip
 
@@ -32,20 +36,33 @@ class VLMBridge(Node):
 
         # -------- Parameters --------
         self.declare_parameter('default_clip', '')
-        self.declare_parameter('confirm_timeout_s', 20.0)  # default to 20s
+        self.declare_parameter('confirm_timeout_s', 20.0)     # UI timeout (already in your code)
+        self.declare_parameter('wait_clip_timeout_s', 5.0)    # how long to wait for recorder after /lstm/unknown
 
         self.default_clip: str = str(self.get_parameter('default_clip').value or '')
         self.confirm_timeout_s: float = float(self.get_parameter('confirm_timeout_s').value)
+        self.wait_clip_timeout_s: float = float(self.get_parameter('wait_clip_timeout_s').value)
 
         # -------- ROS I/O --------
         qos = QoSProfile(depth=10)
+
+        # LSTM low-confidence trigger
         self.sub_unk = self.create_subscription(
             UnknownGesture, '/lstm/unknown', self.on_unknown, qos
         )
+
+        # Recorder notifications: std_msgs/String JSON
+        self.sub_clip = self.create_subscription(
+            String, '/recorder/clip_ready', self.on_clip_ready, qos
+        )
+
+        # UI confirm I/O
         self.pub_req = self.create_publisher(ConfirmRequest, '/vlm/confirm_request', qos)
         self.sub_reply = self.create_subscription(
             ConfirmReply, '/ui/confirm_reply', self.on_reply, qos
         )
+
+        # Final intent
         self.pub_intent = self.create_publisher(Intent, '/intents_raw', qos)
 
         # VLM service client
@@ -67,28 +84,77 @@ class VLMBridge(Node):
         self._pending_label: Optional[str] = None
         self._request_time: float = 0.0
         self._watchdog_timer = None  # rclpy Timer handle
+
+        # Latest recorder outputs
+        self._clips_by_window: Dict[int, str] = {}
+        self._last_clip: Optional[str] = None
+        self._cond = threading.Condition()
+
         # carry suggestion metadata for DB on approval
         self._last_suggestion: Dict[str, object] = {}  # {'clip_path': str, 'label': str, 'conf': float}
 
         self.get_logger().info(
             f'vlm_bridge_node up. default_clip="{self.default_clip}", '
-            f'confirm_timeout_s={self.confirm_timeout_s:.1f}'
+            f'confirm_timeout_s={self.confirm_timeout_s:.1f}, wait_clip_timeout_s={self.wait_clip_timeout_s:.1f}'
         )
 
-    # ---------- Callbacks ----------
+    # ---------- Recorder side ----------
+    def on_clip_ready(self, msg: String):
+        """Cache the recorder's clip_path keyed by window_id."""
+        try:
+            data = json.loads(msg.data)
+        except Exception as e:
+            self.get_logger().warn(f'/recorder/clip_ready JSON parse failed: {e}')
+            return
+
+        clip_path = str(data.get('clip_path', '')).strip()
+        window_id = int(data.get('window_id', -1))
+        if not clip_path:
+            return
+
+        with self._cond:
+            if window_id >= 0:
+                self._clips_by_window[window_id] = clip_path
+            self._last_clip = clip_path
+            self._cond.notify_all()
+
+        self.get_logger().info(f'Recorder clip cached: window_id={window_id} path="{clip_path}"')
+
+    def _await_clip_for_window(self, window_id: int) -> Optional[str]:
+        """Wait briefly for the recorder to publish a clip for this window_id."""
+        deadline = time.time() + max(0.0, float(self.wait_clip_timeout_s))
+        with self._cond:
+            while time.time() < deadline:
+                if window_id in self._clips_by_window:
+                    return self._clips_by_window[window_id]
+                # Small wait; awakened by on_clip_ready
+                self._cond.wait(timeout=0.1)
+        # Fallback: last seen clip, or default_clip
+        return self._clips_by_window.get(window_id) or self._last_clip or (self.default_clip or '')
+
+    # ---------- LSTM unknown callback ----------
     def on_unknown(self, msg: UnknownGesture):
         if self._awaiting:
             self.get_logger().info('Already awaiting confirmation; skipping new unknown.')
             return
 
-        clip_path = self.default_clip or ''
-        label_hint = (msg.hint or '').strip()
+        # Prefer the recorder's clip for this window; fall back to default_clip
+        window_id = int(getattr(msg, 'window_id', -1))
+        label_hint = (getattr(msg, 'hint', '') or '').strip()
+        clip_path = self._await_clip_for_window(window_id)
 
-        self.get_logger().info(f'Calling VLM: clip="{clip_path}" hint="{label_hint}"')
+        if not clip_path:
+            self.get_logger().warn('No clip available (recorder/default); aborting VLM call.')
+            return
+
+        self.get_logger().info(f'Calling VLM: clip="{clip_path}" hint="{label_hint}" (window_id={window_id})')
         req = InferClip.Request(clip_path=clip_path, label_hint=label_hint)
         fut: Future = self.cli.call_async(req)
+        # Stash the clip used so we can store it in DB if approved
+        self._last_suggestion = {'clip_path': clip_path}
         fut.add_done_callback(self._after_vlm)
 
+    # ---------- After VLM returns ----------
     def _after_vlm(self, fut: Future):
         try:
             res = fut.result()
@@ -102,12 +168,9 @@ class VLMBridge(Node):
 
         self.get_logger().info(f'VLM → label="{label}" conf={conf:.2f} note="{rationale}"')
 
-        # stash suggestion metadata for DB if approved
-        self._last_suggestion = {
-            'clip_path': self.default_clip or '',
-            'label': label,
-            'conf': conf,
-        }
+        # complete metadata for potential DB push
+        self._last_suggestion['label'] = label
+        self._last_suggestion['conf'] = conf
 
         # Publish UI confirmation request
         req = ConfirmRequest()
@@ -122,7 +185,6 @@ class VLMBridge(Node):
         self._awaiting = True
         self._pending_label = label
         self._request_time = time.time()
-        # Cancel previous timer if any, then create a fresh one
         if self._watchdog_timer:
             try:
                 self._watchdog_timer.cancel()
@@ -133,7 +195,6 @@ class VLMBridge(Node):
 
     def _watchdog_once(self):
         if not self._awaiting:
-            # done—stop this timer
             if self._watchdog_timer:
                 try:
                     self._watchdog_timer.cancel()
@@ -147,7 +208,6 @@ class VLMBridge(Node):
             self.get_logger().warn('UI timeout; rejecting suggestion.')
             self._awaiting = False
             self._pending_label = None
-            # stop timer
             if self._watchdog_timer:
                 try:
                     self._watchdog_timer.cancel()
@@ -155,11 +215,12 @@ class VLMBridge(Node):
                     pass
                 self._watchdog_timer = None
 
+    # ---------- UI reply ----------
     def on_reply(self, rep: ConfirmReply):
         if not self._awaiting:
             return
 
-        # Stop the watchdog when a reply arrives
+        # Stop watchdog
         self._awaiting = False
         if self._watchdog_timer:
             try:
