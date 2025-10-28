@@ -1,8 +1,0 @@
-/**:
-  ros__parameters:
-    model_path: "/home/sayak/amr_gesture_ws/models/lstm/current/latest.onnx"
-    labels_path: "/home/sayak/amr_gesture_ws/models/lstm/current/labels.txt"
-    normalizer_path: "/home/sayak/amr_gesture_ws/models/lstm/current/normalizer.json"
-    threshold: 0.80
-    window: 30
-    features: 84
