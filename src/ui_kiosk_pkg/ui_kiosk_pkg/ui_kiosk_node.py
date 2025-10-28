@@ -81,7 +81,7 @@ class UIHTTP(BaseHTTPRequestHandler):
   button{padding:8px 12px}
   .dim{opacity:0.6}
 </style>
-<h2>Candidate</h2>
+<h2>KOLAMeRo UI</h2>
 <div class="row">Label: <span id="label"></span></div>
 <div class="row">Confidence: <span id="conf"></span></div>
 <div class="row">Hint: <span id="hint"></span></div>

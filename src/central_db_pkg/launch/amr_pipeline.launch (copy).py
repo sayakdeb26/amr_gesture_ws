@@ -56,12 +56,10 @@ def generate_launch_description():
     br_rec_req  = DeclareLaunchArgument('recorder_request_topic', default_value='/recorder/request')
     br_rec_rdy  = DeclareLaunchArgument('recorder_ready_topic',   default_value='/recorder/clip_ready')
 
-    # Environment: fixed domain + FastVLM on GPU by default (CUDA device 0).
+    # Environment: fixed domain + FastVLM on CPU by default (safe on your RTX 5070 Blackwell)
     set_domain = SetEnvironmentVariable(name='ROS_DOMAIN_ID', value='7')
     set_model  = SetEnvironmentVariable(name='VLM_MODEL_ID',  value='apple/FastVLM-1.5B')
-    # Use GPU: set CUDA_VISIBLE_DEVICES to "0".
-    # To force CPU instead, launch with: env CUDA_VISIBLE_DEVICES=""
-    force_gpu  = SetEnvironmentVariable(name='CUDA_VISIBLE_DEVICES', value='')
+    force_cpu  = SetEnvironmentVariable(name='CUDA_VISIBLE_DEVICES', value='')  # comment this if you run nightly CUDA
 
     # 1) CAMERA
     cam = Node(
@@ -173,7 +171,7 @@ def generate_launch_description():
         br_timeout, br_req_s, br_keep_min, br_min_conf, br_ui_req, br_ui_rep, br_rec_req, br_rec_rdy,
 
         # Env
-        set_domain, set_model, force_gpu,
+        set_domain, set_model, force_cpu,
 
         # Order: camera → simplifier → keypoints → lstm → recorder → vlm → bridge → ui/db
         cam,

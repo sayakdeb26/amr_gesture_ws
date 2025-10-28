@@ -1,0 +1,5 @@
+nohup: ignoring input
+usage: train_lstm_from_npz.py [-h] --prepared_root PREPARED_ROOT
+                              [--epochs EPOCHS] [--bs BS] [--hidden HIDDEN]
+                              --out_dir OUT_DIR [--num_classes NUM_CLASSES]
+train_lstm_from_npz.py: error: the following arguments are required: --prepared_root, --out_dir

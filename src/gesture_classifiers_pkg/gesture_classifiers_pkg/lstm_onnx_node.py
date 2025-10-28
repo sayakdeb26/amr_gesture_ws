@@ -20,6 +20,7 @@ class LstmOnnxNode(Node):
         self.declare_parameter("min_frames", 12)     # allow early decision
         self.declare_parameter("model_frames", 30)   # training window length
         self.declare_parameter("intra_threads", 3)
+        self.declare_parameter("use_cuda", True)
         self.declare_parameter("allow_stub", False)
         self.declare_parameter("background_label", "NO_GESTURE")
         self.declare_parameter("treat_background_as_unknown", True)
@@ -49,7 +50,10 @@ class LstmOnnxNode(Node):
 
             so = ort.SessionOptions()
             so.intra_op_num_threads = int(self.get_parameter("intra_threads").value)
-            self.session = ort.InferenceSession(weights_path, sess_options=so, providers=["CPUExecutionProvider"])
+            use_cuda = bool(self.get_parameter("use_cuda").value)
+            providers = ["CUDAExecutionProvider","CPUExecutionProvider"] if use_cuda else ["CPUExecutionProvider"]
+            self.session = ort.InferenceSession(weights_path, sess_options=so, providers=providers)
+            self.get_logger().info(f"ONNX providers: {self.session.get_providers()}")
 
             inp = self.session.get_inputs()[0]
             ishape = tuple(int(d) if isinstance(d, (int, np.integer)) else None for d in inp.shape)
