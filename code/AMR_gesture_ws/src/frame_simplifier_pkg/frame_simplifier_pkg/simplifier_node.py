@@ -11,7 +11,7 @@ import cv2
 class SimplifierNode(Node):
     def __init__(self):
         super().__init__('frame_simplifier')
-        self.declare_parameter('in_topic', '/camera/image_raw')
+        self.declare_parameter('in_topic', '/image_raw')
         self.declare_parameter('out_topic', '/image_raw_10hz')
         self.declare_parameter('width', 320)
         self.declare_parameter('height', 240)

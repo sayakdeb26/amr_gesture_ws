@@ -23,6 +23,10 @@ It is organized as a modular ROS 2 Humble workspace with dedicated packages for 
 # First time only
 sudo apt install python3-ament-package python3-colcon-common-extensions ros-humble-image-view
 
+# remove 
+amr_gesture_ws/launch_all.sh
+cmake file
+
 # Build everything
 rm -rf build install log
 colcon build --merge-install --symlink-install

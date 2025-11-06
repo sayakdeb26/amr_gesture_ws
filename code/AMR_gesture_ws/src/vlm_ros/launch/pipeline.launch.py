@@ -3,15 +3,19 @@ from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
-def launch_setup(_ctx, **_kwargs):
-    camera_dev   = LaunchConfiguration('camera_dev')
-    width        = LaunchConfiguration('width')
-    height       = LaunchConfiguration('height')
-    fps          = LaunchConfiguration('fps')
-    pixel_format = LaunchConfiguration('pixel_format')   # YUYV is safest
-    out_enc      = LaunchConfiguration('output_encoding')# rgb8 works for your graph
-    ui_port      = LaunchConfiguration('ui_port')
-    auto_ok      = LaunchConfiguration('auto_approve')
+def launch_setup(ctx, **_kwargs):
+    # LaunchConfiguration Werte auswerten und in korrekte Typen konvertieren
+    camera_dev   = LaunchConfiguration('camera_dev').perform(ctx)
+    width        = int(LaunchConfiguration('width').perform(ctx))
+    height       = int(LaunchConfiguration('height').perform(ctx))
+    fps          = int(LaunchConfiguration('fps').perform(ctx))
+    pixel_format = LaunchConfiguration('pixel_format').perform(ctx)
+    out_enc      = LaunchConfiguration('output_encoding').perform(ctx)
+    ui_port      = int(LaunchConfiguration('ui_port').perform(ctx))
+
+    # auto_approve String zu Boolean konvertieren
+    auto_ok_str = LaunchConfiguration('auto_approve').perform(ctx)
+    auto_ok = True if auto_ok_str.lower() == 'true' else False
 
     nodes = []
 
@@ -20,10 +24,10 @@ def launch_setup(_ctx, **_kwargs):
         package='v4l2_camera', executable='v4l2_camera_node', name='v4l2_camera',
         parameters=[{
             'video_device': camera_dev,
-            'image_size': [width, height],
+            'image_size': [width, height],  # echte Integer-Liste
             'fps': fps,
-            'pixel_format': pixel_format,        # force YUYV to avoid MJPG conversion woes
-            'output_encoding': out_enc,          # rgb8 for downstream OpenCV
+            'pixel_format': pixel_format,        
+            'output_encoding': out_enc,        
         }],
         remappings=[],
         output='screen',
@@ -37,6 +41,12 @@ def launch_setup(_ctx, **_kwargs):
             'input_topic': '/camera/image_raw',
             'output_topic': '/frames/simplified',
         }],
+        output='screen'
+    ))
+
+    # Keypoint Identfikation
+    nodes.append(Node(
+        package='keypoint_extractor_pkg', executable='keypoint_extractor_node', name='keypoint_extractor_node',
         output='screen'
     ))
 
@@ -74,6 +84,12 @@ def launch_setup(_ctx, **_kwargs):
         output='screen'
     ))
 
+    #VLM service node
+    nodes.append(Node(
+        package='vlm_ros', executable='vlm_node', name='vlm_node',  
+        output='screen'          
+    ))
+
     # Central DB
     nodes.append(Node(
         package='central_db_pkg', executable='central_db_node', name='central_db_node',
@@ -86,14 +102,13 @@ def launch_setup(_ctx, **_kwargs):
         parameters=[{
             'host': '0.0.0.0',
             'port': ui_port,
-            'auto_approve': auto_ok,
+            'auto_approve': auto_ok,  # Boolean korrekt übergeben
             'deadline_s': 20.0,
         }],
         output='screen'
     ))
 
-    # Lightweight monitors (no new code): topic statistics + image viewer UI
-    # rqt_image_view is handy for visual; comment out if you don't want a GUI window
+    # Optional: rqt_image_view für Visualisierung
     try:
         nodes.append(Node(package='rqt_image_view', executable='rqt_image_view', name='viewer'))
     except Exception:
@@ -101,13 +116,14 @@ def launch_setup(_ctx, **_kwargs):
 
     return nodes
 
+
 def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument('camera_dev', default_value='/dev/video0'),
         DeclareLaunchArgument('width', default_value='640'),
         DeclareLaunchArgument('height', default_value='480'),
         DeclareLaunchArgument('fps', default_value='30'),
-        DeclareLaunchArgument('pixel_format', default_value='YUYV'),   # <- important
+        DeclareLaunchArgument('pixel_format', default_value='YUYV'),
         DeclareLaunchArgument('output_encoding', default_value='rgb8'),
         DeclareLaunchArgument('ui_port', default_value='8008'),
         DeclareLaunchArgument('auto_approve', default_value='false'),

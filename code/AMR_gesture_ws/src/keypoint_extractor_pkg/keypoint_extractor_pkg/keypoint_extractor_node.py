@@ -19,22 +19,18 @@ class KeypointExtractorNode(Node):
         super().__init__('keypoint_extractor_node')
 
         # ---------- parameters / env ----------
-        # preferred: source=ros and provide image_topic for ROS image mode
-        self.declare_parameter('source', 'ros')                   # 'ros' | 'webcam' | 'clip'
-        self.declare_parameter('image_topic', '/image_raw_10hz')  # ROS subscribed image (if source=ros)
+        self.declare_parameter('source', 'ros')
+        self.declare_parameter('image_topic', '/image_raw_10hz')
         self.declare_parameter('webcam_index', 0)
-        self.declare_parameter('stride', 3)                       # publish every N frames
-        self.declare_parameter('debug', False)                    # show OpenCV window (overlay)
-        self.declare_parameter('debug_stride', 3)                 # draw every N frames when debugging
+        self.declare_parameter('stride', 3)
+        self.declare_parameter('show_window', True)  # Fenster immer anzeigen
 
         self.source_mode   = self.get_parameter('source').get_parameter_value().string_value
         self.image_topic   = self.get_parameter('image_topic').get_parameter_value().string_value
         self.webcam_index  = int(self.get_parameter('webcam_index').value)
         self.stride        = int(self.get_parameter('stride').value)
-        self.debug         = bool(self.get_parameter('debug').value)
-        self.debug_stride  = int(self.get_parameter('debug_stride').value)
+        self.show_window   = bool(self.get_parameter('show_window').value)
 
-        # legacy envs kept for compatibility
         env_test_clip = os.environ.get('PERCEPTION_TEST_CLIP', '').strip()
         self.test_clip = env_test_clip if env_test_clip else ''
         if self.source_mode == 'clip' and not self.test_clip:
@@ -50,46 +46,33 @@ class KeypointExtractorNode(Node):
             min_detection_confidence=0.5
         )
         self.mp_draw = mp.solutions.drawing_utils
-        self.draw_spec = self.mp_draw.DrawingSpec(thickness=2, circle_radius=2)
+        self.draw_spec = self.mp_draw.DrawingSpec(thickness=2, circle_radius=2,color=(31,130,245))
 
         # buffers
         self.buf = deque(maxlen=WINDOW)
         self.frame_idx = 0
-        self.debug_idx = 0
 
         # mode routing
         if self.source_mode == 'ros':
-            # We subscribe to a *BGR8* image topic produced by your simplifier.
-            # To avoid cv_bridge dependency (and keep things very light),
-            # we expect /image_raw_10hz to already be BGR8 and we get it via cv2.imdecode path.
-            # BUT: the simplifier publishes sensor_msgs/Image — so we DO use cv_bridge here.
             from cv_bridge import CvBridge
             from sensor_msgs.msg import Image
             self.bridge = CvBridge()
             self.sub = self.create_subscription(
                 Image, self.image_topic, self.on_ros_image, qos
             )
-            mode = f'ros:{self.image_topic}'
         elif self.source_mode == 'webcam':
             self.cap = cv2.VideoCapture(self.webcam_index)
             if not self.cap.isOpened():
                 self.get_logger().warn('Webcam open failed.')
                 self.cap = None
             self.timer = self.create_timer(0.0, self.tick_webcam)
-            mode = f'webcam:{self.webcam_index}'
         elif self.source_mode == 'clip':
-            # Wait for trigger; we run only when an UnknownGesture arrives
             self.sub_unknown = self.create_subscription(
                 UnknownGesture, '/lstm/unknown', self.on_unknown, qos
             )
-            mode = f'clip:{self.test_clip if self.test_clip else "<none>"}'
-        else:
-            mode = f'unknown({self.source_mode})'
-            self.get_logger().warn(f'Unknown source mode: {self.source_mode}')
 
-        self.get_logger().info(
-            f'keypoint_extractor_node up. mode={mode}, stride={self.stride}, debug={self.debug}'
-        )
+        if self.show_window:
+            cv2.namedWindow('Video + Keypoints', cv2.WINDOW_NORMAL)
 
     # ---------- core helpers ----------
     def _extract_pts(self, bgr):
@@ -100,12 +83,19 @@ class KeypointExtractorNode(Node):
         n = 0
         if res.multi_hand_landmarks:
             n = len(res.multi_hand_landmarks)
-            for hand in res.multi_hand_landmarks:
+            for hand in res.multi_hand_landmarks[:2]:
                 for lm in hand.landmark:
                     pts.extend([float(lm.x), float(lm.y), float(lm.z)])
-        # pad to 2 hands if only 1 detected to keep shape consistent (63 joints/hand * 2 * 3floats)
-        if n == 1:
-            pts.extend([0.0] * 63)
+
+        if n < 2:
+            pts.extend([0.0] * ((2 - n) * 21 * 3))
+
+        if len(pts) != 126:
+            if len(pts) < 126:
+                pts.extend([0.0] * (126 - len(pts)))
+            elif len(pts) > 126:
+                pts = pts[:126]
+
         return pts, res
 
     def _publish_buf(self, flat, joints_per_frame, source):
@@ -117,28 +107,20 @@ class KeypointExtractorNode(Node):
         msg.source = source
         self.pub_kp.publish(msg)
 
-    def _maybe_debug(self, bgr, res):
-        """Draw overlay and show window if debug is enabled."""
-        if not self.debug:
+    def _show_frame(self, bgr, res):
+        if not self.show_window:
             return
-        self.debug_idx += 1
-        if self.debug_idx % max(self.debug_stride, 1) != 0:
-            return
-        try:
-            if res and res.multi_hand_landmarks:
-                for hand in res.multi_hand_landmarks:
-                    self.mp_draw.draw_landmarks(
-                        bgr, hand, mp.solutions.hands.HAND_CONNECTIONS,
-                        self.draw_spec, self.draw_spec
-                    )
-            cv2.imshow('Keypoints Debug', bgr)
-            # press q to close the preview without killing node
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                self.debug = False
-                cv2.destroyWindow('Keypoints Debug')
-        except cv2.error:
-            # headless / wayland issues: just ignore
-            pass
+        # Mediapipe Overlay
+        if res and res.multi_hand_landmarks:
+            for hand in res.multi_hand_landmarks:
+                self.mp_draw.draw_landmarks(
+                    bgr, hand, mp.solutions.hands.HAND_CONNECTIONS,
+                    self.draw_spec, self.draw_spec
+                )
+        cv2.imshow('Video + Keypoints', bgr)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            self.show_window = False
+            cv2.destroyWindow('Video + Keypoints')
 
     # ---------- ROS image mode ----------
     def on_ros_image(self, msg):
@@ -149,7 +131,7 @@ class KeypointExtractorNode(Node):
             return
 
         pts, res = self._extract_pts(bgr)
-        self._maybe_debug(bgr.copy(), res)
+        self._show_frame(bgr.copy(), res)
 
         if pts:
             self.buf.append(pts)
@@ -167,7 +149,7 @@ class KeypointExtractorNode(Node):
         if not ok:
             return
         pts, res = self._extract_pts(frame)
-        self._maybe_debug(frame.copy(), res)
+        self._show_frame(frame.copy(), res)
 
         if pts:
             self.buf.append(pts)
@@ -189,7 +171,7 @@ class KeypointExtractorNode(Node):
             if not ok:
                 break
             pts, res = self._extract_pts(frame)
-            self._maybe_debug(frame.copy(), res)
+            self._show_frame(frame.copy(), res)
             if pts:
                 buf.append(pts)
         cap.release()
@@ -206,14 +188,12 @@ class KeypointExtractorNode(Node):
         self._publish_buf(flat, joints_per_frame, 'mediapipe-clip')
         self.get_logger().info(f'Published /lstm/keypoints_window frames={WINDOW} joints/frame={joints_per_frame}')
 
-    # clean up debug window on shutdown
     def destroy_node(self):
         try:
             cv2.destroyAllWindows()
         except cv2.error:
             pass
         super().destroy_node()
-
 
 def main():
     rclpy.init()
@@ -222,7 +202,5 @@ def main():
     node.destroy_node()
     rclpy.shutdown()
 
-
 if __name__ == '__main__':
     main()
-
