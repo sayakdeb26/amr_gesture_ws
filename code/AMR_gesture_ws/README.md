@@ -104,7 +104,7 @@ ros2 run keypoint_extractor_pkg keypoint_extractor_node --ros-args   -r image:=/
 
 ros2 run frame_simplifier_pkg simplifier_node --ros-args   -p window:=30 -p stride:=1 -p features:=84   -r /keypoints_in:=/keypoints_30hz   -r /lstm/window:=/lstm/window
 ```
-
+	
 ### 3. LSTM Gesture Classifier
 For **5-class model**:
 ```bash

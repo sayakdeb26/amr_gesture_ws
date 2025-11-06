@@ -34,15 +34,25 @@ def launch_setup(ctx, **_kwargs):
         arguments=['--ros-args', '--log-level', 'info']
     ))
 
-    # Frame simplifier
+    # Frame simplifier 10Hz
     nodes.append(Node(
-        package='frame_simplifier_pkg', executable='simplifier_node', name='frame_simplifier',
+        package='frame_simplifier_pkg', executable='simplifier_node', name='frame_simplifier_10hz',
         parameters=[{
-            'input_topic': '/camera/image_raw',
-            'output_topic': '/frames/simplified',
+            'in_topic': '/image_raw',
+            'out_topic': '/image_raw_10hz',
         }],
         output='screen'
     ))
+
+    # Frame simplifier 30Hz
+    nodes.append(Node(
+        package='frame_simplifier_pkg', executable='simplifier_node', name='frame_simplifier_30hz',
+        parameters=[{
+            'in_topic': '/image_raw',
+            'out_topic': '/image_raw_30hz',
+        }],
+        output='screen'
+    )) 
 
     # Keypoint Identfikation
     nodes.append(Node(
