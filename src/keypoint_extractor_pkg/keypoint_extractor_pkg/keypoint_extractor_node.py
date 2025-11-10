@@ -1,28 +1,28 @@
-from mediapipe.tasks.python.vision.core.vision_task_running_mode import VisionTaskRunningMode as RunningMode
 #!/usr/bin/env python3
 from pathlib import Path
-#!/usr/bin/env python3
-import os, cv2, numpy as np
+import cv2, numpy as np
 from collections import deque
 
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, DurabilityPolicy, ReliabilityPolicy, HistoryPolicy
 
-try:
-    from vlm_interfaces.msg import UnknownGesture, KeypointsWindow
-except Exception:
-    from std_msgs.msg import Float32MultiArray as KeypointsWindow
-    UnknownGesture = None  # not used by KPX
-
-# MediaPipe imports (assuming installed in your env)
-import mediapipe as mp
-from mediapipe.tasks.python.core.base_options import BaseOptions
-from mediapipe.tasks.python.vision import HandLandmarker, HandLandmarkerOptions, RunningMode
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 
-WINDOW = 30
+# Messages
+try:
+    from vlm_interfaces.msg import KeypointsWindow
+except Exception:
+    from std_msgs.msg import Float32MultiArray as KeypointsWindow  # fallback
+
+# MediaPipe
+import mediapipe as mp
+from mediapipe.tasks.python.core.base_options import BaseOptions
+from mediapipe.tasks.python.vision import HandLandmarker, HandLandmarkerOptions, RunningMode
+
+WINDOW = 30  # frames per window
+
 
 class KeypointExtractorNode(Node):
     def __init__(self):
@@ -40,11 +40,14 @@ class KeypointExtractorNode(Node):
         self.image_topic = self.get_parameter('image_topic').value
         self.stride = int(self.get_parameter('stride').value)
         self.pub_ann = bool(self.get_parameter('publish_annotated').value)
+        self.drop_z = bool(self.get_parameter('drop_z').value)     # <-- store it!
         self.debug = bool(self.get_parameter('debug').value)
 
         # ---------- QoS ----------
-        sub_qos = QoSProfile(history=HistoryPolicy.KEEP_LAST, depth=1, reliability=ReliabilityPolicy.BEST_EFFORT)
-        pub_qos = QoSProfile(history=HistoryPolicy.KEEP_LAST, depth=10, reliability=ReliabilityPolicy.RELIABLE)
+        sub_qos = QoSProfile(history=HistoryPolicy.KEEP_LAST, depth=1,
+                             reliability=ReliabilityPolicy.BEST_EFFORT)
+        pub_qos = QoSProfile(history=HistoryPolicy.KEEP_LAST, depth=10,
+                             reliability=ReliabilityPolicy.RELIABLE)
         hold_qos = QoSProfile(history=HistoryPolicy.KEEP_LAST, depth=1,
                               durability=DurabilityPolicy.TRANSIENT_LOCAL,
                               reliability=ReliabilityPolicy.RELIABLE)
@@ -53,15 +56,11 @@ class KeypointExtractorNode(Node):
         self.bridge = CvBridge()
         self.paused = False
 
+        from std_msgs.msg import Bool
         self.sub_img = self.create_subscription(Image, self.image_topic, self.on_img, sub_qos)
-        self.sub_hold = self.create_subscription(
-            __import__('std_msgs.msg', fromlist=['Bool']).Bool, '/pipeline/hold', self.on_hold, hold_qos
-        )
+        self.sub_hold = self.create_subscription(Bool, '/pipeline/hold', self.on_hold, hold_qos)
         self.pub_window = self.create_publisher(KeypointsWindow, '/lstm/keypoints_window', pub_qos)
-        if self.pub_ann:
-            self.pub_overlay = self.create_publisher(Image, '/keypoints/overlay', pub_qos)
-        else:
-            self.pub_overlay = None
+        self.pub_overlay = self.create_publisher(Image, '/keypoints/overlay', pub_qos) if self.pub_ann else None
 
         # ---------- MediaPipe HandLandmarker ----------
         hand_model = self.get_parameter('hand_model_path').value
@@ -73,7 +72,9 @@ class KeypointExtractorNode(Node):
         self.q = deque(maxlen=WINDOW)
         self.frame_idx = 0
 
-        self.get_logger().info(f"KPX up: {self.image_topic} → /lstm/keypoints_window (paused={self.paused})")
+        self.get_logger().info(
+            f"KPX up: {self.image_topic} → /lstm/keypoints_window (paused={self.paused}, drop_z={self.drop_z})"
+        )
 
     def on_hold(self, m):
         self.paused = bool(m.data)
@@ -85,19 +86,16 @@ class KeypointExtractorNode(Node):
         self.frame_idx += 1
         if (self.frame_idx % max(1, self.stride)) != 0:
             return
+
         cvimg = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
         H, W = cvimg.shape[:2]
 
-        # run mediapipe detection
-        mpimg = mp.Image(image_format=mp.ImageFormat.SRGB, data=cv2.cvtColor(cvimg, cv2.COLOR_BGR2RGB))
-        # VIDEO API with timestamp from header
-
-        ts_ms = msg.header.stamp.sec * 1000 + msg.header.stamp.nanosec // 1000000
-
+        mpimg = mp.Image(image_format=mp.ImageFormat.SRGB,
+                         data=cv2.cvtColor(cvimg, cv2.COLOR_BGR2RGB))
+        ts_ms = msg.header.stamp.sec * 1000 + msg.header.stamp.nanosec // 1_000_000
         res = self.landmarker.detect_for_video(mpimg, ts_ms)
 
-        # Collect normalized (x,y,z) for both hands (fill zeros when absent)
-        # 21 joints per hand → 42 * 3 = 126 values per frame
+        # Normalize to 2 hands × 21 landmarks × (x,y,z)
         def hand_to_list(hand):
             out = []
             for lm in hand:
@@ -106,53 +104,42 @@ class KeypointExtractorNode(Node):
 
         L = res.hand_landmarks[0] if len(res.hand_landmarks) >= 1 else []
         R = res.hand_landmarks[1] if len(res.hand_landmarks) >= 2 else []
-        L = hand_to_list(L) if L else [0.0]*63
-        R = hand_to_list(R) if R else [0.0]*63
-        
-        # <---- changes have been made to drop the z parameter
-        #frame_vec = ([(v) for i,v in enumerate(L) if (i % 3)!=2] +
-        #            [(v) for i,v in enumerate(R) if (i % 3)!=2])  # 84 if drop_z
-        #        if not self.drop_z:					
-        #            frame_vec = L + R  # 126 (xyz)
+        L = hand_to_list(L) if L else [0.0] * 63
+        R = hand_to_list(R) if R else [0.0] * 63
 
-	#  ➤ Choose xy-only or full xyz
+        # Choose xy-only (84) or full xyz (126)
         if self.drop_z:
-            # keep only x,y for both hands → 84 floats
             frame_vec = [v for i, v in enumerate(L) if (i % 3) != 2] + \
                         [v for i, v in enumerate(R) if (i % 3) != 2]
         else:
-            # full xyz → 126 floats
             frame_vec = L + R
-                    
 
         self.q.append(frame_vec)
 
         if len(self.q) == self.q.maxlen:
-            # publish window
             mw = KeypointsWindow()
             mw.stamp = msg.header.stamp
             mw.frames = len(self.q)
             mw.joints_per_frame = 42
-            # flatten row-major: [f0..., f1..., ...]
             data = []
-            for f in list(self.q):
+            for f in self.q:
                 data.extend(f)
             mw.data = data
             mw.source = 'mediapipe'
             self.pub_window.publish(mw)
 
             if self.pub_overlay:
-                # (Optional) draw simple dots on overlay
                 overlay = cv2.cvtColor(mpimg.numpy_view(), cv2.COLOR_RGB2BGR)
                 for i in range(0, 63, 3):
                     x = int(L[i] * W); y = int(L[i+1] * H)
-                    cv2.circle(overlay, (x,y), 2, (0,255,0), -1)
+                    cv2.circle(overlay, (x, y), 2, (0, 255, 0), -1)
                 for i in range(0, 63, 3):
                     x = int(R[i] * W); y = int(R[i+1] * H)
-                    cv2.circle(overlay, (x,y), 2, (0,0,255), -1)
+                    cv2.circle(overlay, (x, y), 2, (0, 0, 255), -1)
                 out = self.bridge.cv2_to_imgmsg(overlay, encoding='bgr8')
                 out.header = msg.header
                 self.pub_overlay.publish(out)
+
 
 def main():
     rclpy.init()
@@ -163,5 +150,7 @@ def main():
         node.destroy_node()
         rclpy.shutdown()
 
+
 if __name__ == '__main__':
     main()
+
