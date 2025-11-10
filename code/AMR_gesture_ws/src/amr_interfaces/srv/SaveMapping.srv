@@ -1,7 +1,0 @@
-string gesture_id
-string action_topic
-string action_type
-string action_params
----
-bool ok
-string message

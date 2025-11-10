@@ -1,7 +1,0 @@
-string clip_path
-string label_hint
----
-string label
-float32 confidence
-string rationale
-int32 latency_ms

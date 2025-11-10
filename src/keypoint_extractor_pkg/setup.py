@@ -16,7 +16,7 @@ setup(
     maintainer_email='sayak.deb26@gmail.com',
     description='Keypoint extractor node (MediaPipe) for gesture pipeline.',
     license='MIT',
-    tests_require=['pytest'],
+
     entry_points={
         'console_scripts': [
             'keypoint_extractor_node = keypoint_extractor_pkg.keypoint_extractor_node:main',

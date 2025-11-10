@@ -1,0 +1,4 @@
+string session_id
+string candidate_label
+float32 candidate_conf
+string clip_path

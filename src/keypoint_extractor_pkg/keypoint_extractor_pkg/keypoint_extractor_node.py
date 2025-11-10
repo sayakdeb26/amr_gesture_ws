@@ -32,6 +32,7 @@ class KeypointExtractorNode(Node):
         self.declare_parameter('image_topic', '/image_raw_10hz')
         self.declare_parameter('stride', 1)
         self.declare_parameter('publish_annotated', False)
+        self.declare_parameter('drop_z', True)
         self.declare_parameter('debug', False)
         default_hand_model = str(Path.home() / 'amr_gesture_ws/models/mediapipe/hand_landmarker.task')
         self.declare_parameter('hand_model_path', default_hand_model)
@@ -107,7 +108,22 @@ class KeypointExtractorNode(Node):
         R = res.hand_landmarks[1] if len(res.hand_landmarks) >= 2 else []
         L = hand_to_list(L) if L else [0.0]*63
         R = hand_to_list(R) if R else [0.0]*63
-        frame_vec = L + R  # 126 floats
+        
+        # <---- changes have been made to drop the z parameter
+        #frame_vec = ([(v) for i,v in enumerate(L) if (i % 3)!=2] +
+        #            [(v) for i,v in enumerate(R) if (i % 3)!=2])  # 84 if drop_z
+        #        if not self.drop_z:					
+        #            frame_vec = L + R  # 126 (xyz)
+
+	#  ➤ Choose xy-only or full xyz
+        if self.drop_z:
+            # keep only x,y for both hands → 84 floats
+            frame_vec = [v for i, v in enumerate(L) if (i % 3) != 2] + \
+                        [v for i, v in enumerate(R) if (i % 3) != 2]
+        else:
+            # full xyz → 126 floats
+            frame_vec = L + R
+                    
 
         self.q.append(frame_vec)
 

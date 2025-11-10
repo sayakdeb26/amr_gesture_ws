@@ -1,5 +1,0 @@
-int32 trainingdata
----
-string modelpath
----
-int32 progress
