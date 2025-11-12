@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>KOLAMeRO UI Kiosk</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <!-- Top-left brand text -->
+<div class="brand tl">
+  <img src="static/kol_logo_wbg.png" alt="logo" class="brand-logo">
+</div>
+
+  <!-- Bottom-left FAPS text -->
+  <div class="brand-bl">FAPS</div>
+
+  <!-- Bottom-right FAU logo -->
+  <div class="logo-br">
+    <img src="static/fau_logo_white.png" alt="FAU logo">
+  </div>
+
+
+  <main class="page">
+    <!-- Fullscreen toggle button -->
+    <button id="fullscreen-btn" class="fullscreen-btn" title="Toggle fullscreen">⛶</button>
+    <section class="main">
+      <div class="video-box">
+        <video id="clip" autoplay loop muted playsinline style="display:none"></video>
+        <div class="idle-mark" id="idle">Waiting for a clip...</div>
+      </div>
+
+      <div class="panel">
+        <div class="row">
+          <input id="label" type="text" placeholder="Label..."/>
+          <div class="pill" id="conf">conf 0.00</div>
+        </div>
+        <div class="row"><div class="hint" id="hint"></div></div>
+        <div class="bar"><div class="fill" id="fill"></div></div>
+        <div class="row actions">
+          <button class="approve" id="approve">Approve</button>
+          <button class="reject"  id="reject">Reject</button>
+          <div class="status"><input type="checkbox" id="auto"/> Auto-approve (debug)</div>
+        </div>
+        <div class="status" id="status"></div>
+      </div>
+    </section>
+    <!-- NOTE: Recent/aside removed per your request -->
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

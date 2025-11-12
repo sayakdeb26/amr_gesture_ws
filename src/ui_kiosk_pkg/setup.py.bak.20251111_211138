@@ -17,6 +17,5 @@ setup(
     license='MIT',
     entry_points={'console_scripts': [
         'ui_kiosk_node = ui_kiosk_pkg.ui_kiosk_node:main',
-        'kiosk_test_publisher = ui_kiosk_pkg.kiosk_test_publisher:main',
     ]},
 )
