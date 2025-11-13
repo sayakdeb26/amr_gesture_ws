@@ -6,7 +6,7 @@ def generate_launch_description():
         Node(
             package="vlm_bridge_pkg",
             executable="bridge_node",
-            name="vlm_bridge_node",
+            name="bridge_node",
             output="screen",
             parameters=[{
                 "confirm_timeout_s": 20.0,

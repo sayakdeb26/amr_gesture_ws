@@ -12,64 +12,15 @@ from vlm_interfaces.srv import InferClip
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 # -----------------------------------------------------------------------------
-# Gesture label space + default prompt
-# -----------------------------------------------------------------------------
-
-# Must stay in sync with your LSTM / dataset labels
-GESTURE_LABELS = [
-    "ROLL_BACK",
-    "ROLL_FWD",
-    "SWIPE_DOWN",
-    "SWIPE_LEFT",
-    "SWIPE_RIGHT",
-    "SWIPE_UP",
-    "THUMB_DOWN",
-    "THUMB_UP",
-    "ZOOM_IN",
-    "ZOOM_OUT",
-    "NO_GESTURE",
-    "UNKNOWN",
-]
-
-LABEL_CANON = {name.lower(): name for name in GESTURE_LABELS}
-
-DEFAULT_GESTURE_PROMPT = """You will be given frames from a short video.
-Each frame contains a single person performing exactly one hand gesture.
-Focus only on the hands and ignore the face, background, or other objects.
-
-Choose exactly ONE label from the following list that best describes the hand gesture:
-
-- ROLL_BACK
-- ROLL_FWD
-- SWIPE_DOWN
-- SWIPE_LEFT
-- SWIPE_RIGHT
-- SWIPE_UP
-- THUMB_DOWN
-- THUMB_UP
-- ZOOM_IN
-- ZOOM_OUT
-- NO_GESTURE
-- UNKNOWN
-
-If none of the labels fits, answer UNKNOWN.
-Respond with ONLY the label text, nothing else.
-"""
-
-
-# -----------------------------------------------------------------------------
 # Config
 # -----------------------------------------------------------------------------
 MODEL_ID = os.getenv("VLM_MODEL_ID", "apple/FastVLM-1.5B")
-
 FRAMES_TO_SAMPLE = int(os.getenv("VLM_FRAMES", "5"))
 MAX_TOKENS = int(os.getenv("VLM_MAX_TOKENS", "24"))
-MAX_NEW_TOKENS = MAX_TOKENS     # <-- THIS fixes the crash
-
-PROMPT = os.getenv("VLM_PROMPT", DEFAULT_GESTURE_PROMPT)
-TEMPERATURE = float(os.getenv("VLM_TEMPERATURE", "0.0"))
-TOP_P = float(os.getenv("VLM_TOP_P", "1.0"))
-
+PROMPT = os.getenv(
+    "VLM_PROMPT",
+    "Classify the human hand gesture in this frame with a concise single label.",
+)
 IMAGE_TOKEN_INDEX = -200  # per FastVLM
 
 
@@ -182,51 +133,13 @@ class VLMNode(Node):
         text = self.tok.decode(out_ids[0], skip_special_tokens=True).strip()
         return text.splitlines()[0].strip()
 
-    def _canonical_label(self, raw: str) -> str:
-        """Map raw model text to a canonical gesture label."""
-        if not raw:
-            return "UNKNOWN"
-
-        # take only first line, strip punctuation
-        s = raw.strip().splitlines()[0]
-        s = s.strip().strip(".")
-        low = s.lower()
-
-        # exact match
-        if low in LABEL_CANON:
-            return LABEL_CANON[low]
-
-        # allow "swipe left" vs "SWIPE_LEFT"
-        low2 = low.replace(" ", "_")
-        if low2 in LABEL_CANON:
-            return LABEL_CANON[low2]
-
-        # allow phrases containing the label name
-        for key, canon in LABEL_CANON.items():
-            if key in low:
-                return canon
-
-        return "UNKNOWN"
-
-
-
-
     def _aggregate(self, preds: List[str]) -> Tuple[str, float]:
-        """Aggregate frame-wise raw outputs into a single canonical label + confidence."""
         from collections import Counter
-
-        cleaned = [self._canonical_label(p) for p in preds if p]
-        if not cleaned:
-            return "UNKNOWN", 0.01
-
-        c = Counter(cleaned)
+        c = Counter([p.lower() for p in preds if p])
         label, votes = c.most_common(1)[0]
-
-        # confidence = fraction of frames voting for this label (+tiny floor)
-        conf = votes / max(1, len(cleaned))
-        conf = 0.98 * conf + 0.01  # keep your smoothing
+        conf = votes / max(1, len(preds))
+        conf = 0.98 * conf + 0.01
         return label, float(conf)
-
 
 def main():
     rclpy.init(); node = VLMNode()

@@ -92,7 +92,10 @@ class KeypointExtractorNode(Node):
 
         mpimg = mp.Image(image_format=mp.ImageFormat.SRGB,
                          data=cv2.cvtColor(cvimg, cv2.COLOR_BGR2RGB))
-        ts_ms = msg.header.stamp.sec * 1000 + msg.header.stamp.nanosec // 1_000_000
+        if not hasattr(self, 'ts_ms'):
+            self.ts_ms = 0
+        self.ts_ms += 33
+        ts_ms = self.ts_ms
         res = self.landmarker.detect_for_video(mpimg, ts_ms)
 
         # Normalize to 2 hands × 21 landmarks × (x,y,z)

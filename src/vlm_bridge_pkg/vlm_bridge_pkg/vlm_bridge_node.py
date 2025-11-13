@@ -26,7 +26,7 @@ WINDOW_POST = 3.0
 
 class VlmBridgeNode(Node):
     def __init__(self):
-        super().__init__('vlm_bridge_node')
+        super().__init__('bridge_node')
 
         # ---- params (keep your defaults; expose timeouts) ----
         self.declare_parameter('confirm_timeout_s', 15.0)

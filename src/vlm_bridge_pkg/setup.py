@@ -21,7 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
             # 👇 now matches your actual file name
-            'bridge_node = vlm_bridge_pkg.vlm_bridge_node:main',
+            'bridge_node = vlm_bridge_pkg.bridge_node:main',
         ],
     },
 )

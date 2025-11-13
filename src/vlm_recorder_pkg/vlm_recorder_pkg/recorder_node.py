@@ -36,7 +36,7 @@ class RecorderNode(Node):
 
         # ---- params (defaults keep your old behavior unless overridden) ----
         self.declare_parameter('image_topic', '/image_raw_10hz')
-        self.declare_parameter('target_fps', 10)
+        self.declare_parameter('target_fps', 10.0)
         self.declare_parameter('buffer_seconds', 6.0)     # 3s pre + 3s post
         self.declare_parameter('expansion_ratio', 0.30)   # 30% bbox pad
         self.declare_parameter('data_root', os.path.expanduser('~/amr_gesture_ws/data/training'))

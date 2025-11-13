@@ -38,7 +38,7 @@ class CentralDBNode(Node):
             'stamp': {'sec': int(msg.stamp.sec), 'nsec': int(msg.stamp.nanosec)},
             'label': msg.label,
             'confidence': float(msg.confidence),
-            'latency_ms': int(msg.latency_ms),
+            'latency_ms': int(getattr(msg, 'latency_ms', 0)),
             'source': msg.source,
         }
         with self.intents_log.open('a', encoding='utf-8') as f:
