@@ -37,7 +37,7 @@ class RecorderNode(Node):
         # ---- params (defaults keep your old behavior unless overridden) ----
         self.declare_parameter('image_topic', '/image_raw_10hz')
         self.declare_parameter('target_fps', 10.0)
-        self.declare_parameter('buffer_seconds', 6.0)     # 3s pre + 3s post
+        self.declare_parameter('buffer_seconds', 14.0)     # 7s pre + 7s post
         self.declare_parameter('expansion_ratio', 0.30)   # 30% bbox pad
         self.declare_parameter('data_root', os.path.expanduser('~/amr_gesture_ws/data/training'))
         self.declare_parameter('samples_subdir', 'samples')
@@ -150,19 +150,46 @@ class RecorderNode(Node):
         self.active_session = None
 
     # ----------- core writer -----------
+        # ----------- core writer -----------
     def _write_clip(self, req: 'RecorderRequest'):
+        """Write a clip for the requested time window.
+
+        If there are no frames in [t_center - pre, t_center + post],
+        fall back to using the entire buffer so we never produce a 0-frame MP4.
+        """
         if self.latest_shape is None:
             return "", False, "no frames buffered yet"
 
-        center_ns = req.t_center.sec*10**9 + req.t_center.nanosec
-        start_ns  = center_ns - int(req.pre_secs*1e9)
-        end_ns    = center_ns + int(req.post_secs*1e9)
+        center_ns = req.t_center.sec * 10**9 + req.t_center.nanosec
+        start_ns  = center_ns - int(req.pre_secs * 1e9)
+        end_ns    = center_ns + int(req.post_secs * 1e9)
 
+        # Take a snapshot of the buffer under lock
         with self.buffer_lock:
-            frames = [f for f in list(self.buffer) if start_ns <= f.t_ns <= end_ns]
+            buffer_list = list(self.buffer)
+            buf_len = len(buffer_list)
+            frames = [f for f in buffer_list if start_ns <= f.t_ns <= end_ns]
 
+        self.get_logger().info(
+            f"[{req.session_id}] recorder window: "
+            f"center={center_ns}, start={start_ns}, end={end_ns}, "
+            f"buffer_frames={buf_len}, selected_frames={len(frames)}"
+        )
+
+        if not buffer_list:
+            # Nothing at all in the buffer – we really can't write anything
+            return "", False, "buffer empty"
+
+        # Fallback: if no frames fell into the requested window, use entire buffer
         if not frames:
-            return "", False, "no frames for requested window"
+            self.get_logger().warn(
+                f"[{req.session_id}] no frames in requested window; "
+                f"falling back to entire buffer ({buf_len} frames)"
+            )
+            frames = buffer_list
+
+        # Sort frames chronologically (in case deque snapshot was mid-append)
+        frames = sorted(frames, key=lambda fi: fi.t_ns)
 
         # Normalize ROI → pixels
         h, w, _ = self.latest_shape
@@ -205,9 +232,9 @@ class RecorderNode(Node):
                     crop = frame[y:y+hh, x:x+ww]
                 else:
                     crop = frame
-                if self.blur_outside and ww>0 and hh>0:
+                if self.blur_outside and ww > 0 and hh > 0:
                     # Keep full frame size, blur outside ROI (privacy mode)
-                    blurred = cv2.blur(frame, (25,25))
+                    blurred = cv2.blur(frame, (25, 25))
                     blurred[y:y+hh, x:x+ww] = crop
                     out = blurred
                 else:
@@ -219,6 +246,7 @@ class RecorderNode(Node):
             writer.release()
 
         return save_path, True, "ok"
+
 
 def main():
     rclpy.init()

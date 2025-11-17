@@ -1,28 +1,49 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0
 
+import os
+
 from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
+from ament_index_python.packages import get_package_share_directory
 
 
 def generate_launch_description():
     #
-    # 0) Webcam (v4l2_camera)  →  /image_raw  @ ~30 Hz
+    # 0) ZED2i camera → /zed2i/zed_node/rgb_raw/image_raw_color
     #
-    v4l2_camera = Node(
-        package="v4l2_camera",
-        executable="v4l2_camera_node",
-        name="v4l2_camera",
-        output="screen",
-        parameters=[{
-            # these are fine as defaults; adjust if you like
-            "image_size": [640, 480],
-            "time_per_frame": [1, 30],  # 30 fps
-        }],
+    camera_model = LaunchConfiguration("camera_model")
+    camera_name = LaunchConfiguration("camera_name")
+    resolution = LaunchConfiguration("resolution")
+    framerate = LaunchConfiguration("framerate")
+    gpu_id = LaunchConfiguration("gpu_id")
+    publish_tf = LaunchConfiguration("publish_tf")
+    depth_mode = LaunchConfiguration("depth_mode")
+
+    zed_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory("zed_wrapper"),
+                "launch",
+                "zed_camera.launch.py",
+            )
+        ),
+        launch_arguments={
+            "camera_model": camera_model,
+            "camera_name": camera_name,
+            "resolution": resolution,
+            "framerate": framerate,
+            "gpu_id": gpu_id,
+            "publish_tf": publish_tf,
+            "depth_mode": depth_mode,
+        }.items(),
     )
 
     #
-    # 1) Frame simplifier: /image_raw → /image_raw_30hz  (no KPX bridge)
+    # 1) Frame simplifier: ZED RGB → /image_raw_30hz
     #
     frame_simplifier = Node(
         package="frame_simplifier_pkg",
@@ -30,16 +51,20 @@ def generate_launch_description():
         name="frame_simplifier",
         output="screen",
         parameters=[{
+            # must be DOUBLE (not int) for this node
             "target_fps": 30.0,
+            "crop_center": False,
+            "kpx_passthrough": False,
         }],
         remappings=[
-            ("/image_in", "/image_raw"),
+            ("/image_in", "/zed2i/zed_node/rgb_raw/image_raw_color"),
             ("/image_out", "/image_raw_30hz"),
         ],
     )
 
     #
     # 2) Keypoint extractor: /image_raw_30hz → /lstm/keypoints_window
+    #    (same config as webcam pipeline, just different source)
     #
     keypoint_extractor = Node(
         package="keypoint_extractor_pkg",
@@ -51,6 +76,7 @@ def generate_launch_description():
             "drop_z": True,
         }],
         remappings=[
+            # node subscribes to /image_raw_10hz internally → map that to 30 Hz stream
             ("/image_raw_10hz", "/image_raw_30hz"),
             ("/keypoints_window", "/lstm/keypoints_window"),
         ],
@@ -58,6 +84,7 @@ def generate_launch_description():
 
     #
     # 3) LSTM ONNX: /lstm/keypoints_window → /intents_raw + /lstm/unknown
+    #    (identical to working webcam pipeline)
     #
     lstm_onnx = Node(
         package="gesture_classifiers_pkg",
@@ -86,7 +113,8 @@ def generate_launch_description():
     )
 
     #
-    # 4) Recorder: /image_raw_30hz → files under amr_kiosk_media/tmp
+    # 4) Recorder: /image_raw_30hz → circular buffer (for VLM clips)
+    #    (same semantics as webcam pipeline; new recorder_node uses image_topic)
     #
     recorder = Node(
         package="vlm_recorder_pkg",
@@ -95,25 +123,35 @@ def generate_launch_description():
         output="screen",
         parameters=[{
             "image_topic": "/image_raw_30hz",
-            "out_dir": "/home/sayak/amr_kiosk_media/tmp",
-            "buffer_seconds": 14.0,
+            "buffer_seconds": 14.0,     # 7s pre + 7s post
             "target_fps": 30.0,
+            "out_dir": "/home/sayak/amr_gesture_ws/data/training/samples",
         }],
     )
 
     #
-    # 5) Real VLM node (FastVLM on GPU) – service /vlm/infer
+    # 5) Real VLM node (FastVLM on GPU/CPU) – provides /vlm/infer
+    #    (same as webcam pipeline; env/venv handled outside)
     #
+        # --------- VLM node (FastVLM on CPU) ----------
     vlm_node = Node(
         package="vlm_ros",
-        executable="vlm_node",
+        executable="vlm_node_fastvlm",
         name="vlm_node",
         output="screen",
-        # venv + ROS env will be handled by the wrapper script below
+        # Force CPU for VLM
+        env={
+            "VLM_MODEL_ID":   "apple/FastVLM-1.5B",
+            "VLM_DEVICE":     "cpu",
+            # was "5" before
+            "VLM_FRAMES":     "60",
+            "VLM_MAX_TOKENS": "24",
+        },
     )
 
+
     #
-    # 6) Bridge: /lstm/unknown + recorder → /vlm/infer → kiosk + /intents
+    # 6) VLM bridge (session-locked): /lstm/unknown + recorder → /vlm/infer → kiosk
     #
     vlm_bridge = Node(
         package="vlm_bridge_pkg",
@@ -122,18 +160,13 @@ def generate_launch_description():
         output="screen",
         parameters=[{
             "confirm_timeout_s": 20.0,
-            "kiosk_url": "http://127.0.0.1:8008",
+            "wait_clip_timeout_s": 6.0,
         }],
-        remappings=[
-            ("/lstm/unknown", "/lstm/unknown"),
-            ("/vlm/confirm_request", "/vlm/confirm_request"),
-            ("/ui/confirm_reply", "/ui/confirm_reply"),
-            ("/intents", "/intents"),
-        ],
+        # topics are already matching defaults in the node; no remaps needed
     )
 
     #
-    # 7) UI kiosk (serves clips from /home/sayak/amr_kiosk_media)
+    # 7) UI kiosk (same YAML config as webcam pipeline)
     #
     ui_kiosk = Node(
         package="ui_kiosk_pkg",
@@ -146,7 +179,7 @@ def generate_launch_description():
     )
 
     #
-    # 8) Central DB: subscribes /intents and logs to /home/sayak/amr_db
+    # 8) Central DB
     #
     central_db = Node(
         package="central_db_pkg",
@@ -156,7 +189,17 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        v4l2_camera,
+        # Launch args with sane defaults
+        DeclareLaunchArgument("camera_model", default_value="zed2i"),
+        DeclareLaunchArgument("camera_name",  default_value="zed2i"),
+        DeclareLaunchArgument("resolution",   default_value="HD720"),
+        DeclareLaunchArgument("framerate",    default_value="30"),
+        DeclareLaunchArgument("gpu_id",       default_value="0"),
+        DeclareLaunchArgument("publish_tf",   default_value="false"),
+        DeclareLaunchArgument("depth_mode",   default_value="NEURAL"),
+
+        # Pipeline
+        zed_launch,
         frame_simplifier,
         keypoint_extractor,
         lstm_onnx,

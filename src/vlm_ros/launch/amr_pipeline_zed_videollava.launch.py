@@ -135,34 +135,37 @@ def generate_launch_description():
     #
         # --------- VLM node (FastVLM on CPU) ----------
     vlm_node = Node(
-        package="vlm_ros",
-        executable="vlm_node",
-        name="vlm_node",
+        package="vlm_videollava_pkg",     # NEW package you’ll create for the video VLM node
+        executable="vlm_node_videollava", # NEW executable (Python entrypoint)
+        name="vlm_node",                  # same ROS node name
         output="screen",
-        # Force CPU for VLM
-        env={
-            "VLM_MODEL_ID":   "apple/FastVLM-1.5B",
-            "VLM_DEVICE":     "cpu",
-            # was "5" before
-            "VLM_FRAMES":     "60",
-            "VLM_MAX_TOKENS": "24",
-        },
-    )
+        parameters=[
+            {
+                # HF model id placeholder – set this to the actual Video-LLaVA model you choose
+                "model_id": "your-videollava-model-id",
+                "VLM_DEVICE":     "cpu",
+                # was "5" before
+                "VLM_FRAMES":     "60",
+                "VLM_MAX_TOKENS": "24",
+            },
+        )
 
 
     #
     # 6) VLM bridge (session-locked): /lstm/unknown + recorder → /vlm/infer → kiosk
     #
-    vlm_bridge = Node(
-        package="vlm_bridge_pkg",
-        executable="bridge_node",
-        name="bridge_node",
+    vlm_node = Node(
+        package="vlm_videollava_pkg",
+        executable="vlm_node_videollava",
+        name="vlm_node",
         output="screen",
-        parameters=[{
-            "confirm_timeout_s": 20.0,
-            "wait_clip_timeout_s": 6.0,
-        }],
-        # topics are already matching defaults in the node; no remaps needed
+        parameters=[
+            {
+                "model_id": "your-videollava-model-id",
+                "num_frames": 16,
+                "device": "cuda",  # or "cpu" while testing
+            }
+        ],
     )
 
     #

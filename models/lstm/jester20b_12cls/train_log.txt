@@ -1,0 +1,94 @@
+Using device: cuda
+Training directory: /home/sayak/datasets/jester_npz/windows/train
+Validation directory: /home/sayak/datasets/jester_npz/windows/val
+Number of classes: 12
+Training samples: 181554
+Validation samples: 24759
+Label range in data: min=0, max=11
+Unique labels (sample): [0, 1, 2, 3, 4, 7, 8, 9, 10, 11]
+Model parameters: 648,844
+Created labels file at: /home/sayak/amr_gesture_ws/models/lstm/jester20b_12cls/labels.txt
+
+Starting training...
+[epoch   1] train_acc=0.7033 train_loss=0.9025 val_acc=0.7649 lr=1.00e-03
+  → New best model saved! (val_acc: 0.7649)
+[epoch   2] train_acc=0.7878 train_loss=0.6407 val_acc=0.7881 lr=1.00e-03
+  → New best model saved! (val_acc: 0.7881)
+[epoch   3] train_acc=0.8137 train_loss=0.5697 val_acc=0.8080 lr=1.00e-03
+  → New best model saved! (val_acc: 0.8080)
+[epoch   4] train_acc=0.8336 train_loss=0.5161 val_acc=0.8147 lr=1.00e-03
+  → New best model saved! (val_acc: 0.8147)
+[epoch   5] train_acc=0.8491 train_loss=0.4726 val_acc=0.8180 lr=1.00e-03
+  → New best model saved! (val_acc: 0.8180)
+[epoch   6] train_acc=0.8606 train_loss=0.4365 val_acc=0.8283 lr=1.00e-03
+  → New best model saved! (val_acc: 0.8283)
+[epoch   7] train_acc=0.8708 train_loss=0.4055 val_acc=0.8265 lr=1.00e-03
+[epoch   8] train_acc=0.8787 train_loss=0.3803 val_acc=0.8318 lr=1.00e-03
+  → New best model saved! (val_acc: 0.8318)
+[epoch   9] train_acc=0.8861 train_loss=0.3594 val_acc=0.8273 lr=1.00e-03
+[epoch  10] train_acc=0.8917 train_loss=0.3411 val_acc=0.8293 lr=1.00e-03
+[epoch  11] train_acc=0.8972 train_loss=0.3256 val_acc=0.8371 lr=1.00e-03
+  → New best model saved! (val_acc: 0.8371)
+[epoch  12] train_acc=0.9013 train_loss=0.3120 val_acc=0.8350 lr=1.00e-03
+[epoch  13] train_acc=0.9044 train_loss=0.3029 val_acc=0.8368 lr=1.00e-03
+[epoch  14] train_acc=0.9071 train_loss=0.2943 val_acc=0.8357 lr=1.00e-03
+[epoch  15] train_acc=0.9098 train_loss=0.2861 val_acc=0.8347 lr=1.00e-03
+[epoch  16] train_acc=0.9124 train_loss=0.2787 val_acc=0.8373 lr=1.00e-03
+  → New best model saved! (val_acc: 0.8373)
+[epoch  17] train_acc=0.9143 train_loss=0.2728 val_acc=0.8376 lr=1.00e-03
+  → New best model saved! (val_acc: 0.8376)
+[epoch  18] train_acc=0.9161 train_loss=0.2674 val_acc=0.8370 lr=1.00e-03
+[epoch  19] train_acc=0.9168 train_loss=0.2654 val_acc=0.8399 lr=1.00e-03
+  → New best model saved! (val_acc: 0.8399)
+[epoch  20] train_acc=0.9184 train_loss=0.2604 val_acc=0.8372 lr=1.00e-03
+[epoch  21] train_acc=0.9196 train_loss=0.2564 val_acc=0.8379 lr=1.00e-03
+[epoch  22] train_acc=0.9207 train_loss=0.2532 val_acc=0.8377 lr=1.00e-03
+[epoch  23] train_acc=0.9217 train_loss=0.2510 val_acc=0.8376 lr=1.00e-03
+  -> LR reduced from 1.00e-03 to 5.00e-04
+[epoch  24] train_acc=0.9227 train_loss=0.2482 val_acc=0.8382 lr=5.00e-04
+[epoch  25] train_acc=0.9303 train_loss=0.2248 val_acc=0.8408 lr=5.00e-04
+  → New best model saved! (val_acc: 0.8408)
+[epoch  26] train_acc=0.9319 train_loss=0.2199 val_acc=0.8435 lr=5.00e-04
+  → New best model saved! (val_acc: 0.8435)
+[epoch  27] train_acc=0.9318 train_loss=0.2202 val_acc=0.8443 lr=5.00e-04
+  → New best model saved! (val_acc: 0.8443)
+[epoch  28] train_acc=0.9323 train_loss=0.2190 val_acc=0.8421 lr=5.00e-04
+[epoch  29] train_acc=0.9326 train_loss=0.2185 val_acc=0.8426 lr=5.00e-04
+[epoch  30] train_acc=0.9325 train_loss=0.2177 val_acc=0.8415 lr=5.00e-04
+[epoch  31] train_acc=0.9327 train_loss=0.2179 val_acc=0.8436 lr=5.00e-04
+  -> LR reduced from 5.00e-04 to 2.50e-04
+[epoch  32] train_acc=0.9331 train_loss=0.2164 val_acc=0.8420 lr=2.50e-04
+[epoch  33] train_acc=0.9350 train_loss=0.2100 val_acc=0.8445 lr=2.50e-04
+  → New best model saved! (val_acc: 0.8445)
+[epoch  34] train_acc=0.9355 train_loss=0.2085 val_acc=0.8430 lr=2.50e-04
+[epoch  35] train_acc=0.9355 train_loss=0.2092 val_acc=0.8435 lr=2.50e-04
+[epoch  36] train_acc=0.9356 train_loss=0.2084 val_acc=0.8436 lr=2.50e-04
+[epoch  37] train_acc=0.9354 train_loss=0.2094 val_acc=0.8430 lr=2.50e-04
+  -> LR reduced from 2.50e-04 to 1.25e-04
+[epoch  38] train_acc=0.9356 train_loss=0.2084 val_acc=0.8426 lr=1.25e-04
+[epoch  39] train_acc=0.9360 train_loss=0.2071 val_acc=0.8433 lr=1.25e-04
+[epoch  40] train_acc=0.9362 train_loss=0.2064 val_acc=0.8437 lr=1.25e-04
+[epoch  41] train_acc=0.9362 train_loss=0.2063 val_acc=0.8446 lr=1.25e-04
+  → New best model saved! (val_acc: 0.8446)
+[epoch  42] train_acc=0.9361 train_loss=0.2063 val_acc=0.8433 lr=1.25e-04
+[epoch  43] train_acc=0.9363 train_loss=0.2062 val_acc=0.8452 lr=1.25e-04
+  → New best model saved! (val_acc: 0.8452)
+[epoch  44] train_acc=0.9362 train_loss=0.2064 val_acc=0.8439 lr=1.25e-04
+[epoch  45] train_acc=0.9363 train_loss=0.2060 val_acc=0.8447 lr=1.25e-04
+[epoch  46] train_acc=0.9362 train_loss=0.2063 val_acc=0.8436 lr=1.25e-04
+[epoch  47] train_acc=0.9361 train_loss=0.2065 val_acc=0.8441 lr=1.25e-04
+  -> LR reduced from 1.25e-04 to 6.25e-05
+[epoch  48] train_acc=0.9362 train_loss=0.2061 val_acc=0.8450 lr=6.25e-05
+[epoch  49] train_acc=0.9363 train_loss=0.2060 val_acc=0.8444 lr=6.25e-05
+[epoch  50] train_acc=0.9364 train_loss=0.2056 val_acc=0.8449 lr=6.25e-05
+[epoch  51] train_acc=0.9364 train_loss=0.2056 val_acc=0.8442 lr=6.25e-05
+Early stopping at epoch 51
+
+Loading best model for export...
+Loaded best model from epoch 43 with val_acc=0.8452
+[torch.onnx] Obtain model graph for `ImprovedLSTMClassifier([...]` with `torch.export.export(..., strict=False)`...
+[torch.onnx] Obtain model graph for `ImprovedLSTMClassifier([...]` with `torch.export.export(..., strict=False)`... ✅
+[torch.onnx] Run decomposition...
+[torch.onnx] Run decomposition... ✅
+[torch.onnx] Translate the graph into ONNX...
+[torch.onnx] Translate the graph into ONNX... ✅

@@ -1,0 +1,733 @@
+Using device: cuda
+Training directory:   /home/sayak/datasets/jester_npz/windows/train
+Validation directory: /home/sayak/datasets/jester_npz/windows/val
+Training samples:   181554
+Validation samples: 24759
+Model parameters: 715,572
+labels.txt written to: /home/sayak/amr_gesture_ws/models/lstm/jester20b_12cls/labels.txt
+
+🚀 Starting optimized training...
+
+Per-class accuracy:
+  IGNORE: 0.818
+  NO_GESTURE: 0.871
+  ROLL_BACK: 0.028
+  ROLL_FWD: 0.802
+  SWIPE_DOWN: 0.781
+  SWIPE_LEFT: 0.623
+  SWIPE_RIGHT: 0.523
+  SWIPE_UP: 0.550
+  THUMB_DOWN: 0.745
+  THUMB_UP: 0.601
+  ZOOM_IN: 0.778
+  ZOOM_OUT: 0.798
+[epoch   1] train_acc=0.7153 train_loss=0.8659 val_acc=0.7649 lr=5.00e-04
+  → New best model saved! (val_acc: 0.7649)
+
+Per-class accuracy:
+  IGNORE: 0.831
+  NO_GESTURE: 0.904
+  ROLL_BACK: 0.020
+  ROLL_FWD: 0.823
+  SWIPE_DOWN: 0.741
+  SWIPE_LEFT: 0.600
+  SWIPE_RIGHT: 0.623
+  SWIPE_UP: 0.630
+  THUMB_DOWN: 0.750
+  THUMB_UP: 0.641
+  ZOOM_IN: 0.807
+  ZOOM_OUT: 0.735
+[epoch   2] train_acc=0.7787 train_loss=0.6643 val_acc=0.7802 lr=5.00e-04
+  → New best model saved! (val_acc: 0.7802)
+
+Per-class accuracy:
+  IGNORE: 0.834
+  NO_GESTURE: 0.907
+  ROLL_BACK: 0.507
+  ROLL_FWD: 0.534
+  SWIPE_DOWN: 0.786
+  SWIPE_LEFT: 0.663
+  SWIPE_RIGHT: 0.674
+  SWIPE_UP: 0.489
+  THUMB_DOWN: 0.742
+  THUMB_UP: 0.640
+  ZOOM_IN: 0.821
+  ZOOM_OUT: 0.830
+[epoch   3] train_acc=0.7974 train_loss=0.6079 val_acc=0.7946 lr=5.00e-04
+  → New best model saved! (val_acc: 0.7946)
+
+Per-class accuracy:
+  IGNORE: 0.846
+  NO_GESTURE: 0.935
+  ROLL_BACK: 0.607
+  ROLL_FWD: 0.573
+  SWIPE_DOWN: 0.772
+  SWIPE_LEFT: 0.634
+  SWIPE_RIGHT: 0.664
+  SWIPE_UP: 0.495
+  THUMB_DOWN: 0.759
+  THUMB_UP: 0.642
+  ZOOM_IN: 0.809
+  ZOOM_OUT: 0.837
+[epoch   4] train_acc=0.8128 train_loss=0.5676 val_acc=0.8069 lr=5.00e-04
+  → New best model saved! (val_acc: 0.8069)
+
+Per-class accuracy:
+  IGNORE: 0.848
+  NO_GESTURE: 0.928
+  ROLL_BACK: 0.594
+  ROLL_FWD: 0.690
+  SWIPE_DOWN: 0.769
+  SWIPE_LEFT: 0.663
+  SWIPE_RIGHT: 0.696
+  SWIPE_UP: 0.541
+  THUMB_DOWN: 0.770
+  THUMB_UP: 0.646
+  ZOOM_IN: 0.826
+  ZOOM_OUT: 0.829
+[epoch   5] train_acc=0.8283 train_loss=0.5310 val_acc=0.8145 lr=5.00e-04
+  → New best model saved! (val_acc: 0.8145)
+
+Per-class accuracy:
+  IGNORE: 0.863
+  NO_GESTURE: 0.902
+  ROLL_BACK: 0.630
+  ROLL_FWD: 0.755
+  SWIPE_DOWN: 0.753
+  SWIPE_LEFT: 0.679
+  SWIPE_RIGHT: 0.696
+  SWIPE_UP: 0.526
+  THUMB_DOWN: 0.777
+  THUMB_UP: 0.635
+  ZOOM_IN: 0.799
+  ZOOM_OUT: 0.845
+[epoch   6] train_acc=0.8391 train_loss=0.5016 val_acc=0.8171 lr=5.00e-04
+  → New best model saved! (val_acc: 0.8171)
+
+Per-class accuracy:
+  IGNORE: 0.861
+  NO_GESTURE: 0.935
+  ROLL_BACK: 0.736
+  ROLL_FWD: 0.638
+  SWIPE_DOWN: 0.806
+  SWIPE_LEFT: 0.680
+  SWIPE_RIGHT: 0.707
+  SWIPE_UP: 0.571
+  THUMB_DOWN: 0.770
+  THUMB_UP: 0.642
+  ZOOM_IN: 0.810
+  ZOOM_OUT: 0.840
+[epoch   7] train_acc=0.8469 train_loss=0.4767 val_acc=0.8257 lr=5.00e-04
+  → New best model saved! (val_acc: 0.8257)
+
+Per-class accuracy:
+  IGNORE: 0.872
+  NO_GESTURE: 0.930
+  ROLL_BACK: 0.654
+  ROLL_FWD: 0.693
+  SWIPE_DOWN: 0.779
+  SWIPE_LEFT: 0.680
+  SWIPE_RIGHT: 0.705
+  SWIPE_UP: 0.603
+  THUMB_DOWN: 0.763
+  THUMB_UP: 0.646
+  ZOOM_IN: 0.803
+  ZOOM_OUT: 0.845
+[epoch   8] train_acc=0.8546 train_loss=0.4565 val_acc=0.8286 lr=5.00e-04
+  → New best model saved! (val_acc: 0.8286)
+
+Per-class accuracy:
+  IGNORE: 0.865
+  NO_GESTURE: 0.940
+  ROLL_BACK: 0.655
+  ROLL_FWD: 0.748
+  SWIPE_DOWN: 0.754
+  SWIPE_LEFT: 0.691
+  SWIPE_RIGHT: 0.699
+  SWIPE_UP: 0.598
+  THUMB_DOWN: 0.766
+  THUMB_UP: 0.645
+  ZOOM_IN: 0.810
+  ZOOM_OUT: 0.847
+[epoch   9] train_acc=0.8598 train_loss=0.4393 val_acc=0.8291 lr=5.00e-04
+  → New best model saved! (val_acc: 0.8291)
+
+Per-class accuracy:
+  IGNORE: 0.868
+  NO_GESTURE: 0.936
+  ROLL_BACK: 0.708
+  ROLL_FWD: 0.692
+  SWIPE_DOWN: 0.739
+  SWIPE_LEFT: 0.678
+  SWIPE_RIGHT: 0.730
+  SWIPE_UP: 0.645
+  THUMB_DOWN: 0.771
+  THUMB_UP: 0.646
+  ZOOM_IN: 0.814
+  ZOOM_OUT: 0.852
+[epoch  10] train_acc=0.8657 train_loss=0.4210 val_acc=0.8318 lr=5.00e-04
+  → New best model saved! (val_acc: 0.8318)
+
+Per-class accuracy:
+  IGNORE: 0.863
+  NO_GESTURE: 0.939
+  ROLL_BACK: 0.736
+  ROLL_FWD: 0.680
+  SWIPE_DOWN: 0.802
+  SWIPE_LEFT: 0.676
+  SWIPE_RIGHT: 0.706
+  SWIPE_UP: 0.610
+  THUMB_DOWN: 0.783
+  THUMB_UP: 0.648
+  ZOOM_IN: 0.821
+  ZOOM_OUT: 0.859
+[epoch  11] train_acc=0.8701 train_loss=0.4097 val_acc=0.8323 lr=5.00e-04
+  → New best model saved! (val_acc: 0.8323)
+
+Per-class accuracy:
+  IGNORE: 0.859
+  NO_GESTURE: 0.939
+  ROLL_BACK: 0.751
+  ROLL_FWD: 0.679
+  SWIPE_DOWN: 0.815
+  SWIPE_LEFT: 0.680
+  SWIPE_RIGHT: 0.713
+  SWIPE_UP: 0.692
+  THUMB_DOWN: 0.777
+  THUMB_UP: 0.652
+  ZOOM_IN: 0.795
+  ZOOM_OUT: 0.854
+[epoch  12] train_acc=0.8737 train_loss=0.3962 val_acc=0.8316 lr=5.00e-04
+
+Per-class accuracy:
+  IGNORE: 0.868
+  NO_GESTURE: 0.953
+  ROLL_BACK: 0.765
+  ROLL_FWD: 0.614
+  SWIPE_DOWN: 0.792
+  SWIPE_LEFT: 0.664
+  SWIPE_RIGHT: 0.665
+  SWIPE_UP: 0.586
+  THUMB_DOWN: 0.789
+  THUMB_UP: 0.647
+  ZOOM_IN: 0.822
+  ZOOM_OUT: 0.845
+[epoch  13] train_acc=0.8774 train_loss=0.3857 val_acc=0.8326 lr=5.00e-04
+  → New best model saved! (val_acc: 0.8326)
+
+Per-class accuracy:
+  IGNORE: 0.870
+  NO_GESTURE: 0.953
+  ROLL_BACK: 0.722
+  ROLL_FWD: 0.704
+  SWIPE_DOWN: 0.750
+  SWIPE_LEFT: 0.684
+  SWIPE_RIGHT: 0.714
+  SWIPE_UP: 0.603
+  THUMB_DOWN: 0.768
+  THUMB_UP: 0.641
+  ZOOM_IN: 0.831
+  ZOOM_OUT: 0.832
+[epoch  14] train_acc=0.8808 train_loss=0.3762 val_acc=0.8353 lr=5.00e-04
+  → New best model saved! (val_acc: 0.8353)
+
+Per-class accuracy:
+  IGNORE: 0.870
+  NO_GESTURE: 0.955
+  ROLL_BACK: 0.679
+  ROLL_FWD: 0.715
+  SWIPE_DOWN: 0.795
+  SWIPE_LEFT: 0.678
+  SWIPE_RIGHT: 0.695
+  SWIPE_UP: 0.648
+  THUMB_DOWN: 0.788
+  THUMB_UP: 0.657
+  ZOOM_IN: 0.815
+  ZOOM_OUT: 0.849
+[epoch  15] train_acc=0.8838 train_loss=0.3655 val_acc=0.8374 lr=5.00e-04
+  → New best model saved! (val_acc: 0.8374)
+
+Per-class accuracy:
+  IGNORE: 0.869
+  NO_GESTURE: 0.947
+  ROLL_BACK: 0.632
+  ROLL_FWD: 0.739
+  SWIPE_DOWN: 0.800
+  SWIPE_LEFT: 0.675
+  SWIPE_RIGHT: 0.699
+  SWIPE_UP: 0.685
+  THUMB_DOWN: 0.778
+  THUMB_UP: 0.647
+  ZOOM_IN: 0.809
+  ZOOM_OUT: 0.853
+[epoch  16] train_acc=0.8870 train_loss=0.3561 val_acc=0.8353 lr=5.00e-04
+
+Per-class accuracy:
+  IGNORE: 0.860
+  NO_GESTURE: 0.960
+  ROLL_BACK: 0.724
+  ROLL_FWD: 0.678
+  SWIPE_DOWN: 0.833
+  SWIPE_LEFT: 0.676
+  SWIPE_RIGHT: 0.698
+  SWIPE_UP: 0.660
+  THUMB_DOWN: 0.783
+  THUMB_UP: 0.652
+  ZOOM_IN: 0.830
+  ZOOM_OUT: 0.840
+[epoch  17] train_acc=0.8890 train_loss=0.3500 val_acc=0.8362 lr=5.00e-04
+
+Per-class accuracy:
+  IGNORE: 0.868
+  NO_GESTURE: 0.957
+  ROLL_BACK: 0.754
+  ROLL_FWD: 0.674
+  SWIPE_DOWN: 0.798
+  SWIPE_LEFT: 0.692
+  SWIPE_RIGHT: 0.688
+  SWIPE_UP: 0.716
+  THUMB_DOWN: 0.780
+  THUMB_UP: 0.651
+  ZOOM_IN: 0.813
+  ZOOM_OUT: 0.849
+[epoch  18] train_acc=0.8908 train_loss=0.3437 val_acc=0.8399 lr=5.00e-04
+  → New best model saved! (val_acc: 0.8399)
+
+Per-class accuracy:
+  IGNORE: 0.862
+  NO_GESTURE: 0.962
+  ROLL_BACK: 0.689
+  ROLL_FWD: 0.694
+  SWIPE_DOWN: 0.812
+  SWIPE_LEFT: 0.688
+  SWIPE_RIGHT: 0.706
+  SWIPE_UP: 0.699
+  THUMB_DOWN: 0.773
+  THUMB_UP: 0.650
+  ZOOM_IN: 0.819
+  ZOOM_OUT: 0.854
+[epoch  19] train_acc=0.8938 train_loss=0.3354 val_acc=0.8377 lr=5.00e-04
+
+Per-class accuracy:
+  IGNORE: 0.870
+  NO_GESTURE: 0.964
+  ROLL_BACK: 0.704
+  ROLL_FWD: 0.685
+  SWIPE_DOWN: 0.781
+  SWIPE_LEFT: 0.662
+  SWIPE_RIGHT: 0.688
+  SWIPE_UP: 0.660
+  THUMB_DOWN: 0.783
+  THUMB_UP: 0.648
+  ZOOM_IN: 0.814
+  ZOOM_OUT: 0.843
+[epoch  20] train_acc=0.8957 train_loss=0.3302 val_acc=0.8373 lr=5.00e-04
+
+Per-class accuracy:
+  IGNORE: 0.874
+  NO_GESTURE: 0.960
+  ROLL_BACK: 0.655
+  ROLL_FWD: 0.730
+  SWIPE_DOWN: 0.778
+  SWIPE_LEFT: 0.674
+  SWIPE_RIGHT: 0.684
+  SWIPE_UP: 0.613
+  THUMB_DOWN: 0.790
+  THUMB_UP: 0.651
+  ZOOM_IN: 0.827
+  ZOOM_OUT: 0.850
+[epoch  21] train_acc=0.8976 train_loss=0.3240 val_acc=0.8387 lr=5.00e-04
+
+Per-class accuracy:
+  IGNORE: 0.873
+  NO_GESTURE: 0.961
+  ROLL_BACK: 0.729
+  ROLL_FWD: 0.696
+  SWIPE_DOWN: 0.814
+  SWIPE_LEFT: 0.675
+  SWIPE_RIGHT: 0.692
+  SWIPE_UP: 0.632
+  THUMB_DOWN: 0.783
+  THUMB_UP: 0.651
+  ZOOM_IN: 0.825
+  ZOOM_OUT: 0.842
+[epoch  22] train_acc=0.8992 train_loss=0.3201 val_acc=0.8408 lr=5.00e-04
+  → New best model saved! (val_acc: 0.8408)
+
+Per-class accuracy:
+  IGNORE: 0.871
+  NO_GESTURE: 0.959
+  ROLL_BACK: 0.640
+  ROLL_FWD: 0.746
+  SWIPE_DOWN: 0.809
+  SWIPE_LEFT: 0.680
+  SWIPE_RIGHT: 0.702
+  SWIPE_UP: 0.648
+  THUMB_DOWN: 0.788
+  THUMB_UP: 0.644
+  ZOOM_IN: 0.828
+  ZOOM_OUT: 0.850
+[epoch  23] train_acc=0.9006 train_loss=0.3158 val_acc=0.8398 lr=5.00e-04
+
+Per-class accuracy:
+  IGNORE: 0.875
+  NO_GESTURE: 0.966
+  ROLL_BACK: 0.662
+  ROLL_FWD: 0.719
+  SWIPE_DOWN: 0.807
+  SWIPE_LEFT: 0.692
+  SWIPE_RIGHT: 0.696
+  SWIPE_UP: 0.635
+  THUMB_DOWN: 0.785
+  THUMB_UP: 0.648
+  ZOOM_IN: 0.820
+  ZOOM_OUT: 0.828
+[epoch  24] train_acc=0.9018 train_loss=0.3124 val_acc=0.8405 lr=5.00e-04
+
+Per-class accuracy:
+  IGNORE: 0.873
+  NO_GESTURE: 0.967
+  ROLL_BACK: 0.652
+  ROLL_FWD: 0.692
+  SWIPE_DOWN: 0.811
+  SWIPE_LEFT: 0.688
+  SWIPE_RIGHT: 0.679
+  SWIPE_UP: 0.603
+  THUMB_DOWN: 0.774
+  THUMB_UP: 0.645
+  ZOOM_IN: 0.823
+  ZOOM_OUT: 0.848
+[epoch  25] train_acc=0.9032 train_loss=0.3054 val_acc=0.8380 lr=5.00e-04
+
+Per-class accuracy:
+  IGNORE: 0.875
+  NO_GESTURE: 0.967
+  ROLL_BACK: 0.674
+  ROLL_FWD: 0.714
+  SWIPE_DOWN: 0.811
+  SWIPE_LEFT: 0.685
+  SWIPE_RIGHT: 0.685
+  SWIPE_UP: 0.638
+  THUMB_DOWN: 0.788
+  THUMB_UP: 0.650
+  ZOOM_IN: 0.816
+  ZOOM_OUT: 0.842
+[epoch  26] train_acc=0.9046 train_loss=0.3026 val_acc=0.8412 lr=5.00e-04
+  → New best model saved! (val_acc: 0.8412)
+
+Per-class accuracy:
+  IGNORE: 0.875
+  NO_GESTURE: 0.969
+  ROLL_BACK: 0.644
+  ROLL_FWD: 0.710
+  SWIPE_DOWN: 0.792
+  SWIPE_LEFT: 0.674
+  SWIPE_RIGHT: 0.689
+  SWIPE_UP: 0.653
+  THUMB_DOWN: 0.780
+  THUMB_UP: 0.640
+  ZOOM_IN: 0.817
+  ZOOM_OUT: 0.837
+[epoch  27] train_acc=0.9056 train_loss=0.2989 val_acc=0.8393 lr=5.00e-04
+
+Per-class accuracy:
+  IGNORE: 0.880
+  NO_GESTURE: 0.970
+  ROLL_BACK: 0.664
+  ROLL_FWD: 0.689
+  SWIPE_DOWN: 0.804
+  SWIPE_LEFT: 0.675
+  SWIPE_RIGHT: 0.705
+  SWIPE_UP: 0.578
+  THUMB_DOWN: 0.774
+  THUMB_UP: 0.648
+  ZOOM_IN: 0.814
+  ZOOM_OUT: 0.844
+[epoch  28] train_acc=0.9077 train_loss=0.2942 val_acc=0.8400 lr=5.00e-04
+
+Per-class accuracy:
+  IGNORE: 0.875
+  NO_GESTURE: 0.968
+  ROLL_BACK: 0.655
+  ROLL_FWD: 0.707
+  SWIPE_DOWN: 0.786
+  SWIPE_LEFT: 0.684
+  SWIPE_RIGHT: 0.674
+  SWIPE_UP: 0.689
+  THUMB_DOWN: 0.770
+  THUMB_UP: 0.646
+  ZOOM_IN: 0.810
+  ZOOM_OUT: 0.856
+[epoch  29] train_acc=0.9080 train_loss=0.2931 val_acc=0.8405 lr=5.00e-04
+
+Per-class accuracy:
+  IGNORE: 0.874
+  NO_GESTURE: 0.969
+  ROLL_BACK: 0.660
+  ROLL_FWD: 0.722
+  SWIPE_DOWN: 0.796
+  SWIPE_LEFT: 0.669
+  SWIPE_RIGHT: 0.709
+  SWIPE_UP: 0.630
+  THUMB_DOWN: 0.789
+  THUMB_UP: 0.655
+  ZOOM_IN: 0.823
+  ZOOM_OUT: 0.840
+[epoch  30] train_acc=0.9096 train_loss=0.2884 val_acc=0.8411 lr=5.00e-04
+
+Per-class accuracy:
+  IGNORE: 0.872
+  NO_GESTURE: 0.968
+  ROLL_BACK: 0.694
+  ROLL_FWD: 0.711
+  SWIPE_DOWN: 0.793
+  SWIPE_LEFT: 0.654
+  SWIPE_RIGHT: 0.692
+  SWIPE_UP: 0.695
+  THUMB_DOWN: 0.771
+  THUMB_UP: 0.645
+  ZOOM_IN: 0.818
+  ZOOM_OUT: 0.849
+[epoch  31] train_acc=0.9096 train_loss=0.2876 val_acc=0.8409 lr=5.00e-04
+
+Per-class accuracy:
+  IGNORE: 0.876
+  NO_GESTURE: 0.966
+  ROLL_BACK: 0.662
+  ROLL_FWD: 0.686
+  SWIPE_DOWN: 0.782
+  SWIPE_LEFT: 0.679
+  SWIPE_RIGHT: 0.685
+  SWIPE_UP: 0.653
+  THUMB_DOWN: 0.780
+  THUMB_UP: 0.646
+  ZOOM_IN: 0.825
+  ZOOM_OUT: 0.838
+  -> Learning rate reduced from 5.00e-04 to 2.50e-04
+[epoch  32] train_acc=0.9115 train_loss=0.2814 val_acc=0.8397 lr=2.50e-04
+
+Per-class accuracy:
+  IGNORE: 0.878
+  NO_GESTURE: 0.971
+  ROLL_BACK: 0.664
+  ROLL_FWD: 0.723
+  SWIPE_DOWN: 0.812
+  SWIPE_LEFT: 0.692
+  SWIPE_RIGHT: 0.691
+  SWIPE_UP: 0.629
+  THUMB_DOWN: 0.779
+  THUMB_UP: 0.648
+  ZOOM_IN: 0.817
+  ZOOM_OUT: 0.848
+[epoch  33] train_acc=0.9178 train_loss=0.2629 val_acc=0.8435 lr=2.50e-04
+  → New best model saved! (val_acc: 0.8435)
+
+Per-class accuracy:
+  IGNORE: 0.878
+  NO_GESTURE: 0.975
+  ROLL_BACK: 0.717
+  ROLL_FWD: 0.696
+  SWIPE_DOWN: 0.798
+  SWIPE_LEFT: 0.686
+  SWIPE_RIGHT: 0.688
+  SWIPE_UP: 0.695
+  THUMB_DOWN: 0.773
+  THUMB_UP: 0.651
+  ZOOM_IN: 0.823
+  ZOOM_OUT: 0.833
+[epoch  34] train_acc=0.9189 train_loss=0.2587 val_acc=0.8458 lr=2.50e-04
+  → New best model saved! (val_acc: 0.8458)
+
+Per-class accuracy:
+  IGNORE: 0.876
+  NO_GESTURE: 0.979
+  ROLL_BACK: 0.654
+  ROLL_FWD: 0.715
+  SWIPE_DOWN: 0.797
+  SWIPE_LEFT: 0.665
+  SWIPE_RIGHT: 0.689
+  SWIPE_UP: 0.568
+  THUMB_DOWN: 0.768
+  THUMB_UP: 0.646
+  ZOOM_IN: 0.816
+  ZOOM_OUT: 0.848
+[epoch  35] train_acc=0.9198 train_loss=0.2568 val_acc=0.8390 lr=2.50e-04
+
+Per-class accuracy:
+  IGNORE: 0.879
+  NO_GESTURE: 0.974
+  ROLL_BACK: 0.665
+  ROLL_FWD: 0.710
+  SWIPE_DOWN: 0.802
+  SWIPE_LEFT: 0.681
+  SWIPE_RIGHT: 0.681
+  SWIPE_UP: 0.682
+  THUMB_DOWN: 0.773
+  THUMB_UP: 0.648
+  ZOOM_IN: 0.812
+  ZOOM_OUT: 0.842
+[epoch  36] train_acc=0.9198 train_loss=0.2566 val_acc=0.8437 lr=2.50e-04
+
+Per-class accuracy:
+  IGNORE: 0.878
+  NO_GESTURE: 0.973
+  ROLL_BACK: 0.665
+  ROLL_FWD: 0.686
+  SWIPE_DOWN: 0.809
+  SWIPE_LEFT: 0.672
+  SWIPE_RIGHT: 0.699
+  SWIPE_UP: 0.649
+  THUMB_DOWN: 0.773
+  THUMB_UP: 0.655
+  ZOOM_IN: 0.821
+  ZOOM_OUT: 0.844
+[epoch  37] train_acc=0.9208 train_loss=0.2535 val_acc=0.8427 lr=2.50e-04
+
+Per-class accuracy:
+  IGNORE: 0.873
+  NO_GESTURE: 0.977
+  ROLL_BACK: 0.671
+  ROLL_FWD: 0.697
+  SWIPE_DOWN: 0.793
+  SWIPE_LEFT: 0.674
+  SWIPE_RIGHT: 0.696
+  SWIPE_UP: 0.653
+  THUMB_DOWN: 0.782
+  THUMB_UP: 0.645
+  ZOOM_IN: 0.822
+  ZOOM_OUT: 0.845
+[epoch  38] train_acc=0.9209 train_loss=0.2525 val_acc=0.8414 lr=2.50e-04
+
+Per-class accuracy:
+  IGNORE: 0.877
+  NO_GESTURE: 0.977
+  ROLL_BACK: 0.672
+  ROLL_FWD: 0.707
+  SWIPE_DOWN: 0.791
+  SWIPE_LEFT: 0.672
+  SWIPE_RIGHT: 0.692
+  SWIPE_UP: 0.618
+  THUMB_DOWN: 0.784
+  THUMB_UP: 0.642
+  ZOOM_IN: 0.820
+  ZOOM_OUT: 0.841
+[epoch  39] train_acc=0.9213 train_loss=0.2518 val_acc=0.8417 lr=2.50e-04
+
+Per-class accuracy:
+  IGNORE: 0.875
+  NO_GESTURE: 0.974
+  ROLL_BACK: 0.698
+  ROLL_FWD: 0.682
+  SWIPE_DOWN: 0.788
+  SWIPE_LEFT: 0.669
+  SWIPE_RIGHT: 0.702
+  SWIPE_UP: 0.683
+  THUMB_DOWN: 0.792
+  THUMB_UP: 0.646
+  ZOOM_IN: 0.815
+  ZOOM_OUT: 0.845
+  -> Learning rate reduced from 2.50e-04 to 1.25e-04
+[epoch  40] train_acc=0.9222 train_loss=0.2500 val_acc=0.8428 lr=1.25e-04
+
+Per-class accuracy:
+  IGNORE: 0.876
+  NO_GESTURE: 0.976
+  ROLL_BACK: 0.687
+  ROLL_FWD: 0.725
+  SWIPE_DOWN: 0.806
+  SWIPE_LEFT: 0.670
+  SWIPE_RIGHT: 0.703
+  SWIPE_UP: 0.679
+  THUMB_DOWN: 0.784
+  THUMB_UP: 0.652
+  ZOOM_IN: 0.821
+  ZOOM_OUT: 0.841
+[epoch  41] train_acc=0.9244 train_loss=0.2421 val_acc=0.8453 lr=1.25e-04
+
+Per-class accuracy:
+  IGNORE: 0.877
+  NO_GESTURE: 0.973
+  ROLL_BACK: 0.678
+  ROLL_FWD: 0.708
+  SWIPE_DOWN: 0.812
+  SWIPE_LEFT: 0.683
+  SWIPE_RIGHT: 0.696
+  SWIPE_UP: 0.669
+  THUMB_DOWN: 0.785
+  THUMB_UP: 0.650
+  ZOOM_IN: 0.822
+  ZOOM_OUT: 0.839
+[epoch  42] train_acc=0.9249 train_loss=0.2406 val_acc=0.8445 lr=1.25e-04
+
+Per-class accuracy:
+  IGNORE: 0.880
+  NO_GESTURE: 0.976
+  ROLL_BACK: 0.640
+  ROLL_FWD: 0.719
+  SWIPE_DOWN: 0.800
+  SWIPE_LEFT: 0.669
+  SWIPE_RIGHT: 0.695
+  SWIPE_UP: 0.677
+  THUMB_DOWN: 0.782
+  THUMB_UP: 0.651
+  ZOOM_IN: 0.819
+  ZOOM_OUT: 0.844
+[epoch  43] train_acc=0.9253 train_loss=0.2397 val_acc=0.8448 lr=1.25e-04
+
+Per-class accuracy:
+  IGNORE: 0.879
+  NO_GESTURE: 0.974
+  ROLL_BACK: 0.667
+  ROLL_FWD: 0.690
+  SWIPE_DOWN: 0.802
+  SWIPE_LEFT: 0.676
+  SWIPE_RIGHT: 0.681
+  SWIPE_UP: 0.679
+  THUMB_DOWN: 0.777
+  THUMB_UP: 0.651
+  ZOOM_IN: 0.818
+  ZOOM_OUT: 0.842
+[epoch  44] train_acc=0.9255 train_loss=0.2388 val_acc=0.8436 lr=1.25e-04
+
+Per-class accuracy:
+  IGNORE: 0.880
+  NO_GESTURE: 0.974
+  ROLL_BACK: 0.671
+  ROLL_FWD: 0.687
+  SWIPE_DOWN: 0.787
+  SWIPE_LEFT: 0.673
+  SWIPE_RIGHT: 0.699
+  SWIPE_UP: 0.672
+  THUMB_DOWN: 0.777
+  THUMB_UP: 0.653
+  ZOOM_IN: 0.820
+  ZOOM_OUT: 0.838
+[epoch  45] train_acc=0.9256 train_loss=0.2384 val_acc=0.8439 lr=1.25e-04
+
+Per-class accuracy:
+  IGNORE: 0.876
+  NO_GESTURE: 0.973
+  ROLL_BACK: 0.698
+  ROLL_FWD: 0.689
+  SWIPE_DOWN: 0.807
+  SWIPE_LEFT: 0.689
+  SWIPE_RIGHT: 0.699
+  SWIPE_UP: 0.654
+  THUMB_DOWN: 0.782
+  THUMB_UP: 0.651
+  ZOOM_IN: 0.822
+  ZOOM_OUT: 0.834
+  -> Learning rate reduced from 1.25e-04 to 6.25e-05
+[epoch  46] train_acc=0.9259 train_loss=0.2371 val_acc=0.8436 lr=6.25e-05
+Early stopping at epoch 46
+
+✅ Training completed! Best val_acc=0.8458 at epoch 34
+
+Loading best model for ONNX export...
+Exporting epoch 34 with val_acc=0.8458
+[torch.onnx] Obtain model graph for `OptimizedLSTMClassifier([...]` with `torch.export.export(..., strict=False)`...
+[torch.onnx] Obtain model graph for `OptimizedLSTMClassifier([...]` with `torch.export.export(..., strict=False)`... ✅
+[torch.onnx] Run decomposition...
+[torch.onnx] Run decomposition... ✅
+[torch.onnx] Translate the graph into ONNX...
+[torch.onnx] Translate the graph into ONNX... ✅

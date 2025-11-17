@@ -66,7 +66,7 @@ def generate_launch_description():
         output="screen",
         parameters=[{
             "weights_path":
-                "/home/sayak/amr_gesture_ws/models/lstm/jester20b_12cls/final_jester_model.onnx",
+                "/home/sayak/amr_gesture_ws/models/lstm/jester20b_12cls/model_30x84.onnx",
             "normalizer_path":
                 "/home/sayak/amr_gesture_ws/models/lstm/jester20b_12cls/normalizer.json",
             "labels_path":

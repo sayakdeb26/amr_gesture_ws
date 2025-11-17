@@ -9,6 +9,8 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 from vlm_interfaces.msg import ConfirmRequest, ConfirmReply
+import cv2
+import base64
 
 def utc_ts():
     return int(time.time()*1000)
@@ -199,8 +201,9 @@ class UiKiosk(Node):
       <div class="logo tl"><img src="/static/logo_kolamero.jpg" alt="KOLAMeRO"></div>
       <div class="logo tr"><img src="/static/logo_faps.png" alt="FAPS"></div>
     </div>
+    
     <div class="video-box" id="vbox">
-      <video id="clip" autoplay loop muted playsinline style="display:none"></video>
+      <img id="clip" style="display:none; max-width:100%; max-height:100%; border-radius:16px; object-fit:contain"/>
       <div class="idle-mark" id="idle">Waiting for a clip…</div>
     </div>
     <div class="panel">
@@ -211,7 +214,7 @@ class UiKiosk(Node):
       <div class="row"><div class="hint" id="hint"></div></div>
       <div class="bar"><div class="fill" id="fill"></div></div>
       <div class="row actions">
-        <button class="approve" id="approve">Approve</button>
+        <button class="approve" id="approve">Approve</button> 
         <button class="reject"  id="reject">Reject</button>
         <div class="status"><input type="checkbox" id="auto"/> Auto-approve (debug)</div>
       </div>
@@ -397,38 +400,73 @@ pull();
         self.state.time_recv_ms = 0
 
     # -------- ROS callbacks --------
-    def on_confirm_request(self, req: ConfirmRequest):
-        # Map fields
-        session_id = req.session_id
-        label = req.candidate_label
-        conf = float(req.candidate_conf)
-        src_path = req.clip_path
 
-        # Copy into media_dir if needed
+    def on_confirm_request(self, req: ConfirmRequest):
+        
+        # Map fields from the VLM bridge
+        self._current_request = {
+            "session_id": msg.session_id,
+            "window_id": msg.window_id,
+            "label": msg.label,
+            "confidence": msg.confidence,
+            "clip_url": self._relativize_clip(msg.clip_path),
+            "preview_frame_b64": msg.preview_frame_b64 or "",
+        }
+
+        # Validate clip_path
+        if not src_path or not os.path.isfile(src_path):
+            self.get_logger().warn(f"ConfirmRequest missing/invalid clip_path: {src_path}")
+            return
+
         try:
-            if not src_path or not os.path.isfile(src_path):
-                self.get_logger().warn(f"ConfirmRequest missing/invalid clip_path: {src_path}")
-                return
+            # 1) Copy the MP4 into media_dir (for retention / training)
             base = safe_basename(src_path)
-            dst = os.path.join(self.media_dir, base)
-            if os.path.abspath(os.path.dirname(src_path)) != os.path.abspath(self.media_dir):
-                shutil.copy2(src_path, dst)
-            else:
-                dst = src_path
-            # Prepare state
+            dst_mp4 = os.path.join(self.media_dir, base)
+            if os.path.abspath(src_path) != os.path.abspath(dst_mp4):
+                shutil.copy2(src_path, dst_mp4)
+
+            # 2) Extract middle frame as JPEG preview
+            preview_name = base.rsplit(".", 1)[0] + "_preview.jpg"
+            preview_path = os.path.join(self.media_dir, preview_name)
+
+            try:
+                cap = cv2.VideoCapture(dst_mp4)
+                total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+                mid = total // 2 if total > 0 else 0
+                cap.set(cv2.CAP_PROP_POS_FRAMES, mid)
+                ok, frame = cap.read()
+                cap.release()
+                if ok:
+                    cv2.imwrite(preview_path, frame)
+                else:
+                    preview_path = ""  # fallback to MP4 thumbnail if needed
+            except Exception as e:
+                self.get_logger().warn(f"preview extract failed: {e}")
+                preview_path = ""
+
+            # 3) Update kiosk state (point UI at the preview frame)
             with self.state.lock:
                 self.state.active = True
                 self.state.session_id = session_id
                 self.state.candidate_label = label
                 self.state.candidate_conf = conf
-                self.state.hint = ""   # populate if you add to your message
-                self.state.clip_src = "/media/" + safe_basename(dst)
-                self.state.clip_abspath = dst
+                self.state.hint = ""
+                self.state.clip_abspath = dst_mp4
+                # If preview exists, serve that; otherwise, still show the MP4
+                if preview_path and os.path.exists(preview_path):
+                    self.state.clip_src = "/media/" + safe_basename(preview_path)
+                else:
+                    self.state.clip_src = "/media/" + safe_basename(dst_mp4)
                 self.state.time_recv_ms = utc_ts()
-                self.state.deadline_at_ms = self.state.time_recv_ms + self.decision_timeout_s*1000
-            self.get_logger().info(f"ConfirmRequest {session_id} → {base} (conf={conf:.2f})")
+                self.state.deadline_at_ms = self.state.time_recv_ms + self.decision_timeout_s * 1000
+
+            self.get_logger().info(
+                f"ConfirmRequest {session_id} → {base} (conf={conf:.2f})"
+            )
+
         except Exception as e:
             self.get_logger().error(f"on_confirm_request error: {e}")
+
 
     # -------- housekeeping --------
     def _tick(self):
