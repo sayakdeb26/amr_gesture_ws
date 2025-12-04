@@ -8,9 +8,11 @@ from pathlib import Path
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-from vlm_interfaces.msg import ConfirmRequest, ConfirmReply
+from sensor_msgs.msg import Image
+from amr_interfaces.msg import ConfirmRequest, ConfirmReply, TelemetryCommand
 import cv2
 import base64
+from cv_bridge import CvBridge
 
 def utc_ts():
     return int(time.time()*1000)
@@ -22,6 +24,7 @@ class State:
     def __init__(self):
         self.lock = threading.Lock()
         self.active = False
+        self.processing = False  # VLM is currently processing
         self.session_id = ""
         self.candidate_label = ""
         self.candidate_conf = 0.0
@@ -32,6 +35,10 @@ class State:
         self.auto_approve = False
         self.history = []               # list of dicts (max history_size)
         self.time_recv_ms = 0
+        self.last_command = ""
+        self.last_command_ts = 0
+        
+
 
 class UiKiosk(Node):
     def __init__(self):
@@ -42,246 +49,130 @@ class UiKiosk(Node):
         self.media_dir           = p('media_dir', '/home/sayak/amr_kiosk_media').value
         self.history_size        = int(p('history_size', 5).value)
         self.video_w             = int(p('video_width', 960).value)
-        self.video_h             = int(p('video_height', 540).value)
-        self.janitor_enabled     = bool(p('janitor_enabled', True).value)
+        self.video_h             = int(p('video_height', 720).value)
+        self.decision_timeout_s  = float(p('decision_timeout_s', 20.0).value)
+        self.keep_days_approved  = int(p('keep_days_approved', 7).value)
         self.janitor_interval_s  = int(p('janitor_interval_s', 3600).value)
-        self.keep_days_approved  = int(p('keep_days_approved', 1).value)
-        self.decision_timeout_s  = int(p('decision_timeout_s', 20).value)
-        self.auto_approve        = bool(p('auto_approve_default', False).value)
-        self.dev_mode            = bool(p('dev_mode', False).value)
-
-        os.makedirs(self.media_dir, exist_ok=True)
-        os.makedirs(os.path.join(self.media_dir, "approved"), exist_ok=True)
-        os.makedirs(os.path.join(self.media_dir, "approved","keep"), exist_ok=True)
-        os.makedirs(os.path.join(self.media_dir, "tmp"), exist_ok=True)
+        self.auto_approve        = p('auto_approve_default', False).value
 
         self.state = State()
         self.state.auto_approve = self.auto_approve
+        
+        self.bridge = CvBridge()
 
-        # ROS wiring
-        self.sub_req = self.create_subscription(ConfirmRequest, "/vlm/confirm_request", self.on_confirm_request, 10)
-        self.pub_reply = self.create_publisher(ConfirmReply, "/ui/confirm_reply", 10)
-        self.pub_log = self.create_publisher(String, "/kiosk/decision_log", 10)
+        # Ensure dirs
+        os.makedirs(self.media_dir, exist_ok=True)
+        os.makedirs(os.path.join(self.media_dir, "approved"), exist_ok=True)
 
-        # HTTP server in a thread
-        self.httpd = None
-        self.http_thread = threading.Thread(target=self._start_http, daemon=True)
-        self.http_thread.start()
-
-        # Timer to auto-timeout
-        self.timer = self.create_timer(0.5, self._tick)
-
-        # Janitor
-        if self.janitor_enabled:
-            self.janitor_thread = threading.Thread(target=self._janitor_loop, daemon=True)
-            self.janitor_thread.start()
-
-        self.get_logger().info(f"Kiosk ready at http://{self.http_host}:{self.http_port} (media_dir={self.media_dir})")
-
-    # -------- HTTP helpers --------
-    def _start_http(self):
+        # HTTP Server in thread
+        self.server = HTTPServer((self.http_host, self.http_port), KioskHandler)
+        # inject node ref into handler class
+        global node_ref
         node_ref = self
-        class Handler(BaseHTTPRequestHandler):
-            def _send(self, code=200, headers=None, body=b""):
-                self.send_response(code)
-                if headers:
-                    for k,v in headers.items():
-                        self.send_header(k, v)
-                self.end_headers()
-                if body:
-                    self.wfile.write(body)
+        
+        self.server_thread = threading.Thread(target=self.server.serve_forever)
+        self.server_thread.daemon = True
+        self.server_thread.start()
+        
+        self.get_logger().info(f"UI Kiosk running at http://{self.http_host}:{self.http_port}")
 
-            def log_message(self, fmt, *args):  # quieter
-                node_ref.get_logger().debug("HTTP: " + fmt % args)
+        # Janitor thread
+        self.janitor_thread = threading.Thread(target=self._janitor_loop)
+        self.janitor_thread.daemon = True
+        self.janitor_thread.start()
 
-            def do_GET(self):
-                if self.path == "/" or self.path.startswith("/index.html"):
-                    body = node_ref._html_index().encode("utf-8")
-                    return self._send(200, {"Content-Type":"text/html; charset=utf-8"}, body)
-                elif self.path.startswith("/static/"):
-                    return node_ref._serve_static(self)
-                elif self.path == "/state":
-                    return node_ref._serve_state(self)
-                elif self.path.startswith("/media/"):
-                    return node_ref._serve_media(self)
-                else:
-                    return self._send(404, {"Content-Type":"text/plain"}, b"not found")
+        # Timer for auto-approve check
+        self.create_timer(1.0, self._tick)
 
-            def do_POST(self):
-                if self.path.startswith("/confirm"):
-                    length = int(self.headers.get('Content-Length','0'))
-                    raw = self.rfile.read(length) if length>0 else b""
-                    try:
-                        data = json.loads(raw.decode("utf-8") if raw else "{}")
-                    except Exception:
-                        data = {}
-                    return node_ref._handle_confirm(self, data)
-                elif self.path.startswith("/toggle_auto"):
-                    with node_ref.state.lock:
-                        node_ref.state.auto_approve = not node_ref.state.auto_approve
-                    return self._send(200, {"Content-Type":"application/json"}, json.dumps({"auto_approve":node_ref.state.auto_approve}).encode("utf-8"))
-                else:
-                    return self._send(404, {"Content-Type":"text/plain"}, b"not found")
+        # Subscribers
+        self.sub_req = self.create_subscription(ConfirmRequest, "/vlm/confirm_request", self.on_confirm_request, 10)
+        self.sub_telemetry = self.create_subscription(TelemetryCommand, "/telemetry/command", self.on_telemetry, 10)
 
-        class ReuseTCPServer(socketserver.TCPServer):
-            allow_reuse_address = True
+        # Publisher for reply
+        self.pub_reply = self.create_publisher(ConfirmReply, "/ui/confirm_reply", 10)
 
+    def on_telemetry(self, msg: TelemetryCommand):
+        with self.state.lock:
+            self.state.last_command = msg.command_text
+            self.state.last_command_ts = utc_ts()
+
+    def _html_index(self):
+        # We serve the static index.html from disk
+        path = os.path.join(os.path.dirname(__file__), "www", "index.html")
         try:
-            self.httpd = ReuseTCPServer((self.http_host, self.http_port), Handler)
-            self.httpd.serve_forever()
+            with open(path, "r") as f:
+                return f.read()
         except Exception as e:
-            self.get_logger().error(f"HTTP server failed: {e}")
+            return f"Error loading index.html: {e}"
 
-    def _html_index(self)->str:
-        # If dev_mode and external file exists, serve it
-        if self.dev_mode:
-            try:
-                here = Path(__file__).parent / "www" / "index.html"
-                if here.exists():
-                    return here.read_text(encoding="utf-8")
-            except Exception:
-                pass
-        # Embedded minimal shell (you can still live-edit external files via VS Code; switch dev_mode=true to use them)
-        return """<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>KOLAMeRO UI Kiosk</title>
-<style>
-  :root {{
-    --bgA: #0b0f1a; --bgB: #1a1440; --accent:#7c5cff; --ok:#32d583; --bad:#f97066; --muted:#9aa4b2;
-  }}
-  html,body {{ margin:0; height:100%; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto; color:#e5e7eb; }}
-  body {{ {{
-    background: radial-gradient(1000px 600px at 20% 10%, rgba(124,92,255,0.25), transparent 60%),
-                linear-gradient(135deg, var(--bgA), var(--bgB));
-  }} }}
-  .page {{ display:flex; height:100%; }}
-  .main {{ flex:1; display:flex; flex-direction:column; align-items:center; padding:24px; gap:16px; }}
-  .logos {{ position:fixed; top:12px; left:12px; right:12px; display:flex; justify-content:space-between; pointer-events:none; }}
-  .logo {{ opacity:.9; filter: drop-shadow(0 2px 6px rgba(0,0,0,.4)); }}
-  .logo img {{ height:40px; object-fit:contain; }}
-  .logo.br {{ position:fixed; right:12px; bottom:12px; }}
-  .video-box {{
-    width:{self.video_w}px; height:{self.video_h}px; border:1px solid rgba(255,255,255,.2);
-    border-radius:16px; display:grid; place-items:center; background:rgba(0,0,0,.35);
-    box-shadow:0 10px 30px rgba(0,0,0,.35);
-  }}
-  video {{ width:100%; height:100%; border-radius:16px; object-fit:cover; }}
-  .idle-mark {{ color:#94a3b8; font-size:18px; }}
-  .panel {{ width:{self.video_w}px; display:flex; flex-direction:column; gap:10px; }}
-  .row {{ display:flex; align-items:center; gap:12px; }}
-  input[type=text] {{
-    flex:1; background:#0f172a; color:#e5e7eb; border:1px solid rgba(255,255,255,.2);
-    border-radius:10px; padding:10px 12px; font-size:16px;
-  }}
-  .pill {{ padding:6px 10px; border-radius:999px; background:rgba(255,255,255,.08); color:#e5e7eb; font-size:14px; }}
-  .hint {{ color:#cbd5e1; font-size:14px; }}
-  .bar {{ width:100%; height:10px; background:rgba(255,255,255,.08); border-radius:999px; overflow:hidden; }}
-  .fill {{ height:100%; width:0%; background:linear-gradient(90deg, #4f46e5, #06b6d4); transition:width .2s; }}
-  .actions {{ display:flex; gap:10px; }}
-  button {{
-    border:0; border-radius:10px; padding:10px 14px; font-weight:600; cursor:pointer;
-    background:#1f2937; color:#e5e7eb;
-  }}
-  button.approve {{ background: #164e63; }}
-  button.reject  {{ background: #4c0519; }}
-  .toast {{ position:fixed; top:16px; left:50%; transform:translateX(-50%); background:#111827; color:#e5e7eb;
-           padding:10px 14px; border-radius:10px; box-shadow:0 8px 30px rgba(0,0,0,.35); display:none; }}
-  .aside {{ width:300px; border-left:1px solid rgba(255,255,255,.12); padding:16px; display:flex; flex-direction:column; gap:10px; }}
-  .card {{ background:rgba(255,255,255,.06); padding:10px; border-radius:10px; font-size:14px; }}
-  .status {{ font-size:13px; color:#9aa4b2; }}
-</style>
-</head>
-<body>
-<div class="page">
-  <div class="main">
-    <div class="logos">
-      <div class="logo tl"><img src="/static/logo_kolamero.jpg" alt="KOLAMeRO"></div>
-      <div class="logo tr"><img src="/static/logo_faps.png" alt="FAPS"></div>
-    </div>
-    
-    <div class="video-box" id="vbox">
-      <img id="clip" style="display:none; max-width:100%; max-height:100%; border-radius:16px; object-fit:contain"/>
-      <div class="idle-mark" id="idle">Waiting for a clip…</div>
-    </div>
-    <div class="panel">
-      <div class="row">
-        <input id="label" type="text" placeholder="Label…"/>
-        <div class="pill" id="conf">conf –</div>
-      </div>
-      <div class="row"><div class="hint" id="hint"></div></div>
-      <div class="bar"><div class="fill" id="fill"></div></div>
-      <div class="row actions">
-        <button class="approve" id="approve">Approve</button> 
-        <button class="reject"  id="reject">Reject</button>
-        <div class="status"><input type="checkbox" id="auto"/> Auto-approve (debug)</div>
-      </div>
-      <div class="status" id="status"></div>
-    </div>
-  </div>
-  <div class="aside">
-    <div class="logo br"><img src="/static/logo_fau.png" alt="FAU"></div>
-    <div class="card"><strong>Recent</strong><div id="hist"></div></div>
-  </div>
-</div>
-<div class="toast" id="toast"></div>
-<script>
-let st = null, last_session = null;
-const el = (id)=>document.getElementById(id);
-function toast(msg){ const t=el('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none', 1200); }
-function setVideo(src){
-  const v=el('clip'), idle=el('idle');
-  if(src){ v.src=src; v.style.display='block'; idle.style.display='none'; }
-  else { v.removeAttribute('src'); v.style.display='none'; idle.style.display='grid'; }
-}
-async function pull(){
-  try{
-    const r = await fetch('/state'); if(!r.ok) throw 0;
-    const s = await r.json(); st = s;
-    el('label').value = s.label || '';
-    el('conf').textContent = `conf ${ (s.confidence??0).toFixed(2) }`;
-    el('hint').textContent = s.hint || '';
-    el('auto').checked = !!s.auto_approve;
-    setVideo(s.media_src || null);
-    if(s.time_left_ms!==undefined && s.timeout_ms){
-      const pct = Math.max(0, Math.min(100, 100*(s.time_left_ms/s.timeout_ms)));
-      el('fill').style.width = pct+'%';
-      el('status').textContent = s.media_src ? `time left: ${(s.time_left_ms/1000).toFixed(1)}s` : '';
-    }
-    if(last_session !== s.session_id){ last_session = s.session_id; el('label').focus(); }
-    renderHist(s.history || []);
-  }catch(e){
-    // ignore transient errors
-  } finally { setTimeout(pull, 1000); }
-}
-function renderHist(h){
-  const box=el('hist'); box.innerHTML='';
-  h.forEach(it=>{
-    const d=document.createElement('div');
-    d.className='status';
-    d.textContent = `${it.outcome} · ${it.final_label||it.candidate_label||''} · ${new Date(it.ts).toLocaleTimeString()}`;
-    box.appendChild(d);
-  });
-}
-async function send(approved){
-  if(!st || !st.session_id) return;
-  const body = { session_id: st.session_id, approved: approved, final_label: el('label').value || '' };
-  const r= await fetch('/confirm', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
-  if(r.ok){ toast(approved?'Approved':'Rejected'); }
-}
-el('approve').onclick = ()=>send(true);
-el('reject').onclick  = ()=>send(false);
-pull();
-</script>
-</body></html>
-"""
-    # -------- HTTP route impls --------
+    def _serve_static(self, handler:BaseHTTPRequestHandler):
+        # serve from www/static
+        base = Path(__file__).parent / "www"
+        base_resolved = base.resolve()
+        
+        # sanitize
+        req_path = handler.path.split('?')[0]
+        # remove leading /
+        if req_path.startswith('/'): req_path = req_path[1:]
+        
+        # resolve
+        fpath = (base / req_path).resolve()
+        
+        # security check: must be inside www
+        if not str(fpath).startswith(str(base_resolved)):
+            return handler._send(403, {}, b"Forbidden")
+            
+        if not fpath.exists():
+            return handler._send(404, {}, b"Not Found")
+            
+        # guess mime
+        ctype, _ = mimetypes.guess_type(fpath)
+        if not ctype: ctype = "application/octet-stream"
+        
+        try:
+            with open(fpath, "rb") as f:
+                content = f.read()
+            handler._send(200, {"Content-Type":ctype}, content)
+        except Exception as e:
+            handler._send(500, {}, str(e).encode("utf-8"))
+
+    def _serve_media(self, handler:BaseHTTPRequestHandler):
+        # serve from self.media_dir
+        # path is /media/filename
+        fname = handler.path.split('/')[-1].split('?')[0]
+        fpath = os.path.join(self.media_dir, fname)
+        
+        if not os.path.exists(fpath):
+            return handler._send(404, {}, b"Not Found")
+            
+        ctype, _ = mimetypes.guess_type(fpath)
+        if not ctype: ctype = "application/octet-stream"
+        
+        try:
+            with open(fpath, "rb") as f:
+                content = f.read()
+            handler._send(200, {"Content-Type":ctype}, content)
+        except Exception as e:
+            handler._send(500, {}, str(e).encode("utf-8"))
+
+
     def _serve_state(self, handler:BaseHTTPRequestHandler):
+        # self.get_logger().info("[STATE ENDPOINT CALLED]")
         with self.state.lock:
             now = utc_ts()
-            time_left = max(0, self.state.deadline_at_ms - now) if self.state.active else 0
+            # Only calculate time left if deadline is set (not processing)
+            time_left = 0
+            if self.state.active and self.state.deadline_at_ms > 0:
+                time_left = max(0, self.state.deadline_at_ms - now)
+            
+            active = self.state.active
+            label = self.state.candidate_label
+            conf = self.state.candidate_conf
+            clip = self.state.clip_src
+            
+        # self.get_logger().info(f"Serving /state: active={active}, label={label}, conf={conf}, clip={clip}")
+        
+        with self.state.lock:
             payload = {
                 "session_id": self.state.session_id if self.state.active else "",
                 "label": self.state.candidate_label if self.state.active else "",
@@ -289,99 +180,61 @@ pull();
                 "hint": self.state.hint if self.state.active else "",
                 "media_src": self.state.clip_src if self.state.active else "",
                 "auto_approve": self.state.auto_approve,
-                "timeout_ms": self.decision_timeout_s*1000,
+                "timeout_ms": int(self.decision_timeout_s * 1000) if self.state.deadline_at_ms > 0 else 0,
                 "time_left_ms": time_left,
-                "history": self.state.history[-self.history_size:]
+                "history": self.state.history[-self.history_size:],
+                "last_command": self.state.last_command,
+                "last_command_ts": self.state.last_command_ts
             }
         body = json.dumps(payload).encode("utf-8")
         handler._send(200, {"Content-Type":"application/json"}, body)
 
-    def _serve_static(self, handler:BaseHTTPRequestHandler):
-        # serve VSCode assets if present
-        base = Path(__file__).parent / "www"
-        req = handler.path[len("/static/"):]
-        target = base / "static" / req
-        if not target.exists() or not target.is_file():
-            return handler._send(404, {"Content-Type":"text/plain"}, b"static not found")
-        mime,_ = mimetypes.guess_type(str(target))
-        try:
-            data = target.read_bytes()
-            return handler._send(200, {"Content-Type": mime or "application/octet-stream"}, data)
-        except Exception as e:
-            self.get_logger().warn(f"static error: {e}")
-            return handler._send(500, {"Content-Type":"text/plain"}, b"static error")
-
-    def _serve_media(self, handler:BaseHTTPRequestHandler):
-        rel = handler.path[len("/media/"):]
-        target = os.path.join(self.media_dir, rel)
-        if not os.path.isfile(target):
-            return handler._send(404, {"Content-Type":"text/plain"}, b"media not found")
-        mime,_ = mimetypes.guess_type(target)
-        try:
-            with open(target, "rb") as f:
-                data = f.read()
-            return handler._send(200, {"Content-Type": mime or "video/mp4"}, data)
-        except Exception as e:
-            self.get_logger().warn(f"media error: {e}")
-            return handler._send(500, {"Content-Type":"text/plain"}, b"media error")
-
     def _handle_confirm(self, handler:BaseHTTPRequestHandler, data:dict):
-        approved = bool(data.get("approved", False))
-        final_label = str(data.get("final_label","")).strip()
-        session_id = str(data.get("session_id","")).strip()
-
+        sid = data.get("session_id", "")
+        approved = data.get("approved", False)
+        final_lbl = data.get("final_label", "")
+        
+        self.get_logger().info(f"Received /confirm: sid={sid}, approved={approved}, label={final_lbl}")
+        
         with self.state.lock:
-            if not self.state.active or session_id != self.state.session_id:
-                return handler._send(409, {"Content-Type":"application/json"}, json.dumps({"ok":False, "reason":"no-active-or-mismatch"}).encode("utf-8"))
-            start_ms = self.state.time_recv_ms
-            clip_abs = self.state.clip_abspath
-            candidate_label = self.state.candidate_label
-            candidate_conf = float(self.state.candidate_conf)
+            if not self.state.active or self.state.session_id != sid:
+                return handler._send(400, {}, b"Session mismatch or inactive")
+                
+            # Publish reply
+            msg = ConfirmReply()
+            msg.session_id = sid
+            msg.approved = bool(approved)
+            msg.final_label = final_lbl
+            self.pub_reply.publish(msg)
+            
+            # Log history
+            outcome = "approved" if approved else "rejected"
+            self._push_history({"ts":utc_ts(), "session_id":sid, "outcome":outcome,
+                 "candidate_label":self.state.candidate_label, "final_label":final_lbl,
+                 "candidate_conf":self.state.candidate_conf,
+                 "latency_ms": self.decision_timeout_s*1000 - (self.state.deadline_at_ms - utc_ts()),
+                 "clip_name": safe_basename(self.state.clip_abspath)})
+                 
+            # Handle file retention
+            try:
+                clip_abs = self.state.clip_abspath
+                if approved:
+                    # move to approved/
+                    dst = os.path.join(self.media_dir, "approved", safe_basename(clip_abs))
+                    if clip_abs and os.path.exists(clip_abs):
+                        if os.path.abspath(clip_abs) != os.path.abspath(dst):
+                            shutil.move(clip_abs, dst)
+                else:
+                    # delete immediately
+                    if clip_abs and os.path.exists(clip_abs):
+                        os.remove(clip_abs)
+            except Exception as e:
+                self.get_logger().warn(f"retention op failed: {e}")
 
-        # Publish ConfirmReply
-        msg = ConfirmReply()
-        msg.session_id = session_id
-        msg.approved = approved
-        msg.final_label = final_label if final_label else candidate_label
-        self.pub_reply.publish(msg)
-
-        # Decision log
-        outcome = "approved" if approved else "rejected"
-        latency_ms = max(0, utc_ts() - start_ms)
-        log = {
-            "ts": utc_ts(),
-            "session_id": session_id,
-            "outcome": outcome,
-            "candidate_label": candidate_label,
-            "final_label": msg.final_label,
-            "candidate_conf": candidate_conf,
-            "latency_ms": latency_ms,
-            "clip_name": safe_basename(clip_abs)
-        }
-        self.pub_log.publish(String(data=json.dumps(log)))
-
-        # Retention
-        try:
-            if approved:
-                # keep for keep_days_approved (janitor will purge later)
-                # move into approved/ (not keep/) – training job can move to keep/ if desired
-                dst = os.path.join(self.media_dir, "approved", safe_basename(clip_abs))
-                if clip_abs and os.path.exists(clip_abs):
-                    if os.path.abspath(clip_abs) != os.path.abspath(dst):
-                        shutil.move(clip_abs, dst)
-            else:
-                # delete immediately
-                if clip_abs and os.path.exists(clip_abs):
-                    os.remove(clip_abs)
-        except Exception as e:
-            self.get_logger().warn(f"retention op failed: {e}")
-
-        # Clear state
-        with self.state.lock:
-            self._push_history(log)
+            # Clear state
             self._clear_active()
-
-        return handler._send(200, {"Content-Type":"application/json"}, json.dumps({"ok":True}).encode("utf-8"))
+            
+        handler._send(200, {"Content-Type":"application/json"}, json.dumps({"ok":True}).encode("utf-8"))
 
     def _push_history(self, item):
         self.state.history.append(item)
@@ -401,21 +254,26 @@ pull();
 
     # -------- ROS callbacks --------
 
-    def on_confirm_request(self, req: ConfirmRequest):
-        
-        # Map fields from the VLM bridge
-        self._current_request = {
-            "session_id": msg.session_id,
-            "window_id": msg.window_id,
-            "label": msg.label,
-            "confidence": msg.confidence,
-            "clip_url": self._relativize_clip(msg.clip_path),
-            "preview_frame_b64": msg.preview_frame_b64 or "",
-        }
 
-        # Validate clip_path
-        if not src_path or not os.path.isfile(src_path):
-            self.get_logger().warn(f"ConfirmRequest missing/invalid clip_path: {src_path}")
+    def on_confirm_request(self, msg: ConfirmRequest):
+        session_id = msg.session_id
+        label = msg.candidate_label
+        conf = msg.candidate_conf
+        
+        # Try to find the clip
+        recorder_dir = "/home/sayak/amr_gesture_ws/data/runtime_clips"
+        src_path = ""
+        
+        try:
+            for f in os.listdir(recorder_dir):
+                if session_id in f and f.endswith(".mp4"):
+                    src_path = os.path.join(recorder_dir, f)
+                    break
+        except Exception:
+            pass
+            
+        if not src_path:
+            self.get_logger().warn(f"Could not find clip for session {session_id}")
             return
 
         try:
@@ -450,16 +308,24 @@ pull();
                 self.state.session_id = session_id
                 self.state.candidate_label = label
                 self.state.candidate_conf = conf
-                self.state.hint = ""
+                self.state.hint = msg.hint
                 self.state.clip_abspath = dst_mp4
                 # If preview exists, serve that; otherwise, still show the MP4
-                if preview_path and os.path.exists(preview_path):
-                    self.state.clip_src = "/media/" + safe_basename(preview_path)
-                else:
-                    self.state.clip_src = "/media/" + safe_basename(dst_mp4)
+                # Always use MP4 for video playback
+                self.state.clip_src = "/media/" + safe_basename(dst_mp4)
                 self.state.time_recv_ms = utc_ts()
-                self.state.deadline_at_ms = self.state.time_recv_ms + self.decision_timeout_s * 1000
+                
+                # TIMER LOGIC:
+                # If label is "PROCESSING...", do NOT start timer yet.
+                if label == "PROCESSING...":
+                    self.state.deadline_at_ms = 0 # No timeout
+                else:
+                    # Real label arrived, start 30s countdown
+                    self.state.deadline_at_ms = self.state.time_recv_ms + int(self.decision_timeout_s * 1000)
 
+            self.get_logger().info(
+                f"STATE SET: active=True, label={label}, conf={conf:.2f}, clip_src={self.state.clip_src}"
+            )
             self.get_logger().info(
                 f"ConfirmRequest {session_id} → {base} (conf={conf:.2f})"
             )
@@ -467,12 +333,15 @@ pull();
         except Exception as e:
             self.get_logger().error(f"on_confirm_request error: {e}")
 
-
-    # -------- housekeeping --------
     def _tick(self):
         # auto-approve on timeout (if auto_approve ON)
         with self.state.lock:
             if not self.state.active: return
+            
+            # If deadline is 0, we are waiting for VLM processing, so do nothing
+            if self.state.deadline_at_ms == 0:
+                return
+
             now = utc_ts()
             if now >= self.state.deadline_at_ms:
                 if self.state.auto_approve:
@@ -497,6 +366,13 @@ pull();
                     self._clear_active()
                 else:
                     # timeout → delete immediately
+                    # FIX: Publish reply so bridge knows session ended
+                    msg = ConfirmReply()
+                    msg.session_id = self.state.session_id
+                    msg.approved = False
+                    msg.final_label = "" # or "TIMEOUT"
+                    self.pub_reply.publish(msg)
+                    
                     try:
                         if self.state.clip_abspath and os.path.exists(self.state.clip_abspath):
                             os.remove(self.state.clip_abspath)
@@ -527,6 +403,47 @@ pull();
             except Exception as e:
                 self.get_logger().warn(f"janitor: {e}")
             time.sleep(self.janitor_interval_s)
+
+class KioskHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == "/" or self.path.startswith("/index.html"):
+            body = node_ref._html_index().encode("utf-8")
+            return self._send(200, {"Content-Type":"text/html; charset=utf-8"}, body)
+        elif self.path.startswith("/static/"):
+            return node_ref._serve_static(self)
+        elif self.path.startswith("/state"):
+            return node_ref._serve_state(self)
+        elif self.path.startswith("/media/"):
+            return node_ref._serve_media(self)
+        else:
+            return self._send(404, {"Content-Type":"text/plain"}, b"not found")
+
+    def do_POST(self):
+        if self.path.startswith("/confirm"):
+            length = int(self.headers.get('Content-Length','0'))
+            raw = self.rfile.read(length) if length>0 else b""
+            try:
+                data = json.loads(raw.decode("utf-8") if raw else "{}")
+            except Exception:
+                data = {}
+            return node_ref._handle_confirm(self, data)
+        elif self.path.startswith("/toggle_auto"):
+            with node_ref.state.lock:
+                node_ref.state.auto_approve = not node_ref.state.auto_approve
+            return self._send(200, {"Content-Type":"application/json"}, b"{\"ok\":true}")
+        else:
+            return self._send(404, {}, b"not found")
+
+    def _send(self, code, headers, body):
+        self.send_response(code)
+        for k,v in headers.items():
+            self.send_header(k,v)
+        self.send_header("Content-Length", len(body))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, fmt, *args):  # quieter
+        node_ref.get_logger().debug("HTTP: " + fmt % args)
 
 def main():
     rclpy.init()

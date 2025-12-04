@@ -1,61 +1,193 @@
 const el = id => document.getElementById(id);
-let st=null, last_session=null;
+let st = null;
+let last_session = null;
 
-function toast(msg){ const t=el('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',1200); }
-function setVideo(src){
-  const v=el('clip'), idle=el('idle');
-  if(src){ v.src=src; v.style.display='block'; idle.style.display='none'; }
-  else { v.removeAttribute('src'); v.style.display='none'; idle.style.display='grid'; }
+// Simple toast notification
+function toast(msg) {
+  const t = el("toast");
+  if (!t) return;
+  t.textContent = msg || "";
+  t.style.display = "block";
+  setTimeout(() => {
+    t.style.display = "none";
+  }, 1200);
 }
-function renderHist(h){
-  const box=document.getElementById('hist'); box.innerHTML='';
-  (h||[]).forEach(it=>{
-    const d=document.createElement('div');
-    d.className='status';
-    d.textContent = `${it.outcome} · ${it.final_label||it.candidate_label||''} · ${new Date(it.ts).toLocaleTimeString()}`;
+
+// Video area logic: show idle text when no clip
+function setVideo(src) {
+  const clip = el("clip");
+  const idle = el("idle");
+  if (!clip || !idle) return;
+
+  if (src) {
+    if (clip.dataset.currentSrc !== src) {
+      clip.dataset.currentSrc = src;
+      clip.src = src + "?t=" + Date.now();
+      clip.load();
+      clip.play().catch(e => console.log("Video play failed:", e));
+    }
+    clip.style.display = "block";
+    idle.style.display = "none";
+  } else {
+    clip.pause();
+    clip.removeAttribute("src");
+    clip.dataset.currentSrc = "";
+    clip.style.display = "none";
+    idle.style.display = "block";
+  }
+}
+
+// History sidebar
+function renderHist(history) {
+  const box = el("hist");
+  if (!box) return;
+  box.innerHTML = "";
+  (history || []).forEach(it => {
+    const d = document.createElement("div");
+    d.className = "status";
+    const ts = it.ts ? new Date(it.ts).toLocaleTimeString() : "";
+    const lbl = it.final_label || it.candidate_label || "";
+    d.textContent = `${it.outcome || ""} · ${lbl} · ${ts}`;
     box.appendChild(d);
   });
 }
 
-// toggle fullscreen
-document.addEventListener("DOMContentLoaded", () => {
-  const fsBtn = document.getElementById("fullscreen-btn");
-  if (!fsBtn) return;
+// HUD: direction arrow + text
+function updateHud(cmd, ts) {
+  const hud = el("hud");
+  const arrow = el("hud-arrow");
+  const text = el("hud-text");
+  if (!hud || !arrow || !text) return;
 
+  if (!cmd || (ts && Date.now() - ts > 3000)) {
+    hud.classList.remove("active");
+    return;
+  }
+
+  let icon = "";
+  let cls = "";
+  const label = cmd.replace(/_/g, " ").toUpperCase();
+
+  const lc = cmd.toLowerCase();
+  if (lc.includes("forward")) { icon = "▲"; cls = "anim-up"; }
+  else if (lc.includes("backward")) { icon = "▼"; cls = "anim-down"; }
+  else if (lc.includes("left")) { icon = "◀"; cls = "anim-left"; }
+  else if (lc.includes("right")) { icon = "▶"; cls = "anim-right"; }
+
+  arrow.textContent = icon;
+  arrow.className = "hud-arrow " + cls;
+  text.textContent = label;
+  hud.classList.add("active");
+}
+
+// Fullscreen button
+document.addEventListener("DOMContentLoaded", () => {
+  const fsBtn = el("fullscreen-btn");
+  if (!fsBtn) return;
   fsBtn.addEventListener("click", () => {
+    console.log("Fullscreen button clicked");
     if (!document.fullscreenElement) {
+      console.log("Requesting fullscreen...");
       document.documentElement.requestFullscreen().catch(err => {
         console.warn("Fullscreen request failed:", err);
       });
     } else {
+      console.log("Exiting fullscreen...");
       document.exitFullscreen();
     }
   });
 });
 
-async function pull(){
-  try{
-    const r=await fetch('/state'); if(!r.ok) throw 0;
-    const s=await r.json(); st=s;
-    el('label').value=s.label||''; el('conf').textContent=`conf ${(s.confidence??0).toFixed(2)}`;
-    el('hint').textContent=s.hint||''; el('auto').checked=!!s.auto_approve;
-    setVideo(s.media_src||null);
-    if(s.time_left_ms!==undefined && s.timeout_ms){
-      const pct=Math.max(0,Math.min(100,100*(s.time_left_ms/s.timeout_ms)));
-      document.getElementById('fill').style.width=pct+'%';
-      document.getElementById('status').textContent=s.media_src?`time left: ${(s.time_left_ms/1000).toFixed(1)}s`:'';
+// Poll /state
+async function pull() {
+  try {
+    const r = await fetch("/state?t=" + Date.now(), {
+      headers: { "Cache-Control": "no-cache" }
+    });
+    if (!r.ok) throw new Error("Response not OK");
+    const s = await r.json();
+    st = s;
+
+    // Main label + confidence + hint
+    if (el("label")) el("label").value = s.label || "";
+    if (el("conf")) {
+      const c = typeof s.confidence === "number" ? s.confidence : 0;
+      el("conf").textContent = `conf ${c.toFixed(2)}`;
     }
-    if(last_session!==s.session_id){ last_session=s.session_id; el('label').focus(); }
-    renderHist(s.history||[]);
-  }catch(e){/* ignore */}
-  setTimeout(pull,1000);
+    if (el("hint")) {
+      el("hint").textContent = s.hint || "";
+    }
+
+    // Auto-approve checkbox
+    if (el("auto")) {
+      el("auto").checked = !!s.auto_approve;
+    }
+
+    // Video
+    setVideo(s.media_src || null);
+
+    // HUD from last command
+    if (s.last_command && s.last_command_ts) {
+      updateHud(s.last_command, s.last_command_ts);
+    } else {
+      updateHud("", 0);
+    }
+
+    // Progress bar / status
+    const timeout = s.timeout_ms || 0;
+    const timeLeft = s.time_left_ms || 0;
+    const fill = el("fill");
+    const status = el("status");
+    if (fill && status) {
+      if (timeout > 0) {
+        const pct = Math.max(0, Math.min(100, 100 * (timeLeft / timeout)));
+        fill.style.width = pct + "%";
+        status.textContent = s.label
+          ? `${s.label} (${(s.confidence ?? 0).toFixed(2)})`
+          : "";
+      } else {
+        fill.style.width = "0%";
+        status.textContent = "";
+      }
+    }
+
+    // Reset focus when session changes
+    if (last_session !== s.session_id) {
+      last_session = s.session_id;
+      if (el("label")) el("label").focus();
+    }
+
+    // History
+    renderHist(s.history || []);
+  } catch (e) {
+    console.error("[PULL] Error:", e);
+  }
+
+  setTimeout(pull, 1000);
 }
-async function send(approved){
-  if(!st || !st.session_id) return;
-  const body={ session_id:st.session_id, approved:approved, final_label: el('label').value||'' };
-  const r=await fetch('/confirm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  if(r.ok) toast(approved?'Approved':'Rejected');
+
+// Send approve/reject
+async function send(approved) {
+  if (!st || !st.session_id) return;
+  const body = {
+    session_id: st.session_id,
+    approved: !!approved,
+    final_label: (el("label") && el("label").value) || ""
+  };
+  try {
+    const r = await fetch("/confirm", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    if (r.ok) toast(approved ? "Approved" : "Rejected");
+  } catch (e) {
+    console.error("[SEND] Error:", e);
+  }
 }
-document.getElementById('approve').onclick=()=>send(true);
-document.getElementById('reject').onclick =()=>send(false);
+
+if (el("approve")) el("approve").onclick = () => send(true);
+if (el("reject")) el("reject").onclick = () => send(false);
+
+console.log("[INIT] Starting initial pull");
 pull();

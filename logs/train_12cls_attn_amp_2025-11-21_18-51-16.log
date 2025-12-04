@@ -1,0 +1,1229 @@
+/home/sayak/Downloads/optimized_training12_attn_amp.py:277: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  scaler = GradScaler(enabled=use_amp)
+Using device: cuda
+Detected input dimension: 84
+Detected input dimension: 84
+Training samples: 21634
+Validation samples: 2918
+Input dimension: 84
+
+Training on 12 classes:
+   0: IGNORE
+   1: NO_GESTURE
+   2: STOP_SIGN
+   3: PUSHING_HAND_AWAY
+   4: SWIPE_DOWN
+   5: SWIPE_LEFT
+   6: SWIPE_RIGHT
+   7: SWIPE_UP
+   8: THUMB_DOWN
+   9: THUMB_UP
+  10: ZOOM_IN
+  11: ZOOM_OUT
+Model parameters: 4,086,837
+
+🚀 Starting training with attention + AMP on 12 classes...
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+
+Per-class accuracy:
+   0 (IGNORE): 0.466
+   1 (NO_GESTURE): 0.680
+   2 (STOP_SIGN): 0.851
+   3 (PUSHING_HAND_AWAY): 0.539
+   4 (SWIPE_DOWN): 0.764
+   5 (SWIPE_LEFT): 0.788
+   6 (SWIPE_RIGHT): 0.500
+   7 (SWIPE_UP): 0.843
+   8 (THUMB_DOWN): 0.606
+   9 (THUMB_UP): 0.648
+  10 (ZOOM_IN): 0.577
+  11 (ZOOM_OUT): 0.824
+[epoch  1] train_acc=0.5296 train_loss=1.4722 val_acc=0.6734 lr=5.00e-04
+Per-class val accuracy (summary): IGNORE: 0.466 | NO_GESTURE: 0.680 | STOP_SIGN: 0.851 | PUSHING_HAND_AWAY: 0.539 | SWIPE_DOWN: 0.764 | SWIPE_LEFT: 0.788 | SWIPE_RIGHT: 0.500 | SWIPE_UP: 0.843 | THUMB_DOWN: 0.606 | THUMB_UP: 0.648 | ZOOM_IN: 0.577 | ZOOM_OUT: 0.824
+  → New best model saved! (val_acc: 0.6734)
+
+Per-class accuracy:
+   0 (IGNORE): 0.664
+   1 (NO_GESTURE): 0.602
+   2 (STOP_SIGN): 0.875
+   3 (PUSHING_HAND_AWAY): 0.635
+   4 (SWIPE_DOWN): 0.789
+   5 (SWIPE_LEFT): 0.796
+   6 (SWIPE_RIGHT): 0.683
+   7 (SWIPE_UP): 0.880
+   8 (THUMB_DOWN): 0.771
+   9 (THUMB_UP): 0.697
+  10 (ZOOM_IN): 0.656
+  11 (ZOOM_OUT): 0.755
+[epoch  2] train_acc=0.7321 train_loss=0.8414 val_acc=0.7344 lr=5.00e-04
+Per-class val accuracy (summary): IGNORE: 0.664 | NO_GESTURE: 0.602 | STOP_SIGN: 0.875 | PUSHING_HAND_AWAY: 0.635 | SWIPE_DOWN: 0.789 | SWIPE_LEFT: 0.796 | SWIPE_RIGHT: 0.683 | SWIPE_UP: 0.880 | THUMB_DOWN: 0.771 | THUMB_UP: 0.697 | ZOOM_IN: 0.656 | ZOOM_OUT: 0.755
+  → New best model saved! (val_acc: 0.7344)
+
+Per-class accuracy:
+   0 (IGNORE): 0.741
+   1 (NO_GESTURE): 0.632
+   2 (STOP_SIGN): 0.819
+   3 (PUSHING_HAND_AWAY): 0.768
+   4 (SWIPE_DOWN): 0.789
+   5 (SWIPE_LEFT): 0.744
+   6 (SWIPE_RIGHT): 0.736
+   7 (SWIPE_UP): 0.839
+   8 (THUMB_DOWN): 0.783
+   9 (THUMB_UP): 0.738
+  10 (ZOOM_IN): 0.672
+  11 (ZOOM_OUT): 0.837
+[epoch  3] train_acc=0.7583 train_loss=0.7282 val_acc=0.7584 lr=4.99e-04
+Per-class val accuracy (summary): IGNORE: 0.741 | NO_GESTURE: 0.632 | STOP_SIGN: 0.819 | PUSHING_HAND_AWAY: 0.768 | SWIPE_DOWN: 0.789 | SWIPE_LEFT: 0.744 | SWIPE_RIGHT: 0.736 | SWIPE_UP: 0.839 | THUMB_DOWN: 0.783 | THUMB_UP: 0.738 | ZOOM_IN: 0.672 | ZOOM_OUT: 0.837
+  → New best model saved! (val_acc: 0.7584)
+
+Per-class accuracy:
+   0 (IGNORE): 0.729
+   1 (NO_GESTURE): 0.723
+   2 (STOP_SIGN): 0.863
+   3 (PUSHING_HAND_AWAY): 0.780
+   4 (SWIPE_DOWN): 0.841
+   5 (SWIPE_LEFT): 0.792
+   6 (SWIPE_RIGHT): 0.715
+   7 (SWIPE_UP): 0.855
+   8 (THUMB_DOWN): 0.679
+   9 (THUMB_UP): 0.820
+  10 (ZOOM_IN): 0.705
+  11 (ZOOM_OUT): 0.794
+[epoch  4] train_acc=0.7785 train_loss=0.6695 val_acc=0.7748 lr=4.98e-04
+Per-class val accuracy (summary): IGNORE: 0.729 | NO_GESTURE: 0.723 | STOP_SIGN: 0.863 | PUSHING_HAND_AWAY: 0.780 | SWIPE_DOWN: 0.841 | SWIPE_LEFT: 0.792 | SWIPE_RIGHT: 0.715 | SWIPE_UP: 0.855 | THUMB_DOWN: 0.679 | THUMB_UP: 0.820 | ZOOM_IN: 0.705 | ZOOM_OUT: 0.794
+  → New best model saved! (val_acc: 0.7748)
+
+Per-class accuracy:
+   0 (IGNORE): 0.761
+   1 (NO_GESTURE): 0.632
+   2 (STOP_SIGN): 0.899
+   3 (PUSHING_HAND_AWAY): 0.768
+   4 (SWIPE_DOWN): 0.675
+   5 (SWIPE_LEFT): 0.816
+   6 (SWIPE_RIGHT): 0.683
+   7 (SWIPE_UP): 0.847
+   8 (THUMB_DOWN): 0.759
+   9 (THUMB_UP): 0.816
+  10 (ZOOM_IN): 0.676
+  11 (ZOOM_OUT): 0.845
+[epoch  5] train_acc=0.7888 train_loss=0.6303 val_acc=0.7653 lr=4.97e-04
+Per-class val accuracy (summary): IGNORE: 0.761 | NO_GESTURE: 0.632 | STOP_SIGN: 0.899 | PUSHING_HAND_AWAY: 0.768 | SWIPE_DOWN: 0.675 | SWIPE_LEFT: 0.816 | SWIPE_RIGHT: 0.683 | SWIPE_UP: 0.847 | THUMB_DOWN: 0.759 | THUMB_UP: 0.816 | ZOOM_IN: 0.676 | ZOOM_OUT: 0.845
+
+Per-class accuracy:
+   0 (IGNORE): 0.765
+   1 (NO_GESTURE): 0.740
+   2 (STOP_SIGN): 0.843
+   3 (PUSHING_HAND_AWAY): 0.714
+   4 (SWIPE_DOWN): 0.797
+   5 (SWIPE_LEFT): 0.872
+   6 (SWIPE_RIGHT): 0.728
+   7 (SWIPE_UP): 0.839
+   8 (THUMB_DOWN): 0.771
+   9 (THUMB_UP): 0.799
+  10 (ZOOM_IN): 0.697
+  11 (ZOOM_OUT): 0.854
+[epoch  6] train_acc=0.7983 train_loss=0.5936 val_acc=0.7851 lr=4.96e-04
+Per-class val accuracy (summary): IGNORE: 0.765 | NO_GESTURE: 0.740 | STOP_SIGN: 0.843 | PUSHING_HAND_AWAY: 0.714 | SWIPE_DOWN: 0.797 | SWIPE_LEFT: 0.872 | SWIPE_RIGHT: 0.728 | SWIPE_UP: 0.839 | THUMB_DOWN: 0.771 | THUMB_UP: 0.799 | ZOOM_IN: 0.697 | ZOOM_OUT: 0.854
+  → New best model saved! (val_acc: 0.7851)
+
+Per-class accuracy:
+   0 (IGNORE): 0.737
+   1 (NO_GESTURE): 0.671
+   2 (STOP_SIGN): 0.778
+   3 (PUSHING_HAND_AWAY): 0.772
+   4 (SWIPE_DOWN): 0.886
+   5 (SWIPE_LEFT): 0.856
+   6 (SWIPE_RIGHT): 0.874
+   7 (SWIPE_UP): 0.694
+   8 (THUMB_DOWN): 0.723
+   9 (THUMB_UP): 0.762
+  10 (ZOOM_IN): 0.776
+  11 (ZOOM_OUT): 0.845
+[epoch  7] train_acc=0.8087 train_loss=0.5754 val_acc=0.7817 lr=4.94e-04
+Per-class val accuracy (summary): IGNORE: 0.737 | NO_GESTURE: 0.671 | STOP_SIGN: 0.778 | PUSHING_HAND_AWAY: 0.772 | SWIPE_DOWN: 0.886 | SWIPE_LEFT: 0.856 | SWIPE_RIGHT: 0.874 | SWIPE_UP: 0.694 | THUMB_DOWN: 0.723 | THUMB_UP: 0.762 | ZOOM_IN: 0.776 | ZOOM_OUT: 0.845
+
+Per-class accuracy:
+   0 (IGNORE): 0.761
+   1 (NO_GESTURE): 0.745
+   2 (STOP_SIGN): 0.823
+   3 (PUSHING_HAND_AWAY): 0.801
+   4 (SWIPE_DOWN): 0.902
+   5 (SWIPE_LEFT): 0.832
+   6 (SWIPE_RIGHT): 0.862
+   7 (SWIPE_UP): 0.620
+   8 (THUMB_DOWN): 0.803
+   9 (THUMB_UP): 0.811
+  10 (ZOOM_IN): 0.697
+  11 (ZOOM_OUT): 0.721
+[epoch  8] train_acc=0.8137 train_loss=0.5545 val_acc=0.7824 lr=4.92e-04
+Per-class val accuracy (summary): IGNORE: 0.761 | NO_GESTURE: 0.745 | STOP_SIGN: 0.823 | PUSHING_HAND_AWAY: 0.801 | SWIPE_DOWN: 0.902 | SWIPE_LEFT: 0.832 | SWIPE_RIGHT: 0.862 | SWIPE_UP: 0.620 | THUMB_DOWN: 0.803 | THUMB_UP: 0.811 | ZOOM_IN: 0.697 | ZOOM_OUT: 0.721
+
+Per-class accuracy:
+   0 (IGNORE): 0.745
+   1 (NO_GESTURE): 0.766
+   2 (STOP_SIGN): 0.790
+   3 (PUSHING_HAND_AWAY): 0.817
+   4 (SWIPE_DOWN): 0.890
+   5 (SWIPE_LEFT): 0.780
+   6 (SWIPE_RIGHT): 0.732
+   7 (SWIPE_UP): 0.847
+   8 (THUMB_DOWN): 0.799
+   9 (THUMB_UP): 0.779
+  10 (ZOOM_IN): 0.722
+  11 (ZOOM_OUT): 0.876
+[epoch  9] train_acc=0.8151 train_loss=0.5445 val_acc=0.7951 lr=4.90e-04
+Per-class val accuracy (summary): IGNORE: 0.745 | NO_GESTURE: 0.766 | STOP_SIGN: 0.790 | PUSHING_HAND_AWAY: 0.817 | SWIPE_DOWN: 0.890 | SWIPE_LEFT: 0.780 | SWIPE_RIGHT: 0.732 | SWIPE_UP: 0.847 | THUMB_DOWN: 0.799 | THUMB_UP: 0.779 | ZOOM_IN: 0.722 | ZOOM_OUT: 0.876
+  → New best model saved! (val_acc: 0.7951)
+
+Per-class accuracy:
+   0 (IGNORE): 0.709
+   1 (NO_GESTURE): 0.727
+   2 (STOP_SIGN): 0.907
+   3 (PUSHING_HAND_AWAY): 0.768
+   4 (SWIPE_DOWN): 0.837
+   5 (SWIPE_LEFT): 0.840
+   6 (SWIPE_RIGHT): 0.886
+   7 (SWIPE_UP): 0.740
+   8 (THUMB_DOWN): 0.847
+   9 (THUMB_UP): 0.709
+  10 (ZOOM_IN): 0.643
+  11 (ZOOM_OUT): 0.820
+[epoch 10] train_acc=0.8226 train_loss=0.5205 val_acc=0.7868 lr=4.88e-04
+Per-class val accuracy (summary): IGNORE: 0.709 | NO_GESTURE: 0.727 | STOP_SIGN: 0.907 | PUSHING_HAND_AWAY: 0.768 | SWIPE_DOWN: 0.837 | SWIPE_LEFT: 0.840 | SWIPE_RIGHT: 0.886 | SWIPE_UP: 0.740 | THUMB_DOWN: 0.847 | THUMB_UP: 0.709 | ZOOM_IN: 0.643 | ZOOM_OUT: 0.820
+
+Per-class accuracy:
+   0 (IGNORE): 0.725
+   1 (NO_GESTURE): 0.792
+   2 (STOP_SIGN): 0.891
+   3 (PUSHING_HAND_AWAY): 0.743
+   4 (SWIPE_DOWN): 0.841
+   5 (SWIPE_LEFT): 0.840
+   6 (SWIPE_RIGHT): 0.894
+   7 (SWIPE_UP): 0.727
+   8 (THUMB_DOWN): 0.843
+   9 (THUMB_UP): 0.734
+  10 (ZOOM_IN): 0.676
+  11 (ZOOM_OUT): 0.794
+[epoch 11] train_acc=0.8274 train_loss=0.5069 val_acc=0.7923 lr=4.85e-04
+Per-class val accuracy (summary): IGNORE: 0.725 | NO_GESTURE: 0.792 | STOP_SIGN: 0.891 | PUSHING_HAND_AWAY: 0.743 | SWIPE_DOWN: 0.841 | SWIPE_LEFT: 0.840 | SWIPE_RIGHT: 0.894 | SWIPE_UP: 0.727 | THUMB_DOWN: 0.843 | THUMB_UP: 0.734 | ZOOM_IN: 0.676 | ZOOM_OUT: 0.794
+
+Per-class accuracy:
+   0 (IGNORE): 0.749
+   1 (NO_GESTURE): 0.749
+   2 (STOP_SIGN): 0.895
+   3 (PUSHING_HAND_AWAY): 0.801
+   4 (SWIPE_DOWN): 0.862
+   5 (SWIPE_LEFT): 0.808
+   6 (SWIPE_RIGHT): 0.764
+   7 (SWIPE_UP): 0.843
+   8 (THUMB_DOWN): 0.843
+   9 (THUMB_UP): 0.799
+  10 (ZOOM_IN): 0.714
+  11 (ZOOM_OUT): 0.785
+[epoch 12] train_acc=0.8313 train_loss=0.4958 val_acc=0.8016 lr=4.82e-04
+Per-class val accuracy (summary): IGNORE: 0.749 | NO_GESTURE: 0.749 | STOP_SIGN: 0.895 | PUSHING_HAND_AWAY: 0.801 | SWIPE_DOWN: 0.862 | SWIPE_LEFT: 0.808 | SWIPE_RIGHT: 0.764 | SWIPE_UP: 0.843 | THUMB_DOWN: 0.843 | THUMB_UP: 0.799 | ZOOM_IN: 0.714 | ZOOM_OUT: 0.785
+  → New best model saved! (val_acc: 0.8016)
+
+Per-class accuracy:
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+   0 (IGNORE): 0.753
+   1 (NO_GESTURE): 0.779
+   2 (STOP_SIGN): 0.839
+   3 (PUSHING_HAND_AWAY): 0.846
+   4 (SWIPE_DOWN): 0.894
+   5 (SWIPE_LEFT): 0.696
+   6 (SWIPE_RIGHT): 0.752
+   7 (SWIPE_UP): 0.872
+   8 (THUMB_DOWN): 0.811
+   9 (THUMB_UP): 0.807
+  10 (ZOOM_IN): 0.726
+  11 (ZOOM_OUT): 0.837
+[epoch 13] train_acc=0.8361 train_loss=0.4819 val_acc=0.8009 lr=4.79e-04
+Per-class val accuracy (summary): IGNORE: 0.753 | NO_GESTURE: 0.779 | STOP_SIGN: 0.839 | PUSHING_HAND_AWAY: 0.846 | SWIPE_DOWN: 0.894 | SWIPE_LEFT: 0.696 | SWIPE_RIGHT: 0.752 | SWIPE_UP: 0.872 | THUMB_DOWN: 0.811 | THUMB_UP: 0.807 | ZOOM_IN: 0.726 | ZOOM_OUT: 0.837
+
+Per-class accuracy:
+   0 (IGNORE): 0.745
+   1 (NO_GESTURE): 0.736
+   2 (STOP_SIGN): 0.806
+   3 (PUSHING_HAND_AWAY): 0.851
+   4 (SWIPE_DOWN): 0.907
+   5 (SWIPE_LEFT): 0.764
+   6 (SWIPE_RIGHT): 0.756
+   7 (SWIPE_UP): 0.872
+   8 (THUMB_DOWN): 0.795
+   9 (THUMB_UP): 0.824
+  10 (ZOOM_IN): 0.755
+  11 (ZOOM_OUT): 0.837
+[epoch 14] train_acc=0.8383 train_loss=0.4738 val_acc=0.8040 lr=4.76e-04
+Per-class val accuracy (summary): IGNORE: 0.745 | NO_GESTURE: 0.736 | STOP_SIGN: 0.806 | PUSHING_HAND_AWAY: 0.851 | SWIPE_DOWN: 0.907 | SWIPE_LEFT: 0.764 | SWIPE_RIGHT: 0.756 | SWIPE_UP: 0.872 | THUMB_DOWN: 0.795 | THUMB_UP: 0.824 | ZOOM_IN: 0.755 | ZOOM_OUT: 0.837
+  → New best model saved! (val_acc: 0.8040)
+
+Per-class accuracy:
+   0 (IGNORE): 0.717
+   1 (NO_GESTURE): 0.771
+   2 (STOP_SIGN): 0.831
+   3 (PUSHING_HAND_AWAY): 0.842
+   4 (SWIPE_DOWN): 0.890
+   5 (SWIPE_LEFT): 0.788
+   6 (SWIPE_RIGHT): 0.764
+   7 (SWIPE_UP): 0.843
+   8 (THUMB_DOWN): 0.763
+   9 (THUMB_UP): 0.811
+  10 (ZOOM_IN): 0.780
+  11 (ZOOM_OUT): 0.820
+[epoch 15] train_acc=0.8412 train_loss=0.4674 val_acc=0.8016 lr=4.73e-04
+Per-class val accuracy (summary): IGNORE: 0.717 | NO_GESTURE: 0.771 | STOP_SIGN: 0.831 | PUSHING_HAND_AWAY: 0.842 | SWIPE_DOWN: 0.890 | SWIPE_LEFT: 0.788 | SWIPE_RIGHT: 0.764 | SWIPE_UP: 0.843 | THUMB_DOWN: 0.763 | THUMB_UP: 0.811 | ZOOM_IN: 0.780 | ZOOM_OUT: 0.820
+
+Per-class accuracy:
+   0 (IGNORE): 0.757
+   1 (NO_GESTURE): 0.749
+   2 (STOP_SIGN): 0.863
+   3 (PUSHING_HAND_AWAY): 0.809
+   4 (SWIPE_DOWN): 0.858
+   5 (SWIPE_LEFT): 0.860
+   6 (SWIPE_RIGHT): 0.736
+   7 (SWIPE_UP): 0.868
+   8 (THUMB_DOWN): 0.835
+   9 (THUMB_UP): 0.787
+  10 (ZOOM_IN): 0.672
+  11 (ZOOM_OUT): 0.798
+[epoch 16] train_acc=0.8446 train_loss=0.4479 val_acc=0.7999 lr=4.69e-04
+Per-class val accuracy (summary): IGNORE: 0.757 | NO_GESTURE: 0.749 | STOP_SIGN: 0.863 | PUSHING_HAND_AWAY: 0.809 | SWIPE_DOWN: 0.858 | SWIPE_LEFT: 0.860 | SWIPE_RIGHT: 0.736 | SWIPE_UP: 0.868 | THUMB_DOWN: 0.835 | THUMB_UP: 0.787 | ZOOM_IN: 0.672 | ZOOM_OUT: 0.798
+
+Per-class accuracy:
+   0 (IGNORE): 0.745
+   1 (NO_GESTURE): 0.753
+   2 (STOP_SIGN): 0.827
+   3 (PUSHING_HAND_AWAY): 0.834
+   4 (SWIPE_DOWN): 0.902
+   5 (SWIPE_LEFT): 0.808
+   6 (SWIPE_RIGHT): 0.752
+   7 (SWIPE_UP): 0.855
+   8 (THUMB_DOWN): 0.763
+   9 (THUMB_UP): 0.840
+  10 (ZOOM_IN): 0.726
+  11 (ZOOM_OUT): 0.820
+[epoch 17] train_acc=0.8482 train_loss=0.4442 val_acc=0.8023 lr=4.65e-04
+Per-class val accuracy (summary): IGNORE: 0.745 | NO_GESTURE: 0.753 | STOP_SIGN: 0.827 | PUSHING_HAND_AWAY: 0.834 | SWIPE_DOWN: 0.902 | SWIPE_LEFT: 0.808 | SWIPE_RIGHT: 0.752 | SWIPE_UP: 0.855 | THUMB_DOWN: 0.763 | THUMB_UP: 0.840 | ZOOM_IN: 0.726 | ZOOM_OUT: 0.820
+
+Per-class accuracy:
+   0 (IGNORE): 0.745
+   1 (NO_GESTURE): 0.749
+   2 (STOP_SIGN): 0.887
+   3 (PUSHING_HAND_AWAY): 0.817
+   4 (SWIPE_DOWN): 0.858
+   5 (SWIPE_LEFT): 0.812
+   6 (SWIPE_RIGHT): 0.740
+   7 (SWIPE_UP): 0.851
+   8 (THUMB_DOWN): 0.851
+   9 (THUMB_UP): 0.770
+  10 (ZOOM_IN): 0.676
+  11 (ZOOM_OUT): 0.863
+[epoch 18] train_acc=0.8535 train_loss=0.4319 val_acc=0.8019 lr=4.61e-04
+Per-class val accuracy (summary): IGNORE: 0.745 | NO_GESTURE: 0.749 | STOP_SIGN: 0.887 | PUSHING_HAND_AWAY: 0.817 | SWIPE_DOWN: 0.858 | SWIPE_LEFT: 0.812 | SWIPE_RIGHT: 0.740 | SWIPE_UP: 0.851 | THUMB_DOWN: 0.851 | THUMB_UP: 0.770 | ZOOM_IN: 0.676 | ZOOM_OUT: 0.863
+
+Per-class accuracy:
+   0 (IGNORE): 0.749
+   1 (NO_GESTURE): 0.779
+   2 (STOP_SIGN): 0.863
+   3 (PUSHING_HAND_AWAY): 0.813
+   4 (SWIPE_DOWN): 0.890
+   5 (SWIPE_LEFT): 0.808
+   6 (SWIPE_RIGHT): 0.728
+   7 (SWIPE_UP): 0.855
+   8 (THUMB_DOWN): 0.831
+   9 (THUMB_UP): 0.824
+  10 (ZOOM_IN): 0.734
+  11 (ZOOM_OUT): 0.845
+[epoch 19] train_acc=0.8547 train_loss=0.4223 val_acc=0.8101 lr=4.57e-04
+Per-class val accuracy (summary): IGNORE: 0.749 | NO_GESTURE: 0.779 | STOP_SIGN: 0.863 | PUSHING_HAND_AWAY: 0.813 | SWIPE_DOWN: 0.890 | SWIPE_LEFT: 0.808 | SWIPE_RIGHT: 0.728 | SWIPE_UP: 0.855 | THUMB_DOWN: 0.831 | THUMB_UP: 0.824 | ZOOM_IN: 0.734 | ZOOM_OUT: 0.845
+  → New best model saved! (val_acc: 0.8101)
+
+Per-class accuracy:
+   0 (IGNORE): 0.737
+   1 (NO_GESTURE): 0.727
+   2 (STOP_SIGN): 0.867
+   3 (PUSHING_HAND_AWAY): 0.817
+   4 (SWIPE_DOWN): 0.878
+   5 (SWIPE_LEFT): 0.760
+   6 (SWIPE_RIGHT): 0.744
+   7 (SWIPE_UP): 0.847
+   8 (THUMB_DOWN): 0.843
+   9 (THUMB_UP): 0.725
+  10 (ZOOM_IN): 0.751
+  11 (ZOOM_OUT): 0.815
+[epoch 20] train_acc=0.8567 train_loss=0.4135 val_acc=0.7930 lr=4.52e-04
+Per-class val accuracy (summary): IGNORE: 0.737 | NO_GESTURE: 0.727 | STOP_SIGN: 0.867 | PUSHING_HAND_AWAY: 0.817 | SWIPE_DOWN: 0.878 | SWIPE_LEFT: 0.760 | SWIPE_RIGHT: 0.744 | SWIPE_UP: 0.847 | THUMB_DOWN: 0.843 | THUMB_UP: 0.725 | ZOOM_IN: 0.751 | ZOOM_OUT: 0.815
+
+Per-class accuracy:
+   0 (IGNORE): 0.761
+   1 (NO_GESTURE): 0.758
+   2 (STOP_SIGN): 0.847
+   3 (PUSHING_HAND_AWAY): 0.797
+   4 (SWIPE_DOWN): 0.902
+   5 (SWIPE_LEFT): 0.836
+   6 (SWIPE_RIGHT): 0.752
+   7 (SWIPE_UP): 0.847
+   8 (THUMB_DOWN): 0.823
+   9 (THUMB_UP): 0.787
+  10 (ZOOM_IN): 0.734
+  11 (ZOOM_OUT): 0.850
+[epoch 21] train_acc=0.8618 train_loss=0.4011 val_acc=0.8081 lr=4.48e-04
+Per-class val accuracy (summary): IGNORE: 0.761 | NO_GESTURE: 0.758 | STOP_SIGN: 0.847 | PUSHING_HAND_AWAY: 0.797 | SWIPE_DOWN: 0.902 | SWIPE_LEFT: 0.836 | SWIPE_RIGHT: 0.752 | SWIPE_UP: 0.847 | THUMB_DOWN: 0.823 | THUMB_UP: 0.787 | ZOOM_IN: 0.734 | ZOOM_OUT: 0.850
+
+Per-class accuracy:
+   0 (IGNORE): 0.733
+   1 (NO_GESTURE): 0.753
+   2 (STOP_SIGN): 0.879
+   3 (PUSHING_HAND_AWAY): 0.788
+   4 (SWIPE_DOWN): 0.882
+   5 (SWIPE_LEFT): 0.808
+   6 (SWIPE_RIGHT): 0.760
+   7 (SWIPE_UP): 0.884
+   8 (THUMB_DOWN): 0.791
+   9 (THUMB_UP): 0.820
+  10 (ZOOM_IN): 0.759
+  11 (ZOOM_OUT): 0.880
+[epoch 22] train_acc=0.8652 train_loss=0.3901 val_acc=0.8115 lr=4.43e-04
+Per-class val accuracy (summary): IGNORE: 0.733 | NO_GESTURE: 0.753 | STOP_SIGN: 0.879 | PUSHING_HAND_AWAY: 0.788 | SWIPE_DOWN: 0.882 | SWIPE_LEFT: 0.808 | SWIPE_RIGHT: 0.760 | SWIPE_UP: 0.884 | THUMB_DOWN: 0.791 | THUMB_UP: 0.820 | ZOOM_IN: 0.759 | ZOOM_OUT: 0.880
+  → New best model saved! (val_acc: 0.8115)
+
+Per-class accuracy:
+   0 (IGNORE): 0.761
+   1 (NO_GESTURE): 0.753
+   2 (STOP_SIGN): 0.895
+   3 (PUSHING_HAND_AWAY): 0.822
+   4 (SWIPE_DOWN): 0.854
+   5 (SWIPE_LEFT): 0.836
+   6 (SWIPE_RIGHT): 0.711
+   7 (SWIPE_UP): 0.843
+   8 (THUMB_DOWN): 0.847
+   9 (THUMB_UP): 0.766
+  10 (ZOOM_IN): 0.705
+  11 (ZOOM_OUT): 0.854
+[epoch 23] train_acc=0.8641 train_loss=0.3913 val_acc=0.8043 lr=4.38e-04
+Per-class val accuracy (summary): IGNORE: 0.761 | NO_GESTURE: 0.753 | STOP_SIGN: 0.895 | PUSHING_HAND_AWAY: 0.822 | SWIPE_DOWN: 0.854 | SWIPE_LEFT: 0.836 | SWIPE_RIGHT: 0.711 | SWIPE_UP: 0.843 | THUMB_DOWN: 0.847 | THUMB_UP: 0.766 | ZOOM_IN: 0.705 | ZOOM_OUT: 0.854
+
+Per-class accuracy:
+   0 (IGNORE): 0.729
+   1 (NO_GESTURE): 0.723
+   2 (STOP_SIGN): 0.863
+   3 (PUSHING_HAND_AWAY): 0.809
+   4 (SWIPE_DOWN): 0.886
+   5 (SWIPE_LEFT): 0.788
+   6 (SWIPE_RIGHT): 0.780
+   7 (SWIPE_UP): 0.880
+   8 (THUMB_DOWN): 0.823
+   9 (THUMB_UP): 0.807
+  10 (ZOOM_IN): 0.772
+  11 (ZOOM_OUT): 0.824
+[epoch 24] train_acc=0.8661 train_loss=0.3798 val_acc=0.8074 lr=4.32e-04
+Per-class val accuracy (summary): IGNORE: 0.729 | NO_GESTURE: 0.723 | STOP_SIGN: 0.863 | PUSHING_HAND_AWAY: 0.809 | SWIPE_DOWN: 0.886 | SWIPE_LEFT: 0.788 | SWIPE_RIGHT: 0.780 | SWIPE_UP: 0.880 | THUMB_DOWN: 0.823 | THUMB_UP: 0.807 | ZOOM_IN: 0.772 | ZOOM_OUT: 0.824
+
+Per-class accuracy:
+   0 (IGNORE): 0.765
+   1 (NO_GESTURE): 0.766
+   2 (STOP_SIGN): 0.835
+   3 (PUSHING_HAND_AWAY): 0.830
+   4 (SWIPE_DOWN): 0.902
+   5 (SWIPE_LEFT): 0.844
+   6 (SWIPE_RIGHT): 0.728
+   7 (SWIPE_UP): 0.847
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+   8 (THUMB_DOWN): 0.815
+   9 (THUMB_UP): 0.770
+  10 (ZOOM_IN): 0.734
+  11 (ZOOM_OUT): 0.820
+[epoch 25] train_acc=0.8704 train_loss=0.3768 val_acc=0.8050 lr=4.27e-04
+Per-class val accuracy (summary): IGNORE: 0.765 | NO_GESTURE: 0.766 | STOP_SIGN: 0.835 | PUSHING_HAND_AWAY: 0.830 | SWIPE_DOWN: 0.902 | SWIPE_LEFT: 0.844 | SWIPE_RIGHT: 0.728 | SWIPE_UP: 0.847 | THUMB_DOWN: 0.815 | THUMB_UP: 0.770 | ZOOM_IN: 0.734 | ZOOM_OUT: 0.820
+
+Per-class accuracy:
+   0 (IGNORE): 0.741
+   1 (NO_GESTURE): 0.775
+   2 (STOP_SIGN): 0.871
+   3 (PUSHING_HAND_AWAY): 0.834
+   4 (SWIPE_DOWN): 0.890
+   5 (SWIPE_LEFT): 0.784
+   6 (SWIPE_RIGHT): 0.740
+   7 (SWIPE_UP): 0.888
+   8 (THUMB_DOWN): 0.827
+   9 (THUMB_UP): 0.803
+  10 (ZOOM_IN): 0.714
+  11 (ZOOM_OUT): 0.833
+[epoch 26] train_acc=0.8718 train_loss=0.3694 val_acc=0.8084 lr=4.21e-04
+Per-class val accuracy (summary): IGNORE: 0.741 | NO_GESTURE: 0.775 | STOP_SIGN: 0.871 | PUSHING_HAND_AWAY: 0.834 | SWIPE_DOWN: 0.890 | SWIPE_LEFT: 0.784 | SWIPE_RIGHT: 0.740 | SWIPE_UP: 0.888 | THUMB_DOWN: 0.827 | THUMB_UP: 0.803 | ZOOM_IN: 0.714 | ZOOM_OUT: 0.833
+
+Per-class accuracy:
+   0 (IGNORE): 0.733
+   1 (NO_GESTURE): 0.771
+   2 (STOP_SIGN): 0.871
+   3 (PUSHING_HAND_AWAY): 0.826
+   4 (SWIPE_DOWN): 0.874
+   5 (SWIPE_LEFT): 0.860
+   6 (SWIPE_RIGHT): 0.732
+   7 (SWIPE_UP): 0.855
+   8 (THUMB_DOWN): 0.815
+   9 (THUMB_UP): 0.799
+  10 (ZOOM_IN): 0.701
+  11 (ZOOM_OUT): 0.828
+[epoch 27] train_acc=0.8746 train_loss=0.3530 val_acc=0.8057 lr=4.15e-04
+Per-class val accuracy (summary): IGNORE: 0.733 | NO_GESTURE: 0.771 | STOP_SIGN: 0.871 | PUSHING_HAND_AWAY: 0.826 | SWIPE_DOWN: 0.874 | SWIPE_LEFT: 0.860 | SWIPE_RIGHT: 0.732 | SWIPE_UP: 0.855 | THUMB_DOWN: 0.815 | THUMB_UP: 0.799 | ZOOM_IN: 0.701 | ZOOM_OUT: 0.828
+
+Per-class accuracy:
+   0 (IGNORE): 0.729
+   1 (NO_GESTURE): 0.693
+   2 (STOP_SIGN): 0.843
+   3 (PUSHING_HAND_AWAY): 0.813
+   4 (SWIPE_DOWN): 0.894
+   5 (SWIPE_LEFT): 0.816
+   6 (SWIPE_RIGHT): 0.756
+   7 (SWIPE_UP): 0.888
+   8 (THUMB_DOWN): 0.823
+   9 (THUMB_UP): 0.779
+  10 (ZOOM_IN): 0.751
+  11 (ZOOM_OUT): 0.845
+[epoch 28] train_acc=0.8775 train_loss=0.3505 val_acc=0.8029 lr=4.09e-04
+Per-class val accuracy (summary): IGNORE: 0.729 | NO_GESTURE: 0.693 | STOP_SIGN: 0.843 | PUSHING_HAND_AWAY: 0.813 | SWIPE_DOWN: 0.894 | SWIPE_LEFT: 0.816 | SWIPE_RIGHT: 0.756 | SWIPE_UP: 0.888 | THUMB_DOWN: 0.823 | THUMB_UP: 0.779 | ZOOM_IN: 0.751 | ZOOM_OUT: 0.845
+
+Per-class accuracy:
+   0 (IGNORE): 0.761
+   1 (NO_GESTURE): 0.753
+   2 (STOP_SIGN): 0.863
+   3 (PUSHING_HAND_AWAY): 0.763
+   4 (SWIPE_DOWN): 0.890
+   5 (SWIPE_LEFT): 0.856
+   6 (SWIPE_RIGHT): 0.760
+   7 (SWIPE_UP): 0.835
+   8 (THUMB_DOWN): 0.839
+   9 (THUMB_UP): 0.701
+  10 (ZOOM_IN): 0.730
+  11 (ZOOM_OUT): 0.794
+[epoch 29] train_acc=0.8780 train_loss=0.3436 val_acc=0.7961 lr=4.03e-04
+Per-class val accuracy (summary): IGNORE: 0.761 | NO_GESTURE: 0.753 | STOP_SIGN: 0.863 | PUSHING_HAND_AWAY: 0.763 | SWIPE_DOWN: 0.890 | SWIPE_LEFT: 0.856 | SWIPE_RIGHT: 0.760 | SWIPE_UP: 0.835 | THUMB_DOWN: 0.839 | THUMB_UP: 0.701 | ZOOM_IN: 0.730 | ZOOM_OUT: 0.794
+
+Per-class accuracy:
+   0 (IGNORE): 0.769
+   1 (NO_GESTURE): 0.745
+   2 (STOP_SIGN): 0.855
+   3 (PUSHING_HAND_AWAY): 0.830
+   4 (SWIPE_DOWN): 0.902
+   5 (SWIPE_LEFT): 0.860
+   6 (SWIPE_RIGHT): 0.760
+   7 (SWIPE_UP): 0.872
+   8 (THUMB_DOWN): 0.831
+   9 (THUMB_UP): 0.803
+  10 (ZOOM_IN): 0.755
+  11 (ZOOM_OUT): 0.820
+[epoch 30] train_acc=0.8802 train_loss=0.3422 val_acc=0.8173 lr=3.97e-04
+Per-class val accuracy (summary): IGNORE: 0.769 | NO_GESTURE: 0.745 | STOP_SIGN: 0.855 | PUSHING_HAND_AWAY: 0.830 | SWIPE_DOWN: 0.902 | SWIPE_LEFT: 0.860 | SWIPE_RIGHT: 0.760 | SWIPE_UP: 0.872 | THUMB_DOWN: 0.831 | THUMB_UP: 0.803 | ZOOM_IN: 0.755 | ZOOM_OUT: 0.820
+  → New best model saved! (val_acc: 0.8173)
+
+Per-class accuracy:
+   0 (IGNORE): 0.753
+   1 (NO_GESTURE): 0.749
+   2 (STOP_SIGN): 0.863
+   3 (PUSHING_HAND_AWAY): 0.830
+   4 (SWIPE_DOWN): 0.894
+   5 (SWIPE_LEFT): 0.824
+   6 (SWIPE_RIGHT): 0.744
+   7 (SWIPE_UP): 0.876
+   8 (THUMB_DOWN): 0.839
+   9 (THUMB_UP): 0.807
+  10 (ZOOM_IN): 0.755
+  11 (ZOOM_OUT): 0.841
+[epoch 31] train_acc=0.8846 train_loss=0.3268 val_acc=0.8149 lr=3.91e-04
+Per-class val accuracy (summary): IGNORE: 0.753 | NO_GESTURE: 0.749 | STOP_SIGN: 0.863 | PUSHING_HAND_AWAY: 0.830 | SWIPE_DOWN: 0.894 | SWIPE_LEFT: 0.824 | SWIPE_RIGHT: 0.744 | SWIPE_UP: 0.876 | THUMB_DOWN: 0.839 | THUMB_UP: 0.807 | ZOOM_IN: 0.755 | ZOOM_OUT: 0.841
+
+Per-class accuracy:
+   0 (IGNORE): 0.745
+   1 (NO_GESTURE): 0.762
+   2 (STOP_SIGN): 0.875
+   3 (PUSHING_HAND_AWAY): 0.780
+   4 (SWIPE_DOWN): 0.878
+   5 (SWIPE_LEFT): 0.836
+   6 (SWIPE_RIGHT): 0.728
+   7 (SWIPE_UP): 0.855
+   8 (THUMB_DOWN): 0.819
+   9 (THUMB_UP): 0.807
+  10 (ZOOM_IN): 0.722
+  11 (ZOOM_OUT): 0.854
+[epoch 32] train_acc=0.8875 train_loss=0.3244 val_acc=0.8053 lr=3.84e-04
+Per-class val accuracy (summary): IGNORE: 0.745 | NO_GESTURE: 0.762 | STOP_SIGN: 0.875 | PUSHING_HAND_AWAY: 0.780 | SWIPE_DOWN: 0.878 | SWIPE_LEFT: 0.836 | SWIPE_RIGHT: 0.728 | SWIPE_UP: 0.855 | THUMB_DOWN: 0.819 | THUMB_UP: 0.807 | ZOOM_IN: 0.722 | ZOOM_OUT: 0.854
+
+Per-class accuracy:
+   0 (IGNORE): 0.769
+   1 (NO_GESTURE): 0.771
+   2 (STOP_SIGN): 0.819
+   3 (PUSHING_HAND_AWAY): 0.851
+   4 (SWIPE_DOWN): 0.898
+   5 (SWIPE_LEFT): 0.816
+   6 (SWIPE_RIGHT): 0.756
+   7 (SWIPE_UP): 0.835
+   8 (THUMB_DOWN): 0.827
+   9 (THUMB_UP): 0.811
+  10 (ZOOM_IN): 0.747
+  11 (ZOOM_OUT): 0.850
+[epoch 33] train_acc=0.8878 train_loss=0.3194 val_acc=0.8125 lr=3.77e-04
+Per-class val accuracy (summary): IGNORE: 0.769 | NO_GESTURE: 0.771 | STOP_SIGN: 0.819 | PUSHING_HAND_AWAY: 0.851 | SWIPE_DOWN: 0.898 | SWIPE_LEFT: 0.816 | SWIPE_RIGHT: 0.756 | SWIPE_UP: 0.835 | THUMB_DOWN: 0.827 | THUMB_UP: 0.811 | ZOOM_IN: 0.747 | ZOOM_OUT: 0.850
+
+Per-class accuracy:
+   0 (IGNORE): 0.761
+   1 (NO_GESTURE): 0.779
+   2 (STOP_SIGN): 0.875
+   3 (PUSHING_HAND_AWAY): 0.822
+   4 (SWIPE_DOWN): 0.898
+   5 (SWIPE_LEFT): 0.832
+   6 (SWIPE_RIGHT): 0.740
+   7 (SWIPE_UP): 0.835
+   8 (THUMB_DOWN): 0.827
+   9 (THUMB_UP): 0.828
+  10 (ZOOM_IN): 0.726
+  11 (ZOOM_OUT): 0.824
+[epoch 34] train_acc=0.8912 train_loss=0.3099 val_acc=0.8125 lr=3.70e-04
+Per-class val accuracy (summary): IGNORE: 0.761 | NO_GESTURE: 0.779 | STOP_SIGN: 0.875 | PUSHING_HAND_AWAY: 0.822 | SWIPE_DOWN: 0.898 | SWIPE_LEFT: 0.832 | SWIPE_RIGHT: 0.740 | SWIPE_UP: 0.835 | THUMB_DOWN: 0.827 | THUMB_UP: 0.828 | ZOOM_IN: 0.726 | ZOOM_OUT: 0.824
+
+Per-class accuracy:
+   0 (IGNORE): 0.733
+   1 (NO_GESTURE): 0.784
+   2 (STOP_SIGN): 0.871
+   3 (PUSHING_HAND_AWAY): 0.788
+   4 (SWIPE_DOWN): 0.862
+   5 (SWIPE_LEFT): 0.848
+   6 (SWIPE_RIGHT): 0.736
+   7 (SWIPE_UP): 0.839
+   8 (THUMB_DOWN): 0.807
+   9 (THUMB_UP): 0.803
+  10 (ZOOM_IN): 0.685
+  11 (ZOOM_OUT): 0.858
+[epoch 35] train_acc=0.8916 train_loss=0.3037 val_acc=0.8012 lr=3.63e-04
+Per-class val accuracy (summary): IGNORE: 0.733 | NO_GESTURE: 0.784 | STOP_SIGN: 0.871 | PUSHING_HAND_AWAY: 0.788 | SWIPE_DOWN: 0.862 | SWIPE_LEFT: 0.848 | SWIPE_RIGHT: 0.736 | SWIPE_UP: 0.839 | THUMB_DOWN: 0.807 | THUMB_UP: 0.803 | ZOOM_IN: 0.685 | ZOOM_OUT: 0.858
+
+Per-class accuracy:
+   0 (IGNORE): 0.741
+   1 (NO_GESTURE): 0.779
+   2 (STOP_SIGN): 0.839
+   3 (PUSHING_HAND_AWAY): 0.842
+   4 (SWIPE_DOWN): 0.894
+   5 (SWIPE_LEFT): 0.836
+   6 (SWIPE_RIGHT): 0.728
+   7 (SWIPE_UP): 0.872
+   8 (THUMB_DOWN): 0.819
+   9 (THUMB_UP): 0.779
+  10 (ZOOM_IN): 0.739
+  11 (ZOOM_OUT): 0.863
+[epoch 36] train_acc=0.8932 train_loss=0.3032 val_acc=0.8108 lr=3.56e-04
+Per-class val accuracy (summary): IGNORE: 0.741 | NO_GESTURE: 0.779 | STOP_SIGN: 0.839 | PUSHING_HAND_AWAY: 0.842 | SWIPE_DOWN: 0.894 | SWIPE_LEFT: 0.836 | SWIPE_RIGHT: 0.728 | SWIPE_UP: 0.872 | THUMB_DOWN: 0.819 | THUMB_UP: 0.779 | ZOOM_IN: 0.739 | ZOOM_OUT: 0.863
+
+Per-class accuracy:
+   0 (IGNORE): 0.733
+   1 (NO_GESTURE): 0.762
+   2 (STOP_SIGN): 0.867
+   3 (PUSHING_HAND_AWAY): 0.826
+   4 (SWIPE_DOWN): 0.894
+   5 (SWIPE_LEFT): 0.840
+   6 (SWIPE_RIGHT): 0.707
+   7 (SWIPE_UP): 0.855
+   8 (THUMB_DOWN): 0.839
+   9 (THUMB_UP): 0.766
+  10 (ZOOM_IN): 0.751
+  11 (ZOOM_OUT): 0.845
+[epoch 37] train_acc=0.8978 train_loss=0.2896 val_acc=0.8074 lr=3.49e-04
+Per-class val accuracy (summary): /home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+IGNORE: 0.733 | NO_GESTURE: 0.762 | STOP_SIGN: 0.867 | PUSHING_HAND_AWAY: 0.826 | SWIPE_DOWN: 0.894 | SWIPE_LEFT: 0.840 | SWIPE_RIGHT: 0.707 | SWIPE_UP: 0.855 | THUMB_DOWN: 0.839 | THUMB_UP: 0.766 | ZOOM_IN: 0.751 | ZOOM_OUT: 0.845
+
+Per-class accuracy:
+   0 (IGNORE): 0.761
+   1 (NO_GESTURE): 0.771
+   2 (STOP_SIGN): 0.859
+   3 (PUSHING_HAND_AWAY): 0.813
+   4 (SWIPE_DOWN): 0.874
+   5 (SWIPE_LEFT): 0.848
+   6 (SWIPE_RIGHT): 0.728
+   7 (SWIPE_UP): 0.843
+   8 (THUMB_DOWN): 0.803
+   9 (THUMB_UP): 0.811
+  10 (ZOOM_IN): 0.763
+  11 (ZOOM_OUT): 0.845
+[epoch 38] train_acc=0.8972 train_loss=0.2925 val_acc=0.8101 lr=3.42e-04
+Per-class val accuracy (summary): IGNORE: 0.761 | NO_GESTURE: 0.771 | STOP_SIGN: 0.859 | PUSHING_HAND_AWAY: 0.813 | SWIPE_DOWN: 0.874 | SWIPE_LEFT: 0.848 | SWIPE_RIGHT: 0.728 | SWIPE_UP: 0.843 | THUMB_DOWN: 0.803 | THUMB_UP: 0.811 | ZOOM_IN: 0.763 | ZOOM_OUT: 0.845
+
+Per-class accuracy:
+   0 (IGNORE): 0.773
+   1 (NO_GESTURE): 0.758
+   2 (STOP_SIGN): 0.879
+   3 (PUSHING_HAND_AWAY): 0.793
+   4 (SWIPE_DOWN): 0.886
+   5 (SWIPE_LEFT): 0.824
+   6 (SWIPE_RIGHT): 0.752
+   7 (SWIPE_UP): 0.847
+   8 (THUMB_DOWN): 0.823
+   9 (THUMB_UP): 0.766
+  10 (ZOOM_IN): 0.751
+  11 (ZOOM_OUT): 0.841
+[epoch 39] train_acc=0.8984 train_loss=0.2872 val_acc=0.8081 lr=3.35e-04
+Per-class val accuracy (summary): IGNORE: 0.773 | NO_GESTURE: 0.758 | STOP_SIGN: 0.879 | PUSHING_HAND_AWAY: 0.793 | SWIPE_DOWN: 0.886 | SWIPE_LEFT: 0.824 | SWIPE_RIGHT: 0.752 | SWIPE_UP: 0.847 | THUMB_DOWN: 0.823 | THUMB_UP: 0.766 | ZOOM_IN: 0.751 | ZOOM_OUT: 0.841
+
+Per-class accuracy:
+   0 (IGNORE): 0.749
+   1 (NO_GESTURE): 0.745
+   2 (STOP_SIGN): 0.839
+   3 (PUSHING_HAND_AWAY): 0.859
+   4 (SWIPE_DOWN): 0.894
+   5 (SWIPE_LEFT): 0.848
+   6 (SWIPE_RIGHT): 0.715
+   7 (SWIPE_UP): 0.864
+   8 (THUMB_DOWN): 0.799
+   9 (THUMB_UP): 0.816
+  10 (ZOOM_IN): 0.780
+  11 (ZOOM_OUT): 0.837
+[epoch 40] train_acc=0.9016 train_loss=0.2784 val_acc=0.8122 lr=3.27e-04
+Per-class val accuracy (summary): IGNORE: 0.749 | NO_GESTURE: 0.745 | STOP_SIGN: 0.839 | PUSHING_HAND_AWAY: 0.859 | SWIPE_DOWN: 0.894 | SWIPE_LEFT: 0.848 | SWIPE_RIGHT: 0.715 | SWIPE_UP: 0.864 | THUMB_DOWN: 0.799 | THUMB_UP: 0.816 | ZOOM_IN: 0.780 | ZOOM_OUT: 0.837
+
+Per-class accuracy:
+   0 (IGNORE): 0.761
+   1 (NO_GESTURE): 0.766
+   2 (STOP_SIGN): 0.867
+   3 (PUSHING_HAND_AWAY): 0.859
+   4 (SWIPE_DOWN): 0.878
+   5 (SWIPE_LEFT): 0.784
+   6 (SWIPE_RIGHT): 0.736
+   7 (SWIPE_UP): 0.880
+   8 (THUMB_DOWN): 0.803
+   9 (THUMB_UP): 0.803
+  10 (ZOOM_IN): 0.763
+  11 (ZOOM_OUT): 0.837
+[epoch 41] train_acc=0.9021 train_loss=0.2720 val_acc=0.8115 lr=3.20e-04
+Per-class val accuracy (summary): IGNORE: 0.761 | NO_GESTURE: 0.766 | STOP_SIGN: 0.867 | PUSHING_HAND_AWAY: 0.859 | SWIPE_DOWN: 0.878 | SWIPE_LEFT: 0.784 | SWIPE_RIGHT: 0.736 | SWIPE_UP: 0.880 | THUMB_DOWN: 0.803 | THUMB_UP: 0.803 | ZOOM_IN: 0.763 | ZOOM_OUT: 0.837
+
+Per-class accuracy:
+   0 (IGNORE): 0.737
+   1 (NO_GESTURE): 0.784
+   2 (STOP_SIGN): 0.843
+   3 (PUSHING_HAND_AWAY): 0.838
+   4 (SWIPE_DOWN): 0.890
+   5 (SWIPE_LEFT): 0.816
+   6 (SWIPE_RIGHT): 0.744
+   7 (SWIPE_UP): 0.864
+   8 (THUMB_DOWN): 0.827
+   9 (THUMB_UP): 0.791
+  10 (ZOOM_IN): 0.751
+  11 (ZOOM_OUT): 0.854
+[epoch 42] train_acc=0.9034 train_loss=0.2713 val_acc=0.8115 lr=3.12e-04
+Per-class val accuracy (summary): IGNORE: 0.737 | NO_GESTURE: 0.784 | STOP_SIGN: 0.843 | PUSHING_HAND_AWAY: 0.838 | SWIPE_DOWN: 0.890 | SWIPE_LEFT: 0.816 | SWIPE_RIGHT: 0.744 | SWIPE_UP: 0.864 | THUMB_DOWN: 0.827 | THUMB_UP: 0.791 | ZOOM_IN: 0.751 | ZOOM_OUT: 0.854
+
+Per-class accuracy:
+   0 (IGNORE): 0.753
+   1 (NO_GESTURE): 0.779
+   2 (STOP_SIGN): 0.843
+   3 (PUSHING_HAND_AWAY): 0.838
+   4 (SWIPE_DOWN): 0.898
+   5 (SWIPE_LEFT): 0.820
+   6 (SWIPE_RIGHT): 0.740
+   7 (SWIPE_UP): 0.855
+   8 (THUMB_DOWN): 0.811
+   9 (THUMB_UP): 0.803
+  10 (ZOOM_IN): 0.763
+  11 (ZOOM_OUT): 0.850
+[epoch 43] train_acc=0.9051 train_loss=0.2638 val_acc=0.8129 lr=3.05e-04
+Per-class val accuracy (summary): IGNORE: 0.753 | NO_GESTURE: 0.779 | STOP_SIGN: 0.843 | PUSHING_HAND_AWAY: 0.838 | SWIPE_DOWN: 0.898 | SWIPE_LEFT: 0.820 | SWIPE_RIGHT: 0.740 | SWIPE_UP: 0.855 | THUMB_DOWN: 0.811 | THUMB_UP: 0.803 | ZOOM_IN: 0.763 | ZOOM_OUT: 0.850
+
+Per-class accuracy:
+   0 (IGNORE): 0.745
+   1 (NO_GESTURE): 0.762
+   2 (STOP_SIGN): 0.883
+   3 (PUSHING_HAND_AWAY): 0.846
+   4 (SWIPE_DOWN): 0.878
+   5 (SWIPE_LEFT): 0.860
+   6 (SWIPE_RIGHT): 0.736
+   7 (SWIPE_UP): 0.847
+   8 (THUMB_DOWN): 0.795
+   9 (THUMB_UP): 0.807
+  10 (ZOOM_IN): 0.788
+  11 (ZOOM_OUT): 0.837
+[epoch 44] train_acc=0.9086 train_loss=0.2578 val_acc=0.8156 lr=2.97e-04
+Per-class val accuracy (summary): IGNORE: 0.745 | NO_GESTURE: 0.762 | STOP_SIGN: 0.883 | PUSHING_HAND_AWAY: 0.846 | SWIPE_DOWN: 0.878 | SWIPE_LEFT: 0.860 | SWIPE_RIGHT: 0.736 | SWIPE_UP: 0.847 | THUMB_DOWN: 0.795 | THUMB_UP: 0.807 | ZOOM_IN: 0.788 | ZOOM_OUT: 0.837
+
+Per-class accuracy:
+   0 (IGNORE): 0.769
+   1 (NO_GESTURE): 0.784
+   2 (STOP_SIGN): 0.863
+   3 (PUSHING_HAND_AWAY): 0.838
+   4 (SWIPE_DOWN): 0.894
+   5 (SWIPE_LEFT): 0.844
+   6 (SWIPE_RIGHT): 0.720
+   7 (SWIPE_UP): 0.831
+   8 (THUMB_DOWN): 0.815
+   9 (THUMB_UP): 0.762
+  10 (ZOOM_IN): 0.768
+  11 (ZOOM_OUT): 0.820
+[epoch 45] train_acc=0.9089 train_loss=0.2567 val_acc=0.8091 lr=2.89e-04
+Per-class val accuracy (summary): IGNORE: 0.769 | NO_GESTURE: 0.784 | STOP_SIGN: 0.863 | PUSHING_HAND_AWAY: 0.838 | SWIPE_DOWN: 0.894 | SWIPE_LEFT: 0.844 | SWIPE_RIGHT: 0.720 | SWIPE_UP: 0.831 | THUMB_DOWN: 0.815 | THUMB_UP: 0.762 | ZOOM_IN: 0.768 | ZOOM_OUT: 0.820
+
+Per-class accuracy:
+   0 (IGNORE): 0.769
+   1 (NO_GESTURE): 0.758
+   2 (STOP_SIGN): 0.867
+   3 (PUSHING_HAND_AWAY): 0.822
+   4 (SWIPE_DOWN): 0.894
+   5 (SWIPE_LEFT): 0.832
+   6 (SWIPE_RIGHT): 0.760
+   7 (SWIPE_UP): 0.835
+   8 (THUMB_DOWN): 0.823
+   9 (THUMB_UP): 0.824
+  10 (ZOOM_IN): 0.780
+  11 (ZOOM_OUT): 0.858
+[epoch 46] train_acc=0.9110 train_loss=0.2545 val_acc=0.8187 lr=2.81e-04
+Per-class val accuracy (summary): IGNORE: 0.769 | NO_GESTURE: 0.758 | STOP_SIGN: 0.867 | PUSHING_HAND_AWAY: 0.822 | SWIPE_DOWN: 0.894 | SWIPE_LEFT: 0.832 | SWIPE_RIGHT: 0.760 | SWIPE_UP: 0.835 | THUMB_DOWN: 0.823 | THUMB_UP: 0.824 | ZOOM_IN: 0.780 | ZOOM_OUT: 0.858
+  → New best model saved! (val_acc: 0.8187)
+
+Per-class accuracy:
+   0 (IGNORE): 0.749
+   1 (NO_GESTURE): 0.771
+   2 (STOP_SIGN): 0.863
+   3 (PUSHING_HAND_AWAY): 0.842
+   4 (SWIPE_DOWN): 0.874
+   5 (SWIPE_LEFT): 0.832
+   6 (SWIPE_RIGHT): 0.720
+   7 (SWIPE_UP): 0.843
+   8 (THUMB_DOWN): 0.791
+   9 (THUMB_UP): 0.791
+  10 (ZOOM_IN): 0.763
+  11 (ZOOM_OUT): 0.850
+[epoch 47] train_acc=0.9120 train_loss=0.2484 val_acc=0.8074 lr=2.74e-04
+Per-class val accuracy (summary): IGNORE: 0.749 | NO_GESTURE: 0.771 | STOP_SIGN: 0.863 | PUSHING_HAND_AWAY: 0.842 | SWIPE_DOWN: 0.874 | SWIPE_LEFT: 0.832 | SWIPE_RIGHT: 0.720 | SWIPE_UP: 0.843 | THUMB_DOWN: 0.791 | THUMB_UP: 0.791 | ZOOM_IN: 0.763 | ZOOM_OUT: 0.850
+
+Per-class accuracy:
+   0 (IGNORE): 0.753
+   1 (NO_GESTURE): 0.758
+   2 (STOP_SIGN): 0.855
+   3 (PUSHING_HAND_AWAY): 0.859
+   4 (SWIPE_DOWN): 0.898
+   5 (SWIPE_LEFT): 0.816
+   6 (SWIPE_RIGHT): 0.760
+   7 (SWIPE_UP): 0.835
+   8 (THUMB_DOWN): 0.803
+   9 (THUMB_UP): 0.807
+  10 (ZOOM_IN): 0.759
+  11 (ZOOM_OUT): 0.850
+[epoch 48] train_acc=0.9134 train_loss=0.2463 val_acc=0.8129 lr=2.66e-04
+Per-class val accuracy (summary): IGNORE: 0.753 | NO_GESTURE: 0.758 | STOP_SIGN: 0.855 | PUSHING_HAND_AWAY: 0.859 | SWIPE_DOWN: 0.898 | SWIPE_LEFT: 0.816 | SWIPE_RIGHT: 0.760 | SWIPE_UP: 0.835 | THUMB_DOWN: 0.803 | THUMB_UP: 0.807 | ZOOM_IN: 0.759 | ZOOM_OUT: 0.850
+
+Per-class accuracy:
+   0 (IGNORE): 0.765
+   1 (NO_GESTURE): 0.788
+   2 (STOP_SIGN): 0.847
+   3 (PUSHING_HAND_AWAY): 0.838
+   4 (SWIPE_DOWN): 0.890
+   5 (SWIPE_LEFT): 0.844
+   6 (SWIPE_RIGHT): 0.736
+   7 (SWIPE_UP): 0.826
+   8 (THUMB_DOWN): 0.815
+   9 (THUMB_UP): 0.762
+  10 (ZOOM_IN): 0.755
+  11 (ZOOM_OUT): 0.837
+[epoch 49] train_acc=0.9149 train_loss=0.2403 val_acc=0.8088 lr=2.58e-04
+Per-class val accuracy (summary): IGNORE: 0.765 | NO_GESTURE: 0.788 | STOP_SIGN: 0.847 | PUSHING_HAND_AWAY: 0.838 | SWIPE_DOWN: 0.890 | SWIPE_LEFT: 0.844 | SWIPE_RIGHT: 0.736 | SWIPE_UP: 0.826 | THUMB_DOWN: 0.815 | THUMB_UP: 0.762 | ZOOM_IN: 0.755 | ZOOM_OUT: 0.837
+
+Per-class accuracy:
+   0 (IGNORE): 0.761
+   1 (NO_GESTURE): 0.771/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+
+   2 (STOP_SIGN): 0.863
+   3 (PUSHING_HAND_AWAY): 0.830
+   4 (SWIPE_DOWN): 0.882
+   5 (SWIPE_LEFT): 0.852
+   6 (SWIPE_RIGHT): 0.728
+   7 (SWIPE_UP): 0.826
+   8 (THUMB_DOWN): 0.823
+   9 (THUMB_UP): 0.791
+  10 (ZOOM_IN): 0.751
+  11 (ZOOM_OUT): 0.820
+[epoch 50] train_acc=0.9142 train_loss=0.2420 val_acc=0.8084 lr=2.50e-04
+Per-class val accuracy (summary): IGNORE: 0.761 | NO_GESTURE: 0.771 | STOP_SIGN: 0.863 | PUSHING_HAND_AWAY: 0.830 | SWIPE_DOWN: 0.882 | SWIPE_LEFT: 0.852 | SWIPE_RIGHT: 0.728 | SWIPE_UP: 0.826 | THUMB_DOWN: 0.823 | THUMB_UP: 0.791 | ZOOM_IN: 0.751 | ZOOM_OUT: 0.820
+
+Per-class accuracy:
+   0 (IGNORE): 0.765
+   1 (NO_GESTURE): 0.784
+   2 (STOP_SIGN): 0.855
+   3 (PUSHING_HAND_AWAY): 0.838
+   4 (SWIPE_DOWN): 0.898
+   5 (SWIPE_LEFT): 0.796
+   6 (SWIPE_RIGHT): 0.760
+   7 (SWIPE_UP): 0.835
+   8 (THUMB_DOWN): 0.823
+   9 (THUMB_UP): 0.799
+  10 (ZOOM_IN): 0.739
+  11 (ZOOM_OUT): 0.850
+[epoch 51] train_acc=0.9174 train_loss=0.2344 val_acc=0.8119 lr=2.42e-04
+Per-class val accuracy (summary): IGNORE: 0.765 | NO_GESTURE: 0.784 | STOP_SIGN: 0.855 | PUSHING_HAND_AWAY: 0.838 | SWIPE_DOWN: 0.898 | SWIPE_LEFT: 0.796 | SWIPE_RIGHT: 0.760 | SWIPE_UP: 0.835 | THUMB_DOWN: 0.823 | THUMB_UP: 0.799 | ZOOM_IN: 0.739 | ZOOM_OUT: 0.850
+
+Per-class accuracy:
+   0 (IGNORE): 0.757
+   1 (NO_GESTURE): 0.779
+   2 (STOP_SIGN): 0.855
+   3 (PUSHING_HAND_AWAY): 0.826
+   4 (SWIPE_DOWN): 0.890
+   5 (SWIPE_LEFT): 0.832
+   6 (SWIPE_RIGHT): 0.756
+   7 (SWIPE_UP): 0.831
+   8 (THUMB_DOWN): 0.807
+   9 (THUMB_UP): 0.807
+  10 (ZOOM_IN): 0.759
+  11 (ZOOM_OUT): 0.854
+[epoch 52] train_acc=0.9187 train_loss=0.2308 val_acc=0.8129 lr=2.34e-04
+Per-class val accuracy (summary): IGNORE: 0.757 | NO_GESTURE: 0.779 | STOP_SIGN: 0.855 | PUSHING_HAND_AWAY: 0.826 | SWIPE_DOWN: 0.890 | SWIPE_LEFT: 0.832 | SWIPE_RIGHT: 0.756 | SWIPE_UP: 0.831 | THUMB_DOWN: 0.807 | THUMB_UP: 0.807 | ZOOM_IN: 0.759 | ZOOM_OUT: 0.854
+
+Per-class accuracy:
+   0 (IGNORE): 0.729
+   1 (NO_GESTURE): 0.779
+   2 (STOP_SIGN): 0.851
+   3 (PUSHING_HAND_AWAY): 0.830
+   4 (SWIPE_DOWN): 0.890
+   5 (SWIPE_LEFT): 0.768
+   6 (SWIPE_RIGHT): 0.756
+   7 (SWIPE_UP): 0.847
+   8 (THUMB_DOWN): 0.795
+   9 (THUMB_UP): 0.811
+  10 (ZOOM_IN): 0.759
+  11 (ZOOM_OUT): 0.820
+[epoch 53] train_acc=0.9190 train_loss=0.2254 val_acc=0.8029 lr=2.26e-04
+Per-class val accuracy (summary): IGNORE: 0.729 | NO_GESTURE: 0.779 | STOP_SIGN: 0.851 | PUSHING_HAND_AWAY: 0.830 | SWIPE_DOWN: 0.890 | SWIPE_LEFT: 0.768 | SWIPE_RIGHT: 0.756 | SWIPE_UP: 0.847 | THUMB_DOWN: 0.795 | THUMB_UP: 0.811 | ZOOM_IN: 0.759 | ZOOM_OUT: 0.820
+
+Per-class accuracy:
+   0 (IGNORE): 0.749
+   1 (NO_GESTURE): 0.784
+   2 (STOP_SIGN): 0.839
+   3 (PUSHING_HAND_AWAY): 0.817
+   4 (SWIPE_DOWN): 0.902
+   5 (SWIPE_LEFT): 0.808
+   6 (SWIPE_RIGHT): 0.744
+   7 (SWIPE_UP): 0.851
+   8 (THUMB_DOWN): 0.815
+   9 (THUMB_UP): 0.783
+  10 (ZOOM_IN): 0.763
+  11 (ZOOM_OUT): 0.863
+[epoch 54] train_acc=0.9208 train_loss=0.2236 val_acc=0.8098 lr=2.19e-04
+Per-class val accuracy (summary): IGNORE: 0.749 | NO_GESTURE: 0.784 | STOP_SIGN: 0.839 | PUSHING_HAND_AWAY: 0.817 | SWIPE_DOWN: 0.902 | SWIPE_LEFT: 0.808 | SWIPE_RIGHT: 0.744 | SWIPE_UP: 0.851 | THUMB_DOWN: 0.815 | THUMB_UP: 0.783 | ZOOM_IN: 0.763 | ZOOM_OUT: 0.863
+
+Per-class accuracy:
+   0 (IGNORE): 0.777
+   1 (NO_GESTURE): 0.779
+   2 (STOP_SIGN): 0.843
+   3 (PUSHING_HAND_AWAY): 0.817
+   4 (SWIPE_DOWN): 0.894
+   5 (SWIPE_LEFT): 0.824
+   6 (SWIPE_RIGHT): 0.728
+   7 (SWIPE_UP): 0.851
+   8 (THUMB_DOWN): 0.803
+   9 (THUMB_UP): 0.803
+  10 (ZOOM_IN): 0.763
+  11 (ZOOM_OUT): 0.850
+[epoch 55] train_acc=0.9189 train_loss=0.2257 val_acc=0.8112 lr=2.11e-04
+Per-class val accuracy (summary): IGNORE: 0.777 | NO_GESTURE: 0.779 | STOP_SIGN: 0.843 | PUSHING_HAND_AWAY: 0.817 | SWIPE_DOWN: 0.894 | SWIPE_LEFT: 0.824 | SWIPE_RIGHT: 0.728 | SWIPE_UP: 0.851 | THUMB_DOWN: 0.803 | THUMB_UP: 0.803 | ZOOM_IN: 0.763 | ZOOM_OUT: 0.850
+
+Per-class accuracy:
+   0 (IGNORE): 0.769
+   1 (NO_GESTURE): 0.766
+   2 (STOP_SIGN): 0.851
+   3 (PUSHING_HAND_AWAY): 0.834
+   4 (SWIPE_DOWN): 0.894
+   5 (SWIPE_LEFT): 0.824
+   6 (SWIPE_RIGHT): 0.744
+   7 (SWIPE_UP): 0.872
+   8 (THUMB_DOWN): 0.811
+   9 (THUMB_UP): 0.811
+  10 (ZOOM_IN): 0.747
+  11 (ZOOM_OUT): 0.811
+[epoch 56] train_acc=0.9212 train_loss=0.2201 val_acc=0.8115 lr=2.03e-04
+Per-class val accuracy (summary): IGNORE: 0.769 | NO_GESTURE: 0.766 | STOP_SIGN: 0.851 | PUSHING_HAND_AWAY: 0.834 | SWIPE_DOWN: 0.894 | SWIPE_LEFT: 0.824 | SWIPE_RIGHT: 0.744 | SWIPE_UP: 0.872 | THUMB_DOWN: 0.811 | THUMB_UP: 0.811 | ZOOM_IN: 0.747 | ZOOM_OUT: 0.811
+
+Per-class accuracy:
+   0 (IGNORE): 0.741
+   1 (NO_GESTURE): 0.784
+   2 (STOP_SIGN): 0.859
+   3 (PUSHING_HAND_AWAY): 0.859
+   4 (SWIPE_DOWN): 0.898
+   5 (SWIPE_LEFT): 0.804
+   6 (SWIPE_RIGHT): 0.744
+   7 (SWIPE_UP): 0.835
+   8 (THUMB_DOWN): 0.799
+   9 (THUMB_UP): 0.811
+  10 (ZOOM_IN): 0.763
+  11 (ZOOM_OUT): 0.828
+[epoch 57] train_acc=0.9210 train_loss=0.2193 val_acc=0.8105 lr=1.95e-04
+Per-class val accuracy (summary): IGNORE: 0.741 | NO_GESTURE: 0.784 | STOP_SIGN: 0.859 | PUSHING_HAND_AWAY: 0.859 | SWIPE_DOWN: 0.898 | SWIPE_LEFT: 0.804 | SWIPE_RIGHT: 0.744 | SWIPE_UP: 0.835 | THUMB_DOWN: 0.799 | THUMB_UP: 0.811 | ZOOM_IN: 0.763 | ZOOM_OUT: 0.828
+
+Per-class accuracy:
+   0 (IGNORE): 0.753
+   1 (NO_GESTURE): 0.766
+   2 (STOP_SIGN): 0.855
+   3 (PUSHING_HAND_AWAY): 0.838
+   4 (SWIPE_DOWN): 0.894
+   5 (SWIPE_LEFT): 0.816
+   6 (SWIPE_RIGHT): 0.732
+   7 (SWIPE_UP): 0.843
+   8 (THUMB_DOWN): 0.807
+   9 (THUMB_UP): 0.787
+  10 (ZOOM_IN): 0.759
+  11 (ZOOM_OUT): 0.854
+[epoch 58] train_acc=0.9222 train_loss=0.2203 val_acc=0.8088 lr=1.88e-04
+Per-class val accuracy (summary): IGNORE: 0.753 | NO_GESTURE: 0.766 | STOP_SIGN: 0.855 | PUSHING_HAND_AWAY: 0.838 | SWIPE_DOWN: 0.894 | SWIPE_LEFT: 0.816 | SWIPE_RIGHT: 0.732 | SWIPE_UP: 0.843 | THUMB_DOWN: 0.807 | THUMB_UP: 0.787 | ZOOM_IN: 0.759 | ZOOM_OUT: 0.854
+
+Per-class accuracy:
+   0 (IGNORE): 0.761
+   1 (NO_GESTURE): 0.771
+   2 (STOP_SIGN): 0.863
+   3 (PUSHING_HAND_AWAY): 0.805
+   4 (SWIPE_DOWN): 0.886
+   5 (SWIPE_LEFT): 0.848
+   6 (SWIPE_RIGHT): 0.744
+   7 (SWIPE_UP): 0.826
+   8 (THUMB_DOWN): 0.819
+   9 (THUMB_UP): 0.795
+  10 (ZOOM_IN): 0.763
+  11 (ZOOM_OUT): 0.837
+[epoch 59] train_acc=0.9232 train_loss=0.2127 val_acc=0.8101 lr=1.80e-04
+Per-class val accuracy (summary): IGNORE: 0.761 | NO_GESTURE: 0.771 | STOP_SIGN: 0.863 | PUSHING_HAND_AWAY: 0.805 | SWIPE_DOWN: 0.886 | SWIPE_LEFT: 0.848 | SWIPE_RIGHT: 0.744 | SWIPE_UP: 0.826 | THUMB_DOWN: 0.819 | THUMB_UP: 0.795 | ZOOM_IN: 0.763 | ZOOM_OUT: 0.837
+
+Per-class accuracy:
+   0 (IGNORE): 0.753
+   1 (NO_GESTURE): 0.784
+   2 (STOP_SIGN): 0.867
+   3 (PUSHING_HAND_AWAY): 0.855
+   4 (SWIPE_DOWN): 0.886
+   5 (SWIPE_LEFT): 0.812
+   6 (SWIPE_RIGHT): 0.748
+   7 (SWIPE_UP): 0.822
+   8 (THUMB_DOWN): 0.803
+   9 (THUMB_UP): 0.770
+  10 (ZOOM_IN): 0.772
+  11 (ZOOM_OUT): 0.850
+[epoch 60] train_acc=0.9240 train_loss=0.2131 val_acc=0.8101 lr=1.73e-04
+Per-class val accuracy (summary): IGNORE: 0.753 | NO_GESTURE: 0.784 | STOP_SIGN: 0.867 | PUSHING_HAND_AWAY: 0.855 | SWIPE_DOWN: 0.886 | SWIPE_LEFT: 0.812 | SWIPE_RIGHT: 0.748 | SWIPE_UP: 0.822 | THUMB_DOWN: 0.803 | THUMB_UP: 0.770 | ZOOM_IN: 0.772 | ZOOM_OUT: 0.850
+
+Per-class accuracy:
+   0 (IGNORE): 0.761
+   1 (NO_GESTURE): 0.775
+   2 (STOP_SIGN): 0.863
+   3 (PUSHING_HAND_AWAY): 0.826
+   4 (SWIPE_DOWN): 0.886
+   5 (SWIPE_LEFT): 0.844
+   6 (SWIPE_RIGHT): 0.748
+   7 (SWIPE_UP): 0.835
+   8 (THUMB_DOWN): 0.807
+   9 (THUMB_UP): 0.803
+  10 (ZOOM_IN): 0.768
+  11 (ZOOM_OUT): 0.828
+[epoch 61] train_acc=0.9248 train_loss=0.2094 val_acc=0.8122 lr=1.65e-04
+Per-class val accuracy (summary): IGNORE: 0.761 | NO_GESTURE: 0.775 | STOP_SIGN: 0.863 | PUSHING_HAND_AWAY: 0.826 | SWIPE_DOWN: 0.886 | SWIPE_LEFT: 0.844 | SWIPE_RIGHT: 0.748 | SWIPE_UP: 0.835 | THUMB_DOWN: 0.807 | THUMB_UP: 0.803 | ZOOM_IN: 0.768 | ZOOM_OUT: 0.828
+
+Per-class accuracy:
+   0 (IGNORE): 0.773
+   1 (NO_GESTURE): 0.779
+   2 (STOP_SIGN): 0.867
+   3 (PUSHING_HAND_AWAY): 0.838
+   4 (SWIPE_DOWN): 0.894
+   5 (SWIPE_LEFT): 0.816
+   6 (SWIPE_RIGHT): 0.744
+   7 (SWIPE_UP): 0.818
+   8 (THUMB_DOWN): 0.803
+   9 (THUMB_UP): 0.803
+  10 (ZOOM_IN): 0.759
+  11 (ZOOM_OUT): 0.837
+[epoch 62] train_acc=0.9251 train_loss=0.2077 val_acc=0.8112 lr=1.58e-04
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+/home/sayak/Downloads/optimized_training12_attn_amp.py:123: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast():
+Per-class val accuracy (summary): IGNORE: 0.773 | NO_GESTURE: 0.779 | STOP_SIGN: 0.867 | PUSHING_HAND_AWAY: 0.838 | SWIPE_DOWN: 0.894 | SWIPE_LEFT: 0.816 | SWIPE_RIGHT: 0.744 | SWIPE_UP: 0.818 | THUMB_DOWN: 0.803 | THUMB_UP: 0.803 | ZOOM_IN: 0.759 | ZOOM_OUT: 0.837
+
+Per-class accuracy:
+   0 (IGNORE): 0.749
+   1 (NO_GESTURE): 0.771
+   2 (STOP_SIGN): 0.859
+   3 (PUSHING_HAND_AWAY): 0.842
+   4 (SWIPE_DOWN): 0.894
+   5 (SWIPE_LEFT): 0.796
+   6 (SWIPE_RIGHT): 0.764
+   7 (SWIPE_UP): 0.835
+   8 (THUMB_DOWN): 0.807
+   9 (THUMB_UP): 0.791
+  10 (ZOOM_IN): 0.776
+  11 (ZOOM_OUT): 0.854
+[epoch 63] train_acc=0.9276 train_loss=0.2040 val_acc=0.8115 lr=1.51e-04
+Per-class val accuracy (summary): IGNORE: 0.749 | NO_GESTURE: 0.771 | STOP_SIGN: 0.859 | PUSHING_HAND_AWAY: 0.842 | SWIPE_DOWN: 0.894 | SWIPE_LEFT: 0.796 | SWIPE_RIGHT: 0.764 | SWIPE_UP: 0.835 | THUMB_DOWN: 0.807 | THUMB_UP: 0.791 | ZOOM_IN: 0.776 | ZOOM_OUT: 0.854
+
+Per-class accuracy:
+   0 (IGNORE): 0.741
+   1 (NO_GESTURE): 0.771
+   2 (STOP_SIGN): 0.847
+   3 (PUSHING_HAND_AWAY): 0.834
+   4 (SWIPE_DOWN): 0.902
+   5 (SWIPE_LEFT): 0.800
+   6 (SWIPE_RIGHT): 0.740
+   7 (SWIPE_UP): 0.835
+   8 (THUMB_DOWN): 0.815
+   9 (THUMB_UP): 0.779
+  10 (ZOOM_IN): 0.763
+  11 (ZOOM_OUT): 0.828
+[epoch 64] train_acc=0.9268 train_loss=0.2048 val_acc=0.8047 lr=1.44e-04
+Per-class val accuracy (summary): IGNORE: 0.741 | NO_GESTURE: 0.771 | STOP_SIGN: 0.847 | PUSHING_HAND_AWAY: 0.834 | SWIPE_DOWN: 0.902 | SWIPE_LEFT: 0.800 | SWIPE_RIGHT: 0.740 | SWIPE_UP: 0.835 | THUMB_DOWN: 0.815 | THUMB_UP: 0.779 | ZOOM_IN: 0.763 | ZOOM_OUT: 0.828
+
+Per-class accuracy:
+   0 (IGNORE): 0.761
+   1 (NO_GESTURE): 0.775
+   2 (STOP_SIGN): 0.851
+   3 (PUSHING_HAND_AWAY): 0.830
+   4 (SWIPE_DOWN): 0.902
+   5 (SWIPE_LEFT): 0.828
+   6 (SWIPE_RIGHT): 0.756
+   7 (SWIPE_UP): 0.851
+   8 (THUMB_DOWN): 0.807
+   9 (THUMB_UP): 0.783
+  10 (ZOOM_IN): 0.751
+  11 (ZOOM_OUT): 0.845
+[epoch 65] train_acc=0.9269 train_loss=0.2042 val_acc=0.8119 lr=1.37e-04
+Per-class val accuracy (summary): IGNORE: 0.761 | NO_GESTURE: 0.775 | STOP_SIGN: 0.851 | PUSHING_HAND_AWAY: 0.830 | SWIPE_DOWN: 0.902 | SWIPE_LEFT: 0.828 | SWIPE_RIGHT: 0.756 | SWIPE_UP: 0.851 | THUMB_DOWN: 0.807 | THUMB_UP: 0.783 | ZOOM_IN: 0.751 | ZOOM_OUT: 0.845
+
+Per-class accuracy:
+   0 (IGNORE): 0.757
+   1 (NO_GESTURE): 0.779
+   2 (STOP_SIGN): 0.843
+   3 (PUSHING_HAND_AWAY): 0.834
+   4 (SWIPE_DOWN): 0.902
+   5 (SWIPE_LEFT): 0.828
+   6 (SWIPE_RIGHT): 0.756
+   7 (SWIPE_UP): 0.835
+   8 (THUMB_DOWN): 0.807
+   9 (THUMB_UP): 0.783
+  10 (ZOOM_IN): 0.772
+  11 (ZOOM_OUT): 0.854
+[epoch 66] train_acc=0.9277 train_loss=0.2020 val_acc=0.8125 lr=1.30e-04
+Per-class val accuracy (summary): IGNORE: 0.757 | NO_GESTURE: 0.779 | STOP_SIGN: 0.843 | PUSHING_HAND_AWAY: 0.834 | SWIPE_DOWN: 0.902 | SWIPE_LEFT: 0.828 | SWIPE_RIGHT: 0.756 | SWIPE_UP: 0.835 | THUMB_DOWN: 0.807 | THUMB_UP: 0.783 | ZOOM_IN: 0.772 | ZOOM_OUT: 0.854
+Early stopping at epoch 66
+
+✅ Training completed! Best validation accuracy: 0.8187
+Model and label mapping saved to /home/sayak/models/jester_12cls_attn_amp

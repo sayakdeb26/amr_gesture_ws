@@ -1,0 +1,47 @@
+/home/sayak/Downloads/optimized_training12_attn_amp.py:308: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  scaler = GradScaler(enabled=use_amp)
+Using device: cuda
+Detected input dimension: 84
+Detected input dimension: 84
+Training samples: 21634
+Validation samples: 2918
+Input dimension: 84
+
+Training on 12 classes:
+   0: IGNORE
+   1: NO_GESTURE
+   2: STOP_SIGN
+   3: PUSHING_HAND_AWAY
+   4: SWIPE_DOWN
+   5: SWIPE_LEFT
+   6: SWIPE_RIGHT
+   7: SWIPE_UP
+   8: THUMB_DOWN
+   9: THUMB_UP
+  10: ZOOM_IN
+  11: ZOOM_OUT
+Model parameters: 4,086,837
+
+🚀 Starting training with attention + AMP on 12 classes...
+Traceback (most recent call last):
+  File "/home/sayak/Downloads/optimized_training12_attn_amp.py", line 385, in <module>
+    main()
+  File "/home/sayak/Downloads/optimized_training12_attn_amp.py", line 317, in main
+    train_acc, train_loss = train_one_epoch(
+  File "/home/sayak/Downloads/optimized_training12_attn_amp.py", line 155, in train_one_epoch
+    logits = model(x)
+  File "/home/sayak/venvs/rosgpu_isolated/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/sayak/venvs/rosgpu_isolated/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/sayak/Downloads/optimized_training12_attn_amp.py", line 128, in forward
+    x = self.input_norm(x)
+  File "/home/sayak/venvs/rosgpu_isolated/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/sayak/venvs/rosgpu_isolated/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/sayak/venvs/rosgpu_isolated/lib/python3.10/site-packages/torch/nn/modules/normalization.py", line 229, in forward
+    return F.layer_norm(
+  File "/home/sayak/venvs/rosgpu_isolated/lib/python3.10/site-packages/torch/nn/functional.py", line 2901, in layer_norm
+    return torch.layer_norm(
+RuntimeError: Given normalized_shape=[84], expected input with shape [*, 84], but got input of size[256, 30, 42]

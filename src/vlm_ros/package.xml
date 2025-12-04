@@ -3,18 +3,22 @@
 <package format="3">
   <name>vlm_ros</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="sayak.deb26@gmail.com">sayak</maintainer>
+  <description>VLM ROS Launch Package</description>
+  <maintainer email="sayak@example.com">sayak</maintainer>
   <license>Apache-2.0</license>
 
-  <depend>rclpy</depend>
-  <depend>vlm_interfaces</depend>
-  <depend>std_msgs</depend>
+  <buildtool_depend>ament_python</buildtool_depend>
 
-  <test_depend>ament_copyright</test_depend>
-  <test_depend>ament_flake8</test_depend>
-  <test_depend>ament_pep257</test_depend>
-  <test_depend>python3-pytest</test_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>v4l2_camera</exec_depend>
+  <exec_depend>frame_simplifier_pkg</exec_depend>
+  <exec_depend>gesture_classifiers_pkg</exec_depend>
+  <exec_depend>vlm_recorder_pkg</exec_depend>
+  <exec_depend>vlm_bridge_pkg</exec_depend>
+  <exec_depend>central_db_pkg</exec_depend>
+  <exec_depend>ui_kiosk_pkg</exec_depend>
+  <exec_depend>amr_telemetry_pkg</exec_depend>
+  <exec_depend>vlm_dummy_pkg</exec_depend>
 
   <export>
     <build_type>ament_python</build_type>

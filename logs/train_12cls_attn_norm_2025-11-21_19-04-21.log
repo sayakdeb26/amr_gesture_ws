@@ -1,0 +1,807 @@
+Using device: cuda
+Detected input dimension: 84
+Detected input dimension: 84
+Training samples: 21634
+Validation samples: 2918
+Input dimension: 84
+
+Training on 12 classes:
+   0: IGNORE
+   1: NO_GESTURE
+   2: STOP_SIGN
+   3: PUSHING_HAND_AWAY
+   4: SWIPE_DOWN
+   5: SWIPE_LEFT
+   6: SWIPE_RIGHT
+   7: SWIPE_UP
+   8: THUMB_DOWN
+   9: THUMB_UP
+  10: ZOOM_IN
+  11: ZOOM_OUT
+Model parameters: 4,086,837
+
+🚀 Starting training with attention + AMP on 12 classes...
+
+Per-class accuracy:
+   0 (IGNORE): 0.437
+   1 (NO_GESTURE): 0.571
+   2 (STOP_SIGN): 0.831
+   3 (PUSHING_HAND_AWAY): 0.618
+   4 (SWIPE_DOWN): 0.764
+   5 (SWIPE_LEFT): 0.500
+   6 (SWIPE_RIGHT): 0.585
+   7 (SWIPE_UP): 0.905
+   8 (THUMB_DOWN): 0.687
+   9 (THUMB_UP): 0.623
+  10 (ZOOM_IN): 0.689
+  11 (ZOOM_OUT): 0.639
+[epoch  1] train_acc=0.4861 train_loss=1.5861 val_acc=0.6542 lr=5.00e-04
+Per-class val accuracy (summary): IGNORE: 0.437 | NO_GESTURE: 0.571 | STOP_SIGN: 0.831 | PUSHING_HAND_AWAY: 0.618 | SWIPE_DOWN: 0.764 | SWIPE_LEFT: 0.500 | SWIPE_RIGHT: 0.585 | SWIPE_UP: 0.905 | THUMB_DOWN: 0.687 | THUMB_UP: 0.623 | ZOOM_IN: 0.689 | ZOOM_OUT: 0.639
+  → New best model saved! (val_acc: 0.6542)
+
+Per-class accuracy:
+   0 (IGNORE): 0.684
+   1 (NO_GESTURE): 0.701
+   2 (STOP_SIGN): 0.730
+   3 (PUSHING_HAND_AWAY): 0.730
+   4 (SWIPE_DOWN): 0.915
+   5 (SWIPE_LEFT): 0.712
+   6 (SWIPE_RIGHT): 0.850
+   7 (SWIPE_UP): 0.702
+   8 (THUMB_DOWN): 0.667
+   9 (THUMB_UP): 0.730
+  10 (ZOOM_IN): 0.739
+  11 (ZOOM_OUT): 0.811
+[epoch  2] train_acc=0.7332 train_loss=0.8483 val_acc=0.7474 lr=5.00e-04
+Per-class val accuracy (summary): IGNORE: 0.684 | NO_GESTURE: 0.701 | STOP_SIGN: 0.730 | PUSHING_HAND_AWAY: 0.730 | SWIPE_DOWN: 0.915 | SWIPE_LEFT: 0.712 | SWIPE_RIGHT: 0.850 | SWIPE_UP: 0.702 | THUMB_DOWN: 0.667 | THUMB_UP: 0.730 | ZOOM_IN: 0.739 | ZOOM_OUT: 0.811
+  → New best model saved! (val_acc: 0.7474)
+
+Per-class accuracy:
+   0 (IGNORE): 0.692
+   1 (NO_GESTURE): 0.719
+   2 (STOP_SIGN): 0.847
+   3 (PUSHING_HAND_AWAY): 0.747
+   4 (SWIPE_DOWN): 0.850
+   5 (SWIPE_LEFT): 0.804
+   6 (SWIPE_RIGHT): 0.862
+   7 (SWIPE_UP): 0.649
+   8 (THUMB_DOWN): 0.791
+   9 (THUMB_UP): 0.672
+  10 (ZOOM_IN): 0.722
+  11 (ZOOM_OUT): 0.807
+[epoch  3] train_acc=0.7653 train_loss=0.7174 val_acc=0.7639 lr=4.99e-04
+Per-class val accuracy (summary): IGNORE: 0.692 | NO_GESTURE: 0.719 | STOP_SIGN: 0.847 | PUSHING_HAND_AWAY: 0.747 | SWIPE_DOWN: 0.850 | SWIPE_LEFT: 0.804 | SWIPE_RIGHT: 0.862 | SWIPE_UP: 0.649 | THUMB_DOWN: 0.791 | THUMB_UP: 0.672 | ZOOM_IN: 0.722 | ZOOM_OUT: 0.807
+  → New best model saved! (val_acc: 0.7639)
+
+Per-class accuracy:
+   0 (IGNORE): 0.725
+   1 (NO_GESTURE): 0.758
+   2 (STOP_SIGN): 0.855
+   3 (PUSHING_HAND_AWAY): 0.797
+   4 (SWIPE_DOWN): 0.825
+   5 (SWIPE_LEFT): 0.764
+   6 (SWIPE_RIGHT): 0.650
+   7 (SWIPE_UP): 0.826
+   8 (THUMB_DOWN): 0.731
+   9 (THUMB_UP): 0.631
+  10 (ZOOM_IN): 0.768
+  11 (ZOOM_OUT): 0.768
+[epoch  4] train_acc=0.7784 train_loss=0.6631 val_acc=0.7581 lr=4.98e-04
+Per-class val accuracy (summary): IGNORE: 0.725 | NO_GESTURE: 0.758 | STOP_SIGN: 0.855 | PUSHING_HAND_AWAY: 0.797 | SWIPE_DOWN: 0.825 | SWIPE_LEFT: 0.764 | SWIPE_RIGHT: 0.650 | SWIPE_UP: 0.826 | THUMB_DOWN: 0.731 | THUMB_UP: 0.631 | ZOOM_IN: 0.768 | ZOOM_OUT: 0.768
+
+Per-class accuracy:
+   0 (IGNORE): 0.822
+   1 (NO_GESTURE): 0.736
+   2 (STOP_SIGN): 0.819
+   3 (PUSHING_HAND_AWAY): 0.772
+   4 (SWIPE_DOWN): 0.919
+   5 (SWIPE_LEFT): 0.720
+   6 (SWIPE_RIGHT): 0.691
+   7 (SWIPE_UP): 0.674
+   8 (THUMB_DOWN): 0.707
+   9 (THUMB_UP): 0.807
+  10 (ZOOM_IN): 0.734
+  11 (ZOOM_OUT): 0.837
+[epoch  5] train_acc=0.7929 train_loss=0.6251 val_acc=0.7697 lr=4.97e-04
+Per-class val accuracy (summary): IGNORE: 0.822 | NO_GESTURE: 0.736 | STOP_SIGN: 0.819 | PUSHING_HAND_AWAY: 0.772 | SWIPE_DOWN: 0.919 | SWIPE_LEFT: 0.720 | SWIPE_RIGHT: 0.691 | SWIPE_UP: 0.674 | THUMB_DOWN: 0.707 | THUMB_UP: 0.807 | ZOOM_IN: 0.734 | ZOOM_OUT: 0.837
+  → New best model saved! (val_acc: 0.7697)
+
+Per-class accuracy:
+   0 (IGNORE): 0.753
+   1 (NO_GESTURE): 0.775
+   2 (STOP_SIGN): 0.859
+   3 (PUSHING_HAND_AWAY): 0.714
+   4 (SWIPE_DOWN): 0.907
+   5 (SWIPE_LEFT): 0.764
+   6 (SWIPE_RIGHT): 0.858
+   7 (SWIPE_UP): 0.711
+   8 (THUMB_DOWN): 0.815
+   9 (THUMB_UP): 0.766
+  10 (ZOOM_IN): 0.763
+  11 (ZOOM_OUT): 0.824
+[epoch  6] train_acc=0.7976 train_loss=0.6052 val_acc=0.7927 lr=4.96e-04
+Per-class val accuracy (summary): IGNORE: 0.753 | NO_GESTURE: 0.775 | STOP_SIGN: 0.859 | PUSHING_HAND_AWAY: 0.714 | SWIPE_DOWN: 0.907 | SWIPE_LEFT: 0.764 | SWIPE_RIGHT: 0.858 | SWIPE_UP: 0.711 | THUMB_DOWN: 0.815 | THUMB_UP: 0.766 | ZOOM_IN: 0.763 | ZOOM_OUT: 0.824
+  → New best model saved! (val_acc: 0.7927)
+
+Per-class accuracy:
+   0 (IGNORE): 0.729
+   1 (NO_GESTURE): 0.801
+   2 (STOP_SIGN): 0.790
+   3 (PUSHING_HAND_AWAY): 0.726
+   4 (SWIPE_DOWN): 0.919
+   5 (SWIPE_LEFT): 0.848
+   6 (SWIPE_RIGHT): 0.630
+   7 (SWIPE_UP): 0.806
+   8 (THUMB_DOWN): 0.566
+   9 (THUMB_UP): 0.713
+  10 (ZOOM_IN): 0.780
+  11 (ZOOM_OUT): 0.803
+[epoch  7] train_acc=0.8040 train_loss=0.5740 val_acc=0.7587 lr=4.94e-04
+Per-class val accuracy (summary): IGNORE: 0.729 | NO_GESTURE: 0.801 | STOP_SIGN: 0.790 | PUSHING_HAND_AWAY: 0.726 | SWIPE_DOWN: 0.919 | SWIPE_LEFT: 0.848 | SWIPE_RIGHT: 0.630 | SWIPE_UP: 0.806 | THUMB_DOWN: 0.566 | THUMB_UP: 0.713 | ZOOM_IN: 0.780 | ZOOM_OUT: 0.803
+
+Per-class accuracy:
+   0 (IGNORE): 0.757
+   1 (NO_GESTURE): 0.762
+   2 (STOP_SIGN): 0.859
+   3 (PUSHING_HAND_AWAY): 0.759
+   4 (SWIPE_DOWN): 0.882
+   5 (SWIPE_LEFT): 0.844
+   6 (SWIPE_RIGHT): 0.711
+   7 (SWIPE_UP): 0.855
+   8 (THUMB_DOWN): 0.807
+   9 (THUMB_UP): 0.770
+  10 (ZOOM_IN): 0.689
+  11 (ZOOM_OUT): 0.811
+[epoch  8] train_acc=0.8160 train_loss=0.5478 val_acc=0.7927 lr=4.92e-04
+Per-class val accuracy (summary): IGNORE: 0.757 | NO_GESTURE: 0.762 | STOP_SIGN: 0.859 | PUSHING_HAND_AWAY: 0.759 | SWIPE_DOWN: 0.882 | SWIPE_LEFT: 0.844 | SWIPE_RIGHT: 0.711 | SWIPE_UP: 0.855 | THUMB_DOWN: 0.807 | THUMB_UP: 0.770 | ZOOM_IN: 0.689 | ZOOM_OUT: 0.811
+
+Per-class accuracy:
+   0 (IGNORE): 0.854
+   1 (NO_GESTURE): 0.740
+   2 (STOP_SIGN): 0.806
+   3 (PUSHING_HAND_AWAY): 0.734
+   4 (SWIPE_DOWN): 0.931
+   5 (SWIPE_LEFT): 0.844
+   6 (SWIPE_RIGHT): 0.760
+   7 (SWIPE_UP): 0.682
+   8 (THUMB_DOWN): 0.787
+   9 (THUMB_UP): 0.824
+  10 (ZOOM_IN): 0.739
+  11 (ZOOM_OUT): 0.876
+[epoch  9] train_acc=0.8199 train_loss=0.5329 val_acc=0.7985 lr=4.90e-04
+Per-class val accuracy (summary): IGNORE: 0.854 | NO_GESTURE: 0.740 | STOP_SIGN: 0.806 | PUSHING_HAND_AWAY: 0.734 | SWIPE_DOWN: 0.931 | SWIPE_LEFT: 0.844 | SWIPE_RIGHT: 0.760 | SWIPE_UP: 0.682 | THUMB_DOWN: 0.787 | THUMB_UP: 0.824 | ZOOM_IN: 0.739 | ZOOM_OUT: 0.876
+  → New best model saved! (val_acc: 0.7985)
+
+Per-class accuracy:
+   0 (IGNORE): 0.733
+   1 (NO_GESTURE): 0.706
+   2 (STOP_SIGN): 0.875
+   3 (PUSHING_HAND_AWAY): 0.859
+   4 (SWIPE_DOWN): 0.841
+   5 (SWIPE_LEFT): 0.752
+   6 (SWIPE_RIGHT): 0.744
+   7 (SWIPE_UP): 0.826
+   8 (THUMB_DOWN): 0.775
+   9 (THUMB_UP): 0.791
+  10 (ZOOM_IN): 0.755
+  11 (ZOOM_OUT): 0.850
+[epoch 10] train_acc=0.8258 train_loss=0.5168 val_acc=0.7923 lr=4.88e-04
+Per-class val accuracy (summary): IGNORE: 0.733 | NO_GESTURE: 0.706 | STOP_SIGN: 0.875 | PUSHING_HAND_AWAY: 0.859 | SWIPE_DOWN: 0.841 | SWIPE_LEFT: 0.752 | SWIPE_RIGHT: 0.744 | SWIPE_UP: 0.826 | THUMB_DOWN: 0.775 | THUMB_UP: 0.791 | ZOOM_IN: 0.755 | ZOOM_OUT: 0.850
+
+Per-class accuracy:
+   0 (IGNORE): 0.806
+   1 (NO_GESTURE): 0.749
+   2 (STOP_SIGN): 0.835
+   3 (PUSHING_HAND_AWAY): 0.776
+   4 (SWIPE_DOWN): 0.911
+   5 (SWIPE_LEFT): 0.756
+   6 (SWIPE_RIGHT): 0.756
+   7 (SWIPE_UP): 0.760
+   8 (THUMB_DOWN): 0.767
+   9 (THUMB_UP): 0.807
+  10 (ZOOM_IN): 0.763
+  11 (ZOOM_OUT): 0.845
+[epoch 11] train_acc=0.8299 train_loss=0.5014 val_acc=0.7944 lr=4.85e-04
+Per-class val accuracy (summary): IGNORE: 0.806 | NO_GESTURE: 0.749 | STOP_SIGN: 0.835 | PUSHING_HAND_AWAY: 0.776 | SWIPE_DOWN: 0.911 | SWIPE_LEFT: 0.756 | SWIPE_RIGHT: 0.756 | SWIPE_UP: 0.760 | THUMB_DOWN: 0.767 | THUMB_UP: 0.807 | ZOOM_IN: 0.763 | ZOOM_OUT: 0.845
+
+Per-class accuracy:
+   0 (IGNORE): 0.733
+   1 (NO_GESTURE): 0.753
+   2 (STOP_SIGN): 0.855
+   3 (PUSHING_HAND_AWAY): 0.793
+   4 (SWIPE_DOWN): 0.894
+   5 (SWIPE_LEFT): 0.856
+   6 (SWIPE_RIGHT): 0.732
+   7 (SWIPE_UP): 0.843
+   8 (THUMB_DOWN): 0.791
+   9 (THUMB_UP): 0.672
+  10 (ZOOM_IN): 0.763
+  11 (ZOOM_OUT): 0.845
+[epoch 12] train_acc=0.8347 train_loss=0.4857 val_acc=0.7944 lr=4.82e-04
+Per-class val accuracy (summary): IGNORE: 0.733 | NO_GESTURE: 0.753 | STOP_SIGN: 0.855 | PUSHING_HAND_AWAY: 0.793 | SWIPE_DOWN: 0.894 | SWIPE_LEFT: 0.856 | SWIPE_RIGHT: 0.732 | SWIPE_UP: 0.843 | THUMB_DOWN: 0.791 | THUMB_UP: 0.672 | ZOOM_IN: 0.763 | ZOOM_OUT: 0.845
+
+Per-class accuracy:
+   0 (IGNORE): 0.700
+   1 (NO_GESTURE): 0.771
+   2 (STOP_SIGN): 0.875
+   3 (PUSHING_HAND_AWAY): 0.834
+   4 (SWIPE_DOWN): 0.890
+   5 (SWIPE_LEFT): 0.820
+   6 (SWIPE_RIGHT): 0.760
+   7 (SWIPE_UP): 0.864
+   8 (THUMB_DOWN): 0.831
+   9 (THUMB_UP): 0.807
+  10 (ZOOM_IN): 0.743
+  11 (ZOOM_OUT): 0.841
+[epoch 13] train_acc=0.8353 train_loss=0.4694 val_acc=0.8115 lr=4.79e-04
+Per-class val accuracy (summary): IGNORE: 0.700 | NO_GESTURE: 0.771 | STOP_SIGN: 0.875 | PUSHING_HAND_AWAY: 0.834 | SWIPE_DOWN: 0.890 | SWIPE_LEFT: 0.820 | SWIPE_RIGHT: 0.760 | SWIPE_UP: 0.864 | THUMB_DOWN: 0.831 | THUMB_UP: 0.807 | ZOOM_IN: 0.743 | ZOOM_OUT: 0.841
+  → New best model saved! (val_acc: 0.8115)
+
+Per-class accuracy:
+   0 (IGNORE): 0.733
+   1 (NO_GESTURE): 0.792
+   2 (STOP_SIGN): 0.875
+   3 (PUSHING_HAND_AWAY): 0.822
+   4 (SWIPE_DOWN): 0.919
+   5 (SWIPE_LEFT): 0.780
+   6 (SWIPE_RIGHT): 0.760
+   7 (SWIPE_UP): 0.826
+   8 (THUMB_DOWN): 0.811
+   9 (THUMB_UP): 0.828
+  10 (ZOOM_IN): 0.730
+  11 (ZOOM_OUT): 0.863
+[epoch 14] train_acc=0.8422 train_loss=0.4616 val_acc=0.8115 lr=4.76e-04
+Per-class val accuracy (summary): IGNORE: 0.733 | NO_GESTURE: 0.792 | STOP_SIGN: 0.875 | PUSHING_HAND_AWAY: 0.822 | SWIPE_DOWN: 0.919 | SWIPE_LEFT: 0.780 | SWIPE_RIGHT: 0.760 | SWIPE_UP: 0.826 | THUMB_DOWN: 0.811 | THUMB_UP: 0.828 | ZOOM_IN: 0.730 | ZOOM_OUT: 0.863
+
+Per-class accuracy:
+   0 (IGNORE): 0.737
+   1 (NO_GESTURE): 0.745
+   2 (STOP_SIGN): 0.895
+   3 (PUSHING_HAND_AWAY): 0.797
+   4 (SWIPE_DOWN): 0.894
+   5 (SWIPE_LEFT): 0.868
+   6 (SWIPE_RIGHT): 0.825
+   7 (SWIPE_UP): 0.723
+   8 (THUMB_DOWN): 0.795
+   9 (THUMB_UP): 0.750
+  10 (ZOOM_IN): 0.780
+  11 (ZOOM_OUT): 0.794
+[epoch 15] train_acc=0.8425 train_loss=0.4566 val_acc=0.8009 lr=4.73e-04
+Per-class val accuracy (summary): IGNORE: 0.737 | NO_GESTURE: 0.745 | STOP_SIGN: 0.895 | PUSHING_HAND_AWAY: 0.797 | SWIPE_DOWN: 0.894 | SWIPE_LEFT: 0.868 | SWIPE_RIGHT: 0.825 | SWIPE_UP: 0.723 | THUMB_DOWN: 0.795 | THUMB_UP: 0.750 | ZOOM_IN: 0.780 | ZOOM_OUT: 0.794
+
+Per-class accuracy:
+   0 (IGNORE): 0.745
+   1 (NO_GESTURE): 0.749
+   2 (STOP_SIGN): 0.867
+   3 (PUSHING_HAND_AWAY): 0.809
+   4 (SWIPE_DOWN): 0.923
+   5 (SWIPE_LEFT): 0.848
+   6 (SWIPE_RIGHT): 0.711
+   7 (SWIPE_UP): 0.880
+   8 (THUMB_DOWN): 0.851
+   9 (THUMB_UP): 0.795
+  10 (ZOOM_IN): 0.743
+  11 (ZOOM_OUT): 0.854
+[epoch 16] train_acc=0.8456 train_loss=0.4440 val_acc=0.8149 lr=4.69e-04
+Per-class val accuracy (summary): IGNORE: 0.745 | NO_GESTURE: 0.749 | STOP_SIGN: 0.867 | PUSHING_HAND_AWAY: 0.809 | SWIPE_DOWN: 0.923 | SWIPE_LEFT: 0.848 | SWIPE_RIGHT: 0.711 | SWIPE_UP: 0.880 | THUMB_DOWN: 0.851 | THUMB_UP: 0.795 | ZOOM_IN: 0.743 | ZOOM_OUT: 0.854
+  → New best model saved! (val_acc: 0.8149)
+
+Per-class accuracy:
+   0 (IGNORE): 0.765
+   1 (NO_GESTURE): 0.766
+   2 (STOP_SIGN): 0.871
+   3 (PUSHING_HAND_AWAY): 0.776
+   4 (SWIPE_DOWN): 0.898
+   5 (SWIPE_LEFT): 0.848
+   6 (SWIPE_RIGHT): 0.760
+   7 (SWIPE_UP): 0.855
+   8 (THUMB_DOWN): 0.807
+   9 (THUMB_UP): 0.787
+  10 (ZOOM_IN): 0.776
+  11 (ZOOM_OUT): 0.858
+[epoch 17] train_acc=0.8503 train_loss=0.4299 val_acc=0.8143 lr=4.65e-04
+Per-class val accuracy (summary): IGNORE: 0.765 | NO_GESTURE: 0.766 | STOP_SIGN: 0.871 | PUSHING_HAND_AWAY: 0.776 | SWIPE_DOWN: 0.898 | SWIPE_LEFT: 0.848 | SWIPE_RIGHT: 0.760 | SWIPE_UP: 0.855 | THUMB_DOWN: 0.807 | THUMB_UP: 0.787 | ZOOM_IN: 0.776 | ZOOM_OUT: 0.858
+
+Per-class accuracy:
+   0 (IGNORE): 0.777
+   1 (NO_GESTURE): 0.753
+   2 (STOP_SIGN): 0.875
+   3 (PUSHING_HAND_AWAY): 0.776
+   4 (SWIPE_DOWN): 0.878
+   5 (SWIPE_LEFT): 0.872
+   6 (SWIPE_RIGHT): 0.760
+   7 (SWIPE_UP): 0.860
+   8 (THUMB_DOWN): 0.811
+   9 (THUMB_UP): 0.770
+  10 (ZOOM_IN): 0.788
+  11 (ZOOM_OUT): 0.876
+[epoch 18] train_acc=0.8524 train_loss=0.4249 val_acc=0.8167 lr=4.61e-04
+Per-class val accuracy (summary): IGNORE: 0.777 | NO_GESTURE: 0.753 | STOP_SIGN: 0.875 | PUSHING_HAND_AWAY: 0.776 | SWIPE_DOWN: 0.878 | SWIPE_LEFT: 0.872 | SWIPE_RIGHT: 0.760 | SWIPE_UP: 0.860 | THUMB_DOWN: 0.811 | THUMB_UP: 0.770 | ZOOM_IN: 0.788 | ZOOM_OUT: 0.876
+  → New best model saved! (val_acc: 0.8167)
+
+Per-class accuracy:
+   0 (IGNORE): 0.769
+   1 (NO_GESTURE): 0.758
+   2 (STOP_SIGN): 0.875
+   3 (PUSHING_HAND_AWAY): 0.784
+   4 (SWIPE_DOWN): 0.935
+   5 (SWIPE_LEFT): 0.864
+   6 (SWIPE_RIGHT): 0.711
+   7 (SWIPE_UP): 0.839
+   8 (THUMB_DOWN): 0.851
+   9 (THUMB_UP): 0.820
+  10 (ZOOM_IN): 0.730
+  11 (ZOOM_OUT): 0.871
+[epoch 19] train_acc=0.8572 train_loss=0.4145 val_acc=0.8177 lr=4.57e-04
+Per-class val accuracy (summary): IGNORE: 0.769 | NO_GESTURE: 0.758 | STOP_SIGN: 0.875 | PUSHING_HAND_AWAY: 0.784 | SWIPE_DOWN: 0.935 | SWIPE_LEFT: 0.864 | SWIPE_RIGHT: 0.711 | SWIPE_UP: 0.839 | THUMB_DOWN: 0.851 | THUMB_UP: 0.820 | ZOOM_IN: 0.730 | ZOOM_OUT: 0.871
+  → New best model saved! (val_acc: 0.8177)
+
+Per-class accuracy:
+   0 (IGNORE): 0.761
+   1 (NO_GESTURE): 0.775
+   2 (STOP_SIGN): 0.883
+   3 (PUSHING_HAND_AWAY): 0.863
+   4 (SWIPE_DOWN): 0.907
+   5 (SWIPE_LEFT): 0.808
+   6 (SWIPE_RIGHT): 0.894
+   7 (SWIPE_UP): 0.731
+   8 (THUMB_DOWN): 0.795
+   9 (THUMB_UP): 0.828
+  10 (ZOOM_IN): 0.759
+  11 (ZOOM_OUT): 0.841
+[epoch 20] train_acc=0.8587 train_loss=0.4020 val_acc=0.8208 lr=4.52e-04
+Per-class val accuracy (summary): IGNORE: 0.761 | NO_GESTURE: 0.775 | STOP_SIGN: 0.883 | PUSHING_HAND_AWAY: 0.863 | SWIPE_DOWN: 0.907 | SWIPE_LEFT: 0.808 | SWIPE_RIGHT: 0.894 | SWIPE_UP: 0.731 | THUMB_DOWN: 0.795 | THUMB_UP: 0.828 | ZOOM_IN: 0.759 | ZOOM_OUT: 0.841
+  → New best model saved! (val_acc: 0.8208)
+
+Per-class accuracy:
+   0 (IGNORE): 0.777
+   1 (NO_GESTURE): 0.771
+   2 (STOP_SIGN): 0.863
+   3 (PUSHING_HAND_AWAY): 0.772
+   4 (SWIPE_DOWN): 0.923
+   5 (SWIPE_LEFT): 0.832
+   6 (SWIPE_RIGHT): 0.748
+   7 (SWIPE_UP): 0.872
+   8 (THUMB_DOWN): 0.839
+   9 (THUMB_UP): 0.779
+  10 (ZOOM_IN): 0.751
+  11 (ZOOM_OUT): 0.863
+[epoch 21] train_acc=0.8617 train_loss=0.3982 val_acc=0.8160 lr=4.48e-04
+Per-class val accuracy (summary): IGNORE: 0.777 | NO_GESTURE: 0.771 | STOP_SIGN: 0.863 | PUSHING_HAND_AWAY: 0.772 | SWIPE_DOWN: 0.923 | SWIPE_LEFT: 0.832 | SWIPE_RIGHT: 0.748 | SWIPE_UP: 0.872 | THUMB_DOWN: 0.839 | THUMB_UP: 0.779 | ZOOM_IN: 0.751 | ZOOM_OUT: 0.863
+
+Per-class accuracy:
+   0 (IGNORE): 0.745
+   1 (NO_GESTURE): 0.766
+   2 (STOP_SIGN): 0.867
+   3 (PUSHING_HAND_AWAY): 0.846
+   4 (SWIPE_DOWN): 0.919
+   5 (SWIPE_LEFT): 0.800
+   6 (SWIPE_RIGHT): 0.760
+   7 (SWIPE_UP): 0.851
+   8 (THUMB_DOWN): 0.815
+   9 (THUMB_UP): 0.840
+  10 (ZOOM_IN): 0.693
+  11 (ZOOM_OUT): 0.876
+[epoch 22] train_acc=0.8635 train_loss=0.3875 val_acc=0.8149 lr=4.43e-04
+Per-class val accuracy (summary): IGNORE: 0.745 | NO_GESTURE: 0.766 | STOP_SIGN: 0.867 | PUSHING_HAND_AWAY: 0.846 | SWIPE_DOWN: 0.919 | SWIPE_LEFT: 0.800 | SWIPE_RIGHT: 0.760 | SWIPE_UP: 0.851 | THUMB_DOWN: 0.815 | THUMB_UP: 0.840 | ZOOM_IN: 0.693 | ZOOM_OUT: 0.876
+
+Per-class accuracy:
+   0 (IGNORE): 0.745
+   1 (NO_GESTURE): 0.784
+   2 (STOP_SIGN): 0.867
+   3 (PUSHING_HAND_AWAY): 0.801
+   4 (SWIPE_DOWN): 0.919
+   5 (SWIPE_LEFT): 0.816
+   6 (SWIPE_RIGHT): 0.760
+   7 (SWIPE_UP): 0.822
+   8 (THUMB_DOWN): 0.807
+   9 (THUMB_UP): 0.824
+  10 (ZOOM_IN): 0.793
+  11 (ZOOM_OUT): 0.871
+[epoch 23] train_acc=0.8661 train_loss=0.3824 val_acc=0.8173 lr=4.38e-04
+Per-class val accuracy (summary): IGNORE: 0.745 | NO_GESTURE: 0.784 | STOP_SIGN: 0.867 | PUSHING_HAND_AWAY: 0.801 | SWIPE_DOWN: 0.919 | SWIPE_LEFT: 0.816 | SWIPE_RIGHT: 0.760 | SWIPE_UP: 0.822 | THUMB_DOWN: 0.807 | THUMB_UP: 0.824 | ZOOM_IN: 0.793 | ZOOM_OUT: 0.871
+
+Per-class accuracy:
+   0 (IGNORE): 0.725
+   1 (NO_GESTURE): 0.792
+   2 (STOP_SIGN): 0.899
+   3 (PUSHING_HAND_AWAY): 0.851
+   4 (SWIPE_DOWN): 0.878
+   5 (SWIPE_LEFT): 0.844
+   6 (SWIPE_RIGHT): 0.744
+   7 (SWIPE_UP): 0.843
+   8 (THUMB_DOWN): 0.843
+   9 (THUMB_UP): 0.824
+  10 (ZOOM_IN): 0.693
+  11 (ZOOM_OUT): 0.811
+[epoch 24] train_acc=0.8676 train_loss=0.3750 val_acc=0.8125 lr=4.32e-04
+Per-class val accuracy (summary): IGNORE: 0.725 | NO_GESTURE: 0.792 | STOP_SIGN: 0.899 | PUSHING_HAND_AWAY: 0.851 | SWIPE_DOWN: 0.878 | SWIPE_LEFT: 0.844 | SWIPE_RIGHT: 0.744 | SWIPE_UP: 0.843 | THUMB_DOWN: 0.843 | THUMB_UP: 0.824 | ZOOM_IN: 0.693 | ZOOM_OUT: 0.811
+
+Per-class accuracy:
+   0 (IGNORE): 0.777
+   1 (NO_GESTURE): 0.771
+   2 (STOP_SIGN): 0.823
+   3 (PUSHING_HAND_AWAY): 0.805
+   4 (SWIPE_DOWN): 0.931
+   5 (SWIPE_LEFT): 0.840
+   6 (SWIPE_RIGHT): 0.752
+   7 (SWIPE_UP): 0.864
+   8 (THUMB_DOWN): 0.811
+   9 (THUMB_UP): 0.787
+  10 (ZOOM_IN): 0.797
+  11 (ZOOM_OUT): 0.867
+[epoch 25] train_acc=0.8739 train_loss=0.3625 val_acc=0.8187 lr=4.27e-04
+Per-class val accuracy (summary): IGNORE: 0.777 | NO_GESTURE: 0.771 | STOP_SIGN: 0.823 | PUSHING_HAND_AWAY: 0.805 | SWIPE_DOWN: 0.931 | SWIPE_LEFT: 0.840 | SWIPE_RIGHT: 0.752 | SWIPE_UP: 0.864 | THUMB_DOWN: 0.811 | THUMB_UP: 0.787 | ZOOM_IN: 0.797 | ZOOM_OUT: 0.867
+
+Per-class accuracy:
+   0 (IGNORE): 0.765
+   1 (NO_GESTURE): 0.779
+   2 (STOP_SIGN): 0.879
+   3 (PUSHING_HAND_AWAY): 0.805
+   4 (SWIPE_DOWN): 0.907
+   5 (SWIPE_LEFT): 0.872
+   6 (SWIPE_RIGHT): 0.748
+   7 (SWIPE_UP): 0.822
+   8 (THUMB_DOWN): 0.811
+   9 (THUMB_UP): 0.852
+  10 (ZOOM_IN): 0.747
+  11 (ZOOM_OUT): 0.845
+[epoch 26] train_acc=0.8782 train_loss=0.3514 val_acc=0.8197 lr=4.21e-04
+Per-class val accuracy (summary): IGNORE: 0.765 | NO_GESTURE: 0.779 | STOP_SIGN: 0.879 | PUSHING_HAND_AWAY: 0.805 | SWIPE_DOWN: 0.907 | SWIPE_LEFT: 0.872 | SWIPE_RIGHT: 0.748 | SWIPE_UP: 0.822 | THUMB_DOWN: 0.811 | THUMB_UP: 0.852 | ZOOM_IN: 0.747 | ZOOM_OUT: 0.845
+
+Per-class accuracy:
+   0 (IGNORE): 0.785
+   1 (NO_GESTURE): 0.779
+   2 (STOP_SIGN): 0.851
+   3 (PUSHING_HAND_AWAY): 0.793
+   4 (SWIPE_DOWN): 0.927
+   5 (SWIPE_LEFT): 0.880
+   6 (SWIPE_RIGHT): 0.752
+   7 (SWIPE_UP): 0.839
+   8 (THUMB_DOWN): 0.775
+   9 (THUMB_UP): 0.811
+  10 (ZOOM_IN): 0.747
+  11 (ZOOM_OUT): 0.781
+[epoch 27] train_acc=0.8742 train_loss=0.3548 val_acc=0.8105 lr=4.15e-04
+Per-class val accuracy (summary): IGNORE: 0.785 | NO_GESTURE: 0.779 | STOP_SIGN: 0.851 | PUSHING_HAND_AWAY: 0.793 | SWIPE_DOWN: 0.927 | SWIPE_LEFT: 0.880 | SWIPE_RIGHT: 0.752 | SWIPE_UP: 0.839 | THUMB_DOWN: 0.775 | THUMB_UP: 0.811 | ZOOM_IN: 0.747 | ZOOM_OUT: 0.781
+
+Per-class accuracy:
+   0 (IGNORE): 0.773
+   1 (NO_GESTURE): 0.758
+   2 (STOP_SIGN): 0.859
+   3 (PUSHING_HAND_AWAY): 0.830
+   4 (SWIPE_DOWN): 0.923
+   5 (SWIPE_LEFT): 0.864
+   6 (SWIPE_RIGHT): 0.886
+   7 (SWIPE_UP): 0.727
+   8 (THUMB_DOWN): 0.747
+   9 (THUMB_UP): 0.857
+  10 (ZOOM_IN): 0.784
+  11 (ZOOM_OUT): 0.850
+[epoch 28] train_acc=0.8779 train_loss=0.3460 val_acc=0.8218 lr=4.09e-04
+Per-class val accuracy (summary): IGNORE: 0.773 | NO_GESTURE: 0.758 | STOP_SIGN: 0.859 | PUSHING_HAND_AWAY: 0.830 | SWIPE_DOWN: 0.923 | SWIPE_LEFT: 0.864 | SWIPE_RIGHT: 0.886 | SWIPE_UP: 0.727 | THUMB_DOWN: 0.747 | THUMB_UP: 0.857 | ZOOM_IN: 0.784 | ZOOM_OUT: 0.850
+  → New best model saved! (val_acc: 0.8218)
+
+Per-class accuracy:
+   0 (IGNORE): 0.761
+   1 (NO_GESTURE): 0.762
+   2 (STOP_SIGN): 0.867
+   3 (PUSHING_HAND_AWAY): 0.830
+   4 (SWIPE_DOWN): 0.911
+   5 (SWIPE_LEFT): 0.800
+   6 (SWIPE_RIGHT): 0.748
+   7 (SWIPE_UP): 0.855
+   8 (THUMB_DOWN): 0.799
+   9 (THUMB_UP): 0.803
+  10 (ZOOM_IN): 0.784
+  11 (ZOOM_OUT): 0.867
+[epoch 29] train_acc=0.8801 train_loss=0.3387 val_acc=0.8156 lr=4.03e-04
+Per-class val accuracy (summary): IGNORE: 0.761 | NO_GESTURE: 0.762 | STOP_SIGN: 0.867 | PUSHING_HAND_AWAY: 0.830 | SWIPE_DOWN: 0.911 | SWIPE_LEFT: 0.800 | SWIPE_RIGHT: 0.748 | SWIPE_UP: 0.855 | THUMB_DOWN: 0.799 | THUMB_UP: 0.803 | ZOOM_IN: 0.784 | ZOOM_OUT: 0.867
+
+Per-class accuracy:
+   0 (IGNORE): 0.781
+   1 (NO_GESTURE): 0.753
+   2 (STOP_SIGN): 0.871
+   3 (PUSHING_HAND_AWAY): 0.817
+   4 (SWIPE_DOWN): 0.902
+   5 (SWIPE_LEFT): 0.864
+   6 (SWIPE_RIGHT): 0.752
+   7 (SWIPE_UP): 0.818
+   8 (THUMB_DOWN): 0.843
+   9 (THUMB_UP): 0.762
+  10 (ZOOM_IN): 0.726
+  11 (ZOOM_OUT): 0.863
+[epoch 30] train_acc=0.8840 train_loss=0.3321 val_acc=0.8132 lr=3.97e-04
+Per-class val accuracy (summary): IGNORE: 0.781 | NO_GESTURE: 0.753 | STOP_SIGN: 0.871 | PUSHING_HAND_AWAY: 0.817 | SWIPE_DOWN: 0.902 | SWIPE_LEFT: 0.864 | SWIPE_RIGHT: 0.752 | SWIPE_UP: 0.818 | THUMB_DOWN: 0.843 | THUMB_UP: 0.762 | ZOOM_IN: 0.726 | ZOOM_OUT: 0.863
+
+Per-class accuracy:
+   0 (IGNORE): 0.773
+   1 (NO_GESTURE): 0.745
+   2 (STOP_SIGN): 0.851
+   3 (PUSHING_HAND_AWAY): 0.813
+   4 (SWIPE_DOWN): 0.923
+   5 (SWIPE_LEFT): 0.848
+   6 (SWIPE_RIGHT): 0.752
+   7 (SWIPE_UP): 0.855
+   8 (THUMB_DOWN): 0.787
+   9 (THUMB_UP): 0.758
+  10 (ZOOM_IN): 0.797
+  11 (ZOOM_OUT): 0.845
+[epoch 31] train_acc=0.8865 train_loss=0.3209 val_acc=0.8125 lr=3.91e-04
+Per-class val accuracy (summary): IGNORE: 0.773 | NO_GESTURE: 0.745 | STOP_SIGN: 0.851 | PUSHING_HAND_AWAY: 0.813 | SWIPE_DOWN: 0.923 | SWIPE_LEFT: 0.848 | SWIPE_RIGHT: 0.752 | SWIPE_UP: 0.855 | THUMB_DOWN: 0.787 | THUMB_UP: 0.758 | ZOOM_IN: 0.797 | ZOOM_OUT: 0.845
+
+Per-class accuracy:
+   0 (IGNORE): 0.769
+   1 (NO_GESTURE): 0.766
+   2 (STOP_SIGN): 0.883
+   3 (PUSHING_HAND_AWAY): 0.846
+   4 (SWIPE_DOWN): 0.915
+   5 (SWIPE_LEFT): 0.836
+   6 (SWIPE_RIGHT): 0.744
+   7 (SWIPE_UP): 0.855
+   8 (THUMB_DOWN): 0.847
+   9 (THUMB_UP): 0.770
+  10 (ZOOM_IN): 0.739
+  11 (ZOOM_OUT): 0.837
+[epoch 32] train_acc=0.8866 train_loss=0.3211 val_acc=0.8177 lr=3.84e-04
+Per-class val accuracy (summary): IGNORE: 0.769 | NO_GESTURE: 0.766 | STOP_SIGN: 0.883 | PUSHING_HAND_AWAY: 0.846 | SWIPE_DOWN: 0.915 | SWIPE_LEFT: 0.836 | SWIPE_RIGHT: 0.744 | SWIPE_UP: 0.855 | THUMB_DOWN: 0.847 | THUMB_UP: 0.770 | ZOOM_IN: 0.739 | ZOOM_OUT: 0.837
+
+Per-class accuracy:
+   0 (IGNORE): 0.785
+   1 (NO_GESTURE): 0.753
+   2 (STOP_SIGN): 0.875
+   3 (PUSHING_HAND_AWAY): 0.768
+   4 (SWIPE_DOWN): 0.919
+   5 (SWIPE_LEFT): 0.884
+   6 (SWIPE_RIGHT): 0.760
+   7 (SWIPE_UP): 0.810
+   8 (THUMB_DOWN): 0.795
+   9 (THUMB_UP): 0.783
+  10 (ZOOM_IN): 0.772
+  11 (ZOOM_OUT): 0.845
+[epoch 33] train_acc=0.8885 train_loss=0.3152 val_acc=0.8129 lr=3.77e-04
+Per-class val accuracy (summary): IGNORE: 0.785 | NO_GESTURE: 0.753 | STOP_SIGN: 0.875 | PUSHING_HAND_AWAY: 0.768 | SWIPE_DOWN: 0.919 | SWIPE_LEFT: 0.884 | SWIPE_RIGHT: 0.760 | SWIPE_UP: 0.810 | THUMB_DOWN: 0.795 | THUMB_UP: 0.783 | ZOOM_IN: 0.772 | ZOOM_OUT: 0.845
+
+Per-class accuracy:
+   0 (IGNORE): 0.761
+   1 (NO_GESTURE): 0.788
+   2 (STOP_SIGN): 0.867
+   3 (PUSHING_HAND_AWAY): 0.830
+   4 (SWIPE_DOWN): 0.931
+   5 (SWIPE_LEFT): 0.848
+   6 (SWIPE_RIGHT): 0.744
+   7 (SWIPE_UP): 0.831
+   8 (THUMB_DOWN): 0.831
+   9 (THUMB_UP): 0.783
+  10 (ZOOM_IN): 0.788
+  11 (ZOOM_OUT): 0.837
+[epoch 34] train_acc=0.8919 train_loss=0.3082 val_acc=0.8201 lr=3.70e-04
+Per-class val accuracy (summary): IGNORE: 0.761 | NO_GESTURE: 0.788 | STOP_SIGN: 0.867 | PUSHING_HAND_AWAY: 0.830 | SWIPE_DOWN: 0.931 | SWIPE_LEFT: 0.848 | SWIPE_RIGHT: 0.744 | SWIPE_UP: 0.831 | THUMB_DOWN: 0.831 | THUMB_UP: 0.783 | ZOOM_IN: 0.788 | ZOOM_OUT: 0.837
+
+Per-class accuracy:
+   0 (IGNORE): 0.765
+   1 (NO_GESTURE): 0.805
+   2 (STOP_SIGN): 0.883
+   3 (PUSHING_HAND_AWAY): 0.846
+   4 (SWIPE_DOWN): 0.919
+   5 (SWIPE_LEFT): 0.820
+   6 (SWIPE_RIGHT): 0.752
+   7 (SWIPE_UP): 0.818
+   8 (THUMB_DOWN): 0.815
+   9 (THUMB_UP): 0.824
+  10 (ZOOM_IN): 0.747
+  11 (ZOOM_OUT): 0.833
+[epoch 35] train_acc=0.8946 train_loss=0.2986 val_acc=0.8191 lr=3.63e-04
+Per-class val accuracy (summary): IGNORE: 0.765 | NO_GESTURE: 0.805 | STOP_SIGN: 0.883 | PUSHING_HAND_AWAY: 0.846 | SWIPE_DOWN: 0.919 | SWIPE_LEFT: 0.820 | SWIPE_RIGHT: 0.752 | SWIPE_UP: 0.818 | THUMB_DOWN: 0.815 | THUMB_UP: 0.824 | ZOOM_IN: 0.747 | ZOOM_OUT: 0.833
+
+Per-class accuracy:
+   0 (IGNORE): 0.773
+   1 (NO_GESTURE): 0.775
+   2 (STOP_SIGN): 0.847
+   3 (PUSHING_HAND_AWAY): 0.846
+   4 (SWIPE_DOWN): 0.931
+   5 (SWIPE_LEFT): 0.800
+   6 (SWIPE_RIGHT): 0.756
+   7 (SWIPE_UP): 0.851
+   8 (THUMB_DOWN): 0.803
+   9 (THUMB_UP): 0.832
+  10 (ZOOM_IN): 0.768
+  11 (ZOOM_OUT): 0.858
+[epoch 36] train_acc=0.8928 train_loss=0.2999 val_acc=0.8201 lr=3.56e-04
+Per-class val accuracy (summary): IGNORE: 0.773 | NO_GESTURE: 0.775 | STOP_SIGN: 0.847 | PUSHING_HAND_AWAY: 0.846 | SWIPE_DOWN: 0.931 | SWIPE_LEFT: 0.800 | SWIPE_RIGHT: 0.756 | SWIPE_UP: 0.851 | THUMB_DOWN: 0.803 | THUMB_UP: 0.832 | ZOOM_IN: 0.768 | ZOOM_OUT: 0.858
+
+Per-class accuracy:
+   0 (IGNORE): 0.769
+   1 (NO_GESTURE): 0.792
+   2 (STOP_SIGN): 0.859
+   3 (PUSHING_HAND_AWAY): 0.838
+   4 (SWIPE_DOWN): 0.919
+   5 (SWIPE_LEFT): 0.836
+   6 (SWIPE_RIGHT): 0.756
+   7 (SWIPE_UP): 0.831
+   8 (THUMB_DOWN): 0.807
+   9 (THUMB_UP): 0.795
+  10 (ZOOM_IN): 0.743
+  11 (ZOOM_OUT): 0.841
+[epoch 37] train_acc=0.8999 train_loss=0.2872 val_acc=0.8156 lr=3.49e-04
+Per-class val accuracy (summary): IGNORE: 0.769 | NO_GESTURE: 0.792 | STOP_SIGN: 0.859 | PUSHING_HAND_AWAY: 0.838 | SWIPE_DOWN: 0.919 | SWIPE_LEFT: 0.836 | SWIPE_RIGHT: 0.756 | SWIPE_UP: 0.831 | THUMB_DOWN: 0.807 | THUMB_UP: 0.795 | ZOOM_IN: 0.743 | ZOOM_OUT: 0.841
+
+Per-class accuracy:
+   0 (IGNORE): 0.794
+   1 (NO_GESTURE): 0.775
+   2 (STOP_SIGN): 0.855
+   3 (PUSHING_HAND_AWAY): 0.763
+   4 (SWIPE_DOWN): 0.923
+   5 (SWIPE_LEFT): 0.860
+   6 (SWIPE_RIGHT): 0.740
+   7 (SWIPE_UP): 0.818
+   8 (THUMB_DOWN): 0.835
+   9 (THUMB_UP): 0.787
+  10 (ZOOM_IN): 0.776
+  11 (ZOOM_OUT): 0.858
+[epoch 38] train_acc=0.8969 train_loss=0.2883 val_acc=0.8156 lr=3.42e-04
+Per-class val accuracy (summary): IGNORE: 0.794 | NO_GESTURE: 0.775 | STOP_SIGN: 0.855 | PUSHING_HAND_AWAY: 0.763 | SWIPE_DOWN: 0.923 | SWIPE_LEFT: 0.860 | SWIPE_RIGHT: 0.740 | SWIPE_UP: 0.818 | THUMB_DOWN: 0.835 | THUMB_UP: 0.787 | ZOOM_IN: 0.776 | ZOOM_OUT: 0.858
+
+Per-class accuracy:
+   0 (IGNORE): 0.773
+   1 (NO_GESTURE): 0.788
+   2 (STOP_SIGN): 0.867
+   3 (PUSHING_HAND_AWAY): 0.817
+   4 (SWIPE_DOWN): 0.894
+   5 (SWIPE_LEFT): 0.848
+   6 (SWIPE_RIGHT): 0.748
+   7 (SWIPE_UP): 0.839
+   8 (THUMB_DOWN): 0.775
+   9 (THUMB_UP): 0.783
+  10 (ZOOM_IN): 0.797
+  11 (ZOOM_OUT): 0.845
+[epoch 39] train_acc=0.9010 train_loss=0.2781 val_acc=0.8146 lr=3.35e-04
+Per-class val accuracy (summary): IGNORE: 0.773 | NO_GESTURE: 0.788 | STOP_SIGN: 0.867 | PUSHING_HAND_AWAY: 0.817 | SWIPE_DOWN: 0.894 | SWIPE_LEFT: 0.848 | SWIPE_RIGHT: 0.748 | SWIPE_UP: 0.839 | THUMB_DOWN: 0.775 | THUMB_UP: 0.783 | ZOOM_IN: 0.797 | ZOOM_OUT: 0.845
+
+Per-class accuracy:
+   0 (IGNORE): 0.749
+   1 (NO_GESTURE): 0.766
+   2 (STOP_SIGN): 0.879
+   3 (PUSHING_HAND_AWAY): 0.809
+   4 (SWIPE_DOWN): 0.894
+   5 (SWIPE_LEFT): 0.860
+   6 (SWIPE_RIGHT): 0.748
+   7 (SWIPE_UP): 0.847
+   8 (THUMB_DOWN): 0.831
+   9 (THUMB_UP): 0.791
+  10 (ZOOM_IN): 0.751
+  11 (ZOOM_OUT): 0.833
+[epoch 40] train_acc=0.9019 train_loss=0.2736 val_acc=0.8136 lr=3.27e-04
+Per-class val accuracy (summary): IGNORE: 0.749 | NO_GESTURE: 0.766 | STOP_SIGN: 0.879 | PUSHING_HAND_AWAY: 0.809 | SWIPE_DOWN: 0.894 | SWIPE_LEFT: 0.860 | SWIPE_RIGHT: 0.748 | SWIPE_UP: 0.847 | THUMB_DOWN: 0.831 | THUMB_UP: 0.791 | ZOOM_IN: 0.751 | ZOOM_OUT: 0.833
+
+Per-class accuracy:
+   0 (IGNORE): 0.769
+   1 (NO_GESTURE): 0.797
+   2 (STOP_SIGN): 0.871
+   3 (PUSHING_HAND_AWAY): 0.855
+   4 (SWIPE_DOWN): 0.907
+   5 (SWIPE_LEFT): 0.828
+   6 (SWIPE_RIGHT): 0.728
+   7 (SWIPE_UP): 0.814
+   8 (THUMB_DOWN): 0.823
+   9 (THUMB_UP): 0.803
+  10 (ZOOM_IN): 0.739
+  11 (ZOOM_OUT): 0.811
+[epoch 41] train_acc=0.9061 train_loss=0.2673 val_acc=0.8122 lr=3.20e-04
+Per-class val accuracy (summary): IGNORE: 0.769 | NO_GESTURE: 0.797 | STOP_SIGN: 0.871 | PUSHING_HAND_AWAY: 0.855 | SWIPE_DOWN: 0.907 | SWIPE_LEFT: 0.828 | SWIPE_RIGHT: 0.728 | SWIPE_UP: 0.814 | THUMB_DOWN: 0.823 | THUMB_UP: 0.803 | ZOOM_IN: 0.739 | ZOOM_OUT: 0.811
+
+Per-class accuracy:
+   0 (IGNORE): 0.757
+   1 (NO_GESTURE): 0.788
+   2 (STOP_SIGN): 0.875
+   3 (PUSHING_HAND_AWAY): 0.838
+   4 (SWIPE_DOWN): 0.902
+   5 (SWIPE_LEFT): 0.836
+   6 (SWIPE_RIGHT): 0.732
+   7 (SWIPE_UP): 0.822
+   8 (THUMB_DOWN): 0.835
+   9 (THUMB_UP): 0.730
+  10 (ZOOM_IN): 0.788
+  11 (ZOOM_OUT): 0.837
+[epoch 42] train_acc=0.9065 train_loss=0.2644 val_acc=0.8119 lr=3.12e-04
+Per-class val accuracy (summary): IGNORE: 0.757 | NO_GESTURE: 0.788 | STOP_SIGN: 0.875 | PUSHING_HAND_AWAY: 0.838 | SWIPE_DOWN: 0.902 | SWIPE_LEFT: 0.836 | SWIPE_RIGHT: 0.732 | SWIPE_UP: 0.822 | THUMB_DOWN: 0.835 | THUMB_UP: 0.730 | ZOOM_IN: 0.788 | ZOOM_OUT: 0.837
+
+Per-class accuracy:
+   0 (IGNORE): 0.781
+   1 (NO_GESTURE): 0.779
+   2 (STOP_SIGN): 0.863
+   3 (PUSHING_HAND_AWAY): 0.809
+   4 (SWIPE_DOWN): 0.907
+   5 (SWIPE_LEFT): 0.864
+   6 (SWIPE_RIGHT): 0.736
+   7 (SWIPE_UP): 0.822
+   8 (THUMB_DOWN): 0.823
+   9 (THUMB_UP): 0.795
+  10 (ZOOM_IN): 0.776
+  11 (ZOOM_OUT): 0.837
+[epoch 43] train_acc=0.9081 train_loss=0.2598 val_acc=0.8163 lr=3.05e-04
+Per-class val accuracy (summary): IGNORE: 0.781 | NO_GESTURE: 0.779 | STOP_SIGN: 0.863 | PUSHING_HAND_AWAY: 0.809 | SWIPE_DOWN: 0.907 | SWIPE_LEFT: 0.864 | SWIPE_RIGHT: 0.736 | SWIPE_UP: 0.822 | THUMB_DOWN: 0.823 | THUMB_UP: 0.795 | ZOOM_IN: 0.776 | ZOOM_OUT: 0.837
+
+Per-class accuracy:
+   0 (IGNORE): 0.753
+   1 (NO_GESTURE): 0.792
+   2 (STOP_SIGN): 0.871
+   3 (PUSHING_HAND_AWAY): 0.805
+   4 (SWIPE_DOWN): 0.919
+   5 (SWIPE_LEFT): 0.832
+   6 (SWIPE_RIGHT): 0.756
+   7 (SWIPE_UP): 0.843
+   8 (THUMB_DOWN): 0.835
+   9 (THUMB_UP): 0.811
+  10 (ZOOM_IN): 0.768
+  11 (ZOOM_OUT): 0.845
+[epoch 44] train_acc=0.9087 train_loss=0.2548 val_acc=0.8194 lr=2.97e-04
+Per-class val accuracy (summary): IGNORE: 0.753 | NO_GESTURE: 0.792 | STOP_SIGN: 0.871 | PUSHING_HAND_AWAY: 0.805 | SWIPE_DOWN: 0.919 | SWIPE_LEFT: 0.832 | SWIPE_RIGHT: 0.756 | SWIPE_UP: 0.843 | THUMB_DOWN: 0.835 | THUMB_UP: 0.811 | ZOOM_IN: 0.768 | ZOOM_OUT: 0.845
+
+Per-class accuracy:
+   0 (IGNORE): 0.769
+   1 (NO_GESTURE): 0.758
+   2 (STOP_SIGN): 0.859
+   3 (PUSHING_HAND_AWAY): 0.842
+   4 (SWIPE_DOWN): 0.898
+   5 (SWIPE_LEFT): 0.848
+   6 (SWIPE_RIGHT): 0.740
+   7 (SWIPE_UP): 0.847
+   8 (THUMB_DOWN): 0.839
+   9 (THUMB_UP): 0.799
+  10 (ZOOM_IN): 0.768
+  11 (ZOOM_OUT): 0.833
+[epoch 45] train_acc=0.9101 train_loss=0.2548 val_acc=0.8170 lr=2.89e-04
+Per-class val accuracy (summary): IGNORE: 0.769 | NO_GESTURE: 0.758 | STOP_SIGN: 0.859 | PUSHING_HAND_AWAY: 0.842 | SWIPE_DOWN: 0.898 | SWIPE_LEFT: 0.848 | SWIPE_RIGHT: 0.740 | SWIPE_UP: 0.847 | THUMB_DOWN: 0.839 | THUMB_UP: 0.799 | ZOOM_IN: 0.768 | ZOOM_OUT: 0.833
+
+Per-class accuracy:
+   0 (IGNORE): 0.753
+   1 (NO_GESTURE): 0.779
+   2 (STOP_SIGN): 0.843
+   3 (PUSHING_HAND_AWAY): 0.846
+   4 (SWIPE_DOWN): 0.902
+   5 (SWIPE_LEFT): 0.812
+   6 (SWIPE_RIGHT): 0.772
+   7 (SWIPE_UP): 0.860
+   8 (THUMB_DOWN): 0.819
+   9 (THUMB_UP): 0.791
+  10 (ZOOM_IN): 0.763
+  11 (ZOOM_OUT): 0.845
+[epoch 46] train_acc=0.9126 train_loss=0.2487 val_acc=0.8156 lr=2.81e-04
+Per-class val accuracy (summary): IGNORE: 0.753 | NO_GESTURE: 0.779 | STOP_SIGN: 0.843 | PUSHING_HAND_AWAY: 0.846 | SWIPE_DOWN: 0.902 | SWIPE_LEFT: 0.812 | SWIPE_RIGHT: 0.772 | SWIPE_UP: 0.860 | THUMB_DOWN: 0.819 | THUMB_UP: 0.791 | ZOOM_IN: 0.763 | ZOOM_OUT: 0.845
+
+Per-class accuracy:
+   0 (IGNORE): 0.769
+   1 (NO_GESTURE): 0.762
+   2 (STOP_SIGN): 0.875
+   3 (PUSHING_HAND_AWAY): 0.805
+   4 (SWIPE_DOWN): 0.911
+   5 (SWIPE_LEFT): 0.848
+   6 (SWIPE_RIGHT): 0.740
+   7 (SWIPE_UP): 0.839
+   8 (THUMB_DOWN): 0.811
+   9 (THUMB_UP): 0.811
+  10 (ZOOM_IN): 0.755
+  11 (ZOOM_OUT): 0.845
+[epoch 47] train_acc=0.9117 train_loss=0.2473 val_acc=0.8146 lr=2.74e-04
+Per-class val accuracy (summary): IGNORE: 0.769 | NO_GESTURE: 0.762 | STOP_SIGN: 0.875 | PUSHING_HAND_AWAY: 0.805 | SWIPE_DOWN: 0.911 | SWIPE_LEFT: 0.848 | SWIPE_RIGHT: 0.740 | SWIPE_UP: 0.839 | THUMB_DOWN: 0.811 | THUMB_UP: 0.811 | ZOOM_IN: 0.755 | ZOOM_OUT: 0.845
+
+Per-class accuracy:
+   0 (IGNORE): 0.769
+   1 (NO_GESTURE): 0.801
+   2 (STOP_SIGN): 0.871
+   3 (PUSHING_HAND_AWAY): 0.826
+   4 (SWIPE_DOWN): 0.907
+   5 (SWIPE_LEFT): 0.844
+   6 (SWIPE_RIGHT): 0.748
+   7 (SWIPE_UP): 0.826
+   8 (THUMB_DOWN): 0.823
+   9 (THUMB_UP): 0.816
+  10 (ZOOM_IN): 0.776
+  11 (ZOOM_OUT): 0.841
+[epoch 48] train_acc=0.9149 train_loss=0.2380 val_acc=0.8208 lr=2.66e-04
+Per-class val accuracy (summary): IGNORE: 0.769 | NO_GESTURE: 0.801 | STOP_SIGN: 0.871 | PUSHING_HAND_AWAY: 0.826 | SWIPE_DOWN: 0.907 | SWIPE_LEFT: 0.844 | SWIPE_RIGHT: 0.748 | SWIPE_UP: 0.826 | THUMB_DOWN: 0.823 | THUMB_UP: 0.816 | ZOOM_IN: 0.776 | ZOOM_OUT: 0.841
+Early stopping at epoch 48
+
+✅ Training completed! Best validation accuracy: 0.8218
+Model and label mapping saved to /home/sayak/models/jester_12cls_attn_norm

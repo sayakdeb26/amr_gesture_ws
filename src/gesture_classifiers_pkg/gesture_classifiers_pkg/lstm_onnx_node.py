@@ -251,14 +251,31 @@ class LstmOnnxNode(Node):
             if self.input_rank == 2:
                 x = x.reshape(1, T * x.shape[2])
 
+#----------------
             out = self.session.run(None, {self.session.get_inputs()[0].name: x})[0]  # (1, C)
             probs = self._softmax(out[0])
             idx = int(np.argmax(probs))
             conf = float(probs[idx])
             label = self.labels[idx] if 0 <= idx < len(self.labels) else f"class_{idx}"
 
-            if (self.bg_is_unknown and label == self.bg_label) or conf < self.conf_threshold:
-                self._publish_unknown("low_conf_or_bg", conf=conf, window_frames=T)
+            # --- routing logic ---
+            # 1) Pure background → NO_GESTURE → drop completely
+            if label == "NO_GESTURE":
+                # optional debug:
+                # self.get_logger().debug(f"Dropping NO_GESTURE (conf={conf:.3f})")
+                return
+
+            # 2) Explicit "IGNORE" class → send ONLY to VLM via /lstm/unknown
+            if label == "IGNORE":
+                self._publish_unknown("ignore", conf=conf, window_frames=T)
+                return
+
+            # 3) Other labels:
+            #    - if confidence too low → drop (do NOT send to VLM)
+            #    - if high enough → publish /intents_raw + /intents
+            if conf < self.conf_threshold:
+                # optional debug:
+                # self.get_logger().debug(f"Low-conf {label} (conf={conf:.3f}), dropping.")
                 return
 
             msg_out = Intent()
@@ -267,8 +284,7 @@ class LstmOnnxNode(Node):
             self.pub_intent.publish(msg_out)
 
         except Exception as e:
-            self.get_logger().error(f"Failed to parse /lstm/keypoints_window: {e}")
-            self._publish_unknown("parse_error")
+            self.get_logger().error(f"Error in on_kpwin: {e}")
 
 def main() -> None:
     rclpy.init()

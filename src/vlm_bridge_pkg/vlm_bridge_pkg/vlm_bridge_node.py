@@ -77,10 +77,12 @@ class VlmBridgeNode(Node):
         )
 
         # ---- state ----
-        self.session_id: Optional[str] = None
-        self.latest_kp: Optional[KeypointsWindow] = None
-        self.clip_for_session: Optional[str] = None
-        self.latest_reply: Optional[ConfirmReply] = None
+        #self.session_id: Optional[str] = None
+        #self.latest_kp: Optional[KeypointsWindow] = None
+        #self.clip_for_session: Optional[str] = None
+        #self.latest_reply: Optional[ConfirmReply] = None
+        self.session_active: bool = False           # are we currently handling one unknown?
+        self.session_id: str = ""
 
         # ---- subscribers ----
         self.sub_unknown = self.create_subscription(
@@ -97,7 +99,7 @@ class VlmBridgeNode(Node):
             String, "/recorder/clip_ready", self.on_clip_ready_json, qos_sub
         )
         self.sub_reply = self.create_subscription(
-            ConfirmReply, "/ui/confirm_reply", self.on_confirm_reply, qos_sub
+            ConfirmReply, "/vlm/confirm_reply", self.on_confirm_reply, qos_sub
         )
 
         # ---- publishers ----
@@ -254,51 +256,45 @@ class VlmBridgeNode(Node):
     # Clip → VLM → UI path
     # ------------------------------------------------------------------
 
-        def _wait_clip_then_vlm(self, clip_msg: RecorderClipReady):
-            """
-            Called in a thread when /recorder/clip_ready arrives.
+    def _wait_clip_then_vlm(self, clip_msg: RecorderClipReady):
+        """
+        Called in a thread when /recorder/clip_ready arrives.
 
-            - clip_msg.clip_path is the exact video file that the VLM will/has seen.
-            - We wait for the VLM result for this session_id.
-            - We build a ConfirmRequest and attach a preview frame from THAT clip.
-            """
-            session_id = clip_msg.session_id
-            clip_path = clip_msg.clip_path
+        - clip_msg.clip_path is the exact video file that the VLM will/has seen.
+        - We wait for the VLM result for this session_id.
+        - We build a ConfirmRequest for the UI kiosk.
+        """
+        session_id = clip_msg.session_id
+        clip_path = clip_msg.clip_path
 
-            # 1) Wait for VLM result for this session
-            try:
-                result = self._vlm_results.wait_for(session_id, timeout=self.confirm_timeout_s)
-                label = result["label"]
-                conf = float(result["confidence"])
-            except Exception as e:
-                self.get_logger().error(f"[{session_id}] waiting for VLM result failed: {e}")
-                # resume pipeline and bail
-                self._set_pipeline_hold(False)
-                return
+        # 1) Wait for VLM result for this session
+        try:
+            result = self._vlm_results.wait_for(session_id, timeout=self.confirm_timeout_s)
+            label = result["label"]
+            conf = float(result["confidence"])
+            rationale = result.get("rationale", "")
+        except Exception as e:
+            self.get_logger().error(f"[{session_id}] waiting for VLM result failed: {e}")
+            # resume pipeline and bail
+            self._set_hold(False)
+            return
 
-            # 2) Build ConfirmRequest for the UI kiosk
-            confirm = ConfirmRequest()
-            confirm.session_id = session_id
-            confirm.window_id = clip_msg.window_id  # if you have this field
-            confirm.candidate_label = label
-            confirm.candidate_confidence = conf
-            confirm.clip_path = clip_path
+        # 2) Build ConfirmRequest for the UI kiosk
+        confirm = ConfirmRequest()
+        confirm.session_id = session_id
+        confirm.window_id = getattr(clip_msg, "window_id", 0)
+        confirm.candidate_label = label
+        confirm.candidate_conf = float(conf)
+        confirm.hint = rationale or ""
+        confirm.source = "vlm"
 
-            # 3) Extract preview frame FROM THE SAME CLIP THE VLM SAW
-            try:
-                confirm.preview_frame_b64 = extract_middle_frame(clip_path)
-            except Exception as e:
-                self.get_logger().error(f"[{session_id}] failed to extract preview frame: {e}")
-                confirm.preview_frame_b64 = ""
+        # (We do NOT set clip_path/preview_frame_b64; kiosk finds the clip via session_id)
 
-            # 4) Publish to kiosk
-            self.pub_confirm.publish(confirm)
-            self.get_logger().info(
-                f"[{session_id}] ConfirmRequest → label={label} conf={conf:.2f}, "
-                f"clip={clip_path}, preview={'ok' if confirm.preview_frame_b64 else 'none'}"
-            )
-
-
+        # 3) Publish to kiosk
+        self.pub_confirm.publish(confirm)
+        self.get_logger().info(
+            f"[{session_id}] ConfirmRequest → label={label} conf={conf:.2f}, clip={clip_path}"
+        )
 
     def _finalize_session(self, resume: bool) -> None:
         if resume:

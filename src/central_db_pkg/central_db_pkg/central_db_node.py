@@ -1,83 +1,76 @@
 #!/usr/bin/env python3
-import json
-import os
-import shutil
-import time
-from pathlib import Path
-
 import rclpy
 from rclpy.node import Node
-
-from vlm_interfaces.msg import Intent, TrainingExample
+from amr_interfaces.msg import TrainingExample, Intent
+import sqlite3
+import os
+import json
 
 class CentralDBNode(Node):
     def __init__(self):
         super().__init__('central_db_node')
 
-        # Root DB dir (env override allowed)
-        self.base_dir = Path(os.getenv('AMR_DB_DIR', str(Path.home() / 'amr_db')))
-        self.base_dir.mkdir(parents=True, exist_ok=True)
+        # Parameters
+        self.db_dir = '/home/sayak/amr_db'
+        if not os.path.exists(self.db_dir):
+            os.makedirs(self.db_dir)
+        
+        self.db_path = os.path.join(self.db_dir, 'amr_gestures.db')
+        self.init_db()
 
-        # Files/dirs
-        self.intents_log = self.base_dir / 'intents.jsonl'
-        self.samples_dir = self.base_dir / 'samples'
-        self.samples_dir.mkdir(parents=True, exist_ok=True)
-        self.training_log = self.base_dir / 'training_examples.jsonl'
+        # Subscribers
+        self.sub_te = self.create_subscription(
+            TrainingExample,
+            '/db/training_example',
+            self.te_callback,
+            10)
+        
+        self.sub_intent = self.create_subscription(
+            Intent,
+            '/intents_raw',
+            self.intent_callback,
+            10)
 
-        # Subs
-        self.sub_intents = self.create_subscription(Intent, '/intents_raw', self.on_intent, 10)
-        self.sub_training = self.create_subscription(TrainingExample, '/lstm/training_example', self.on_training_example, 10)
+        self.get_logger().info(f'Central DB Node started. DB: {self.db_path}')
 
-        self.get_logger().info(f'central_db_node running. DB @ {self.base_dir}')
+    def init_db(self):
+        conn = sqlite3.connect(self.db_path)
+        c = conn.cursor()
+        c.execute('''CREATE TABLE IF NOT EXISTS training_examples
+                     (timestamp REAL, session_id TEXT, window_id INTEGER, label TEXT, clip_path TEXT, confidence REAL, source TEXT)''')
+        c.execute('''CREATE TABLE IF NOT EXISTS intents
+                     (timestamp REAL, session_id TEXT, label TEXT, confidence REAL, latency_ms INTEGER, source TEXT)''')
+        conn.commit()
+        conn.close()
 
-    # --------- callbacks ----------
-
-    def on_intent(self, msg: Intent):
-        rec = {
-            'ts': time.time(),
-            'stamp': {'sec': int(msg.stamp.sec), 'nsec': int(msg.stamp.nanosec)},
-            'label': msg.label,
-            'confidence': float(msg.confidence),
-            'latency_ms': int(getattr(msg, 'latency_ms', 0)),
-            'source': msg.source,
-        }
-        with self.intents_log.open('a', encoding='utf-8') as f:
-            f.write(json.dumps(rec) + '\n')
-        self.get_logger().info(f'logged intent: {rec["label"]} conf={rec["confidence"]:.2f}')
-
-    def on_training_example(self, msg: TrainingExample):
-        ts = time.time()
-        label = (msg.label or 'UNKNOWN').strip()
-        src_path = Path(msg.clip_path or '')
-        if not src_path.is_file():
-            self.get_logger().warn(f'training_example: source clip missing: {src_path}')
-            return
-
-        # Preserve extension; name: <epoch>_<label><ext>
-        dst_name = f'{int(ts)}_{label}{src_path.suffix or ".mp4"}'
-        dst_path = self.samples_dir / dst_name
-
+    def te_callback(self, msg):
         try:
-            shutil.copy2(src_path, dst_path)
-            rel = str(dst_path.relative_to(self.base_dir))
-            rec = {
-                'ts': ts,
-                'stamp': {'sec': int(msg.stamp.sec), 'nsec': int(msg.stamp.nanosec)},
-                'label': label,
-                'clip': rel,
-                'fps': float(msg.fps),
-                'frames': int(msg.frames),
-                'source': msg.source or '',
-                'notes': msg.notes or '',
-            }
-            with self.training_log.open('a', encoding='utf-8') as f:
-                f.write(json.dumps(rec) + '\n')
-            self.get_logger().info(f'stored training example: {label} -> {rel} (fps={rec["fps"]:.2f}, frames={rec["frames"]})')
+            conn = sqlite3.connect(self.db_path)
+            c = conn.cursor()
+            ts = msg.stamp.sec + msg.stamp.nanosec * 1e-9
+            c.execute("INSERT INTO training_examples VALUES (?,?,?,?,?,?,?)",
+                      (ts, msg.session_id, msg.window_id, msg.label, msg.clip_path, msg.confidence, msg.source))
+            conn.commit()
+            conn.close()
+            self.get_logger().info(f"Logged TrainingExample: {msg.session_id}")
         except Exception as e:
-            self.get_logger().error(f'failed to store training example: {e}')
+            self.get_logger().error(f"DB Error: {e}")
 
-def main():
-    rclpy.init()
+    def intent_callback(self, msg):
+        try:
+            conn = sqlite3.connect(self.db_path)
+            c = conn.cursor()
+            ts = msg.stamp.sec + msg.stamp.nanosec * 1e-9
+            c.execute("INSERT INTO intents VALUES (?,?,?,?,?,?)",
+                      (ts, msg.session_id, msg.label, msg.confidence, msg.latency_ms, msg.source))
+            conn.commit()
+            conn.close()
+            # self.get_logger().info(f"Logged Intent: {msg.session_id}")
+        except Exception as e:
+            self.get_logger().error(f"DB Error: {e}")
+
+def main(args=None):
+    rclpy.init(args=args)
     node = CentralDBNode()
     rclpy.spin(node)
     node.destroy_node()
@@ -85,4 +78,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

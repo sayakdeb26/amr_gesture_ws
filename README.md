@@ -1,67 +1,107 @@
-# KOLAMeRo
-### Adaptive und benutzerfreundliche Kollaboration von Menschen und autonomen mobilen Robotern durch kontinuierlich lernende Algorithmen
+# AMR Gesture Control Workspace
 
-Die Kollaboration von Mensch und Roboter ist ein essentieller Baustein für deren Akzeptanz und flexiblen Einsatz.
-Die Interaktion von Mensch und mobilem Roboterhält bereits grundlegend Einzug in die Intralogistik. 
-Das Ziel des Forschungsvorhabens ist es, die Kollaboration von Menschen und autonomen mobilen Robotern benutzerfreundlicher und intuitiver zu gestalten.
+This workspace contains a complete pipeline for controlling an iRobot Create3 robot using hand gestures detected by a VLM (Video-LLaVA). It supports both real hardware and Gazebo simulation.
 
-- Demonstrator mit multimodalen Schnittstellen zur Interaktion und Kollaboration
-   -Gesten-und Sprachsteuerung
-   -Blickbewegung
-   - Projektoren am Roboter
-   - Geeignete Umgebungserfassung
-   - Wissensdatenbank und -manage
+## 1. Simulation with iRobot Create3 + Gesture Control
 
-- Kontinuierliches Lernen
-   - zur Flexibilisierung und automatisierten Adaption der Kollaboration
-   - Optimierung bzw. Adaption von Algorithmen, z. B. zur Gesteninterpretation
-   - Adaption von Verhaltensweisen des Roboters durch den Nutzer
-   - Erweiterung und Anpassung der Wissensdatenbank
+This section explains how to set up and run the full simulation on a new machine.
 
-- Nutzerstudien zur Bewertung der Interaktion und Kollaboration
-   - Verifizierung und Bewertung der Kollaboration
-   - Untersuchung der Verbesserung der Kollaboration durch das kontinuierliche Lernen
+### A) Environment Setup
 
+1.  **Install Ubuntu 22.04 & ROS 2 Humble**
+    *   Follow the official [ROS 2 Humble installation guide](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html).
 
-### Ziele des Projekts:
--  Erarbeitung und systematische Untersuchung von
-multimodalen Kollaborationstechniken für mobile Roboter
-- Optimierung der Nutzerfreundlichkeit und intuitiven
-Kollaboration durch die Möglichkeit des kontinuierlichen
-Lernens des mobilen Roboters
-- Bewertung des Einsatzes von kontinuierlichem Lernen in der
-Intralogistik und Erarbeitung von Handlungsempfehlungen
+2.  **Install Gazebo & Integration Packages**
+    ```bash
+    sudo apt-get update
+    sudo apt-get install ros-humble-gazebo-ros-pkgs ros-humble-ros-ign-bridge
+    ```
+    *Note: If using Gazebo Classic, install `ros-humble-gazebo-ros-pkgs`. If using Ignition/Gazebo Sim, ensure `ign` or `gz` is installed.*
 
-## Nutzen des Forschungsprojektes:
-- Ermöglichung der Nutzung von mobilen Robotern auch bei
-komplexen Arbeitsprozessen, einschließlich Kollaboration
-- Akzeptanzsteigerung für den Einsatz und die Kollaboration
-- Einblick in Ansätze zum kontinuierlichen Lernen
-- Katalog mit Handlungsempfehlungen zur Weiterentwicklung
-der Kollaboration mit mobilen Robotern
+3.  **Install iRobot Create3 Simulation**
+    ```bash
+    # Create workspace directory
+    mkdir -p ~/amr_gesture_ws/src
+    cd ~/amr_gesture_ws/src
+    
+    # Clone repositories
+    git clone https://github.com/iRobotEducation/create3_sim.git -b humble
+    git clone https://github.com/iRobotEducation/irobot_create_msgs.git -b humble
+    
+    # Install dependencies
+    cd ~/amr_gesture_ws
+    rosdep install --from-paths src -y --ignore-src
+    ```
 
-### Rahmenbedingungen:
-Definierte Szenarien:
-−Intuitive Inbetriebnahme
-−Soziale Navigation
-−Verbesserte Kommunikation   
-Betrachtung eines autonomen mobilen Roboters, Keine Entwicklung eines Assistenzsystems
+4.  **Clone This Workspace**
+    *   Copy/clone the contents of this repo into `~/amr_gesture_ws/src`.
 
-### Wissenschaftliche Fragestellungen:
-- Wie sollte die multimodale Kollaboration zwischen Mensch
-und autonomen mobilen Robotern gestaltet werden?   
-- Wie muss das Wissens eines Roboters strukturiert und
-gespeichert werden, um kontinuierliches Lernen zu
-ermöglichen?   
-- Wie kann mit kontinuierlichem Lernen die Kollaboration
-zwischen Mensch und mobilem Roboter intuitiver und
-nutzerfreundlicher gestaltet werden?
+5.  **Build Everything**
+    ```bash
+    cd ~/amr_gesture_ws
+    colcon build --symlink-install --cmake-args -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+    ```
 
+### B) Paths That May Need Adjustment
 
-### Nutzung des Codes
-1. Starten des LED Moduls
-   ESP anstecken
-   - ros2 launch bringup LED.launch.py    
-   ggf boot Taste des Esp drücken   
-   in neuem Terminal:
-   - ros2 launch zed_display_rviz2 display_zed_cam.launch.py camera_model:=zed2i 
+Some nodes use absolute paths that might need updating on a new machine:
+
+*   **VLM Model**: `src/vlm_videollava_pkg/vlm_videollava_pkg/video_llava_node.py`
+    *   Check `model_path` variable.
+*   **LSTM Model**: `src/gesture_classifiers_pkg/config/lstm_params.yaml`
+    *   Check `model_path`.
+*   **UI Kiosk Media**: `src/ui_kiosk_pkg/config/kiosk_params.yaml`
+    *   Check `media_dir` (default: `~/amr_gesture_ws/data/runtime_clips`).
+*   **Recorder Output**: `src/vlm_recorder_pkg/config/recorder_params.yaml`
+    *   Check `save_dir`.
+
+### C) Sourcing and Running
+
+**1. Source the Workspace**
+Always run this in every new terminal:
+```bash
+source /opt/ros/humble/setup.bash
+cd ~/amr_gesture_ws
+source install/setup.bash
+```
+
+**2. Run JUST the Simulation**
+To verify the robot spawns in Gazebo:
+```bash
+ros2 launch create3_sim_integration create3_gazebo_sim.launch.py
+```
+
+**3. Run JUST the Gesture Pipeline**
+To verify camera and VLM without simulation:
+```bash
+# Set domain ID if connecting to real robot (e.g., 95)
+# export ROS_DOMAIN_ID=95 
+ros2 launch vlm_ros pipeline.launch.py
+```
+
+**4. Run EVERYTHING (Sim + Gestures)**
+To control the simulated robot with gestures:
+```bash
+ros2 launch vlm_ros amr_gesture_create3_sim.launch.py
+```
+
+### D) Using Antigravity
+
+If you are setting this up on a new device with Antigravity (Google's AI coding assistant), you can simply ask it to:
+> "Fix paths, reinstall dependencies, and regenerate missing configs for this workspace."
+
+It can parse this README and automate the setup steps for you.
+
+## 2. Real Robot Usage
+
+To control a real iRobot Create3:
+
+1.  Connect to the same Wi-Fi network.
+2.  Set the correct Domain ID (e.g., 95):
+    ```bash
+    export ROS_DOMAIN_ID=95
+    ```
+3.  Run the pipeline:
+    ```bash
+    ros2 launch vlm_ros pipeline.launch.py
+    ```

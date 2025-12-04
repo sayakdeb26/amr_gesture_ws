@@ -1,261 +1,168 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: Apache-2.0
-# Recorder node with 6 s ring-buffer, ROI crop, and RecorderRequest→ClipReady flow.
-import os, time, math, threading, shutil
-from collections import deque
-from dataclasses import dataclass
-from typing import Optional, Tuple, Deque
-
-import cv2
-import numpy as np
-
 import rclpy
 from rclpy.node import Node
-from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy
-from rclpy.time import Time
-
 from sensor_msgs.msg import Image
-from cv_bridge import CvBridge
-
-# New typed msgs (with graceful fallback to JSON String for legacy)
-try:
-    from vlm_interfaces.msg import RecorderRequest, ClipReady
-    HAVE_IFACES = True
-except Exception:
-    HAVE_IFACES = False
+from amr_interfaces.msg import UnknownGesture
+from vlm_interfaces.msg import RecorderRequest
 from std_msgs.msg import String
-
-@dataclass
-class FrameItem:
-    t_ns: int
-    img: np.ndarray
+from cv_bridge import CvBridge
+import cv2
+import collections
+import time
+import json
+import os
+import threading
 
 class RecorderNode(Node):
     def __init__(self):
         super().__init__('recorder_node')
 
-        # ---- params (defaults keep your old behavior unless overridden) ----
-        self.declare_parameter('image_topic', '/image_raw_10hz')
-        self.declare_parameter('target_fps', 10.0)
-        self.declare_parameter('buffer_seconds', 14.0)     # 7s pre + 7s post
-        self.declare_parameter('expansion_ratio', 0.30)   # 30% bbox pad
-        self.declare_parameter('data_root', os.path.expanduser('~/amr_gesture_ws/data/training'))
-        self.declare_parameter('samples_subdir', 'samples')
-        self.declare_parameter('filename_pattern', 'clip_{session_id}.mp4')
-        self.declare_parameter('fourcc', 'mp4v')          # broadly available
-        self.declare_parameter('write_full_frame', False) # if True, ignore ROI
-        self.declare_parameter('blur_outside_roi', False) # optional privacy
-        self.declare_parameter('max_width', 640)          # optional downscale for output
-        self.declare_parameter('max_height', 480)
+        # Parameters
+        self.declare_parameter('input_topic', '/frames/simplified')
+        self.declare_parameter('save_dir', '/home/sayak/amr_gesture_ws/data/runtime_clips')
+        self.declare_parameter('window_seconds', 4.0)
+        self.declare_parameter('pre_secs', 2.0)
+        self.declare_parameter('post_secs', 2.0)
 
-        self.image_topic    = self.get_parameter('image_topic').value
-        self.target_fps     = int(self.get_parameter('target_fps').value)
-        self.buf_secs       = float(self.get_parameter('buffer_seconds').value)
-        self.expand_ratio   = float(self.get_parameter('expansion_ratio').value)
-        self.data_root      = self.get_parameter('data_root').value
-        self.samples_subdir = self.get_parameter('samples_subdir').value
-        self.filename_pat   = self.get_parameter('filename_pattern').value
-        self.fourcc_name    = self.get_parameter('fourcc').value
-        self.write_full     = bool(self.get_parameter('write_full_frame').value)
-        self.blur_outside   = bool(self.get_parameter('blur_outside_roi').value)
-        self.max_w          = int(self.get_parameter('max_width').value)
-        self.max_h          = int(self.get_parameter('max_height').value)
+        self.input_topic = self.get_parameter('input_topic').value
+        self.save_dir = self.get_parameter('save_dir').value
+        self.window_seconds = self.get_parameter('window_seconds').value
+        self.pre_secs = self.get_parameter('pre_secs').value
+        self.post_secs = self.get_parameter('post_secs').value
 
-        # ---- buffers / state ----
+        # Create save directory
+        if not os.path.exists(self.save_dir):
+            os.makedirs(self.save_dir)
+
+        # State
         self.bridge = CvBridge()
-        self.buffer: Deque[FrameItem] = deque()
-        self.buffer_lock = threading.Lock()
-        self.latest_shape: Optional[Tuple[int,int, int]] = None  # (H,W,C)
-        self.active_session: Optional[str] = None     # single-shot guard
+        self.frame_buffer = collections.deque() # Stores (timestamp, cv_image)
+        self.lock = threading.Lock()
 
-        # compute a soft cap on buffer frames (assume ~30 fps input worst case)
-        self.soft_cap_frames = int(self.buf_secs * 40)
+        # Subscribers
+        self.sub_img = self.create_subscription(
+            Image,
+            self.input_topic,
+            self.image_callback,
+            10)
+        
+        self.sub_request = self.create_subscription(
+            RecorderRequest,
+            '/recorder/request',
+            self.request_callback,
+            10)
+        
+        # Deduplication
+        self.active_sessions = set()
 
-        # ---- QoS ----
-        qos_sub = QoSProfile(
-            history=HistoryPolicy.KEEP_LAST, depth=5,
-            reliability=ReliabilityPolicy.BEST_EFFORT
-        )
-        qos_pub = QoSProfile(
-            history=HistoryPolicy.KEEP_LAST, depth=10,
-            reliability=ReliabilityPolicy.RELIABLE
-        )
-        qos_transient = QoSProfile(
-            history=HistoryPolicy.KEEP_LAST, depth=1,
-            durability=DurabilityPolicy.TRANSIENT_LOCAL,
-            reliability=ReliabilityPolicy.RELIABLE
-        )
+        # Publisher
+        self.pub_clip_ready = self.create_publisher(String, '/recorder/clip_ready', 10)
 
-        # ---- I/O ----
-        self.sub_img = self.create_subscription(Image, self.image_topic, self.on_image, qos_sub)
+        self.get_logger().info(f'Recorder Node started. Saving to {self.save_dir}')
 
-        if HAVE_IFACES:
-            self.sub_req = self.create_subscription(RecorderRequest, '/recorder/request', self.on_request_msg, qos_pub)
-            self.pub_ready_msg = self.create_publisher(ClipReady, '/recorder/clip_ready_msg', qos_pub)
-        else:
-            self.get_logger().warn("amr_interfaces not found; only JSON String API will work.")
-
-        # Always keep legacy JSON for compatibility
-        self.pub_ready_json = self.create_publisher(String, '/recorder/clip_ready', qos_pub)
-
-        # ensure output dir
-        self.out_dir = os.path.join(self.data_root, self.samples_subdir)
-        os.makedirs(self.out_dir, exist_ok=True)
-
-        self.get_logger().info(f"Recorder ready. Buffer={self.buf_secs}s, topic={self.image_topic}, out={self.out_dir}")
-
-    # ----------- image buffering -----------
-    def on_image(self, msg: Image):
+    def image_callback(self, msg):
         try:
-            cvimg = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
+            cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
+            timestamp = time.time() # Use system time for simplicity in correlation
+            
+            with self.lock:
+                self.frame_buffer.append((timestamp, cv_image))
+                
+                # Prune old frames
+                while self.frame_buffer and (timestamp - self.frame_buffer[0][0] > self.window_seconds):
+                    self.frame_buffer.popleft()
         except Exception as e:
-            self.get_logger().error(f"cv_bridge error: {e}")
+            self.get_logger().error(f'Error in image_callback: {e}')
+
+    def request_callback(self, msg):
+        # Handle RecorderRequest from Bridge
+        session_id = msg.session_id
+        window_id = msg.window_id
+        
+        # Deduplication
+        with self.lock:
+            if session_id in self.active_sessions:
+                self.get_logger().warn(f"Session {session_id} already recording. Ignoring.")
+                return
+            self.active_sessions.add(session_id)
+
+        # Use t_center from message if available, else current time
+        # msg.t_center is a ROS Time object. Convert to float seconds.
+        t_center = time.time()
+        if msg.t_center.sec > 0:
+            t_center = msg.t_center.sec + msg.t_center.nanosec * 1e-9
+            
+        # Use params from message if valid, else defaults
+        pre = msg.pre_secs if msg.pre_secs > 0 else self.pre_secs
+        post = msg.post_secs if msg.post_secs > 0 else self.post_secs
+
+        self.get_logger().info(f"Recording clip for session {session_id} (t={t_center:.2f}, pre={pre}, post={post})")
+        
+        threading.Thread(target=self.save_clip_thread, args=(t_center, session_id, window_id, pre, post)).start()
+
+    def save_clip_thread(self, t_center, session_id, window_id, pre_secs, post_secs):
+        # Wait for post_secs
+        time.sleep(post_secs + 0.5) # Extra buffer
+
+        # Collect frames
+        frames_to_save = []
+        with self.lock:
+            # Copy buffer to avoid holding lock too long
+            for ts, img in self.frame_buffer:
+                if (ts >= t_center - pre_secs) and (ts <= t_center + post_secs):
+                    frames_to_save.append(img)
+        
+        if not frames_to_save:
+            self.get_logger().warn(f"No frames found for session {session_id}")
+            with self.lock:
+                self.active_sessions.discard(session_id)
             return
-        h, w = cvimg.shape[:2]
-        self.latest_shape = (h, w, 3)
-        t_ns = msg.header.stamp.sec*10**9 + msg.header.stamp.nanosec
-        item = FrameItem(t_ns=t_ns, img=cvimg)
 
-        with self.buffer_lock:
-            self.buffer.append(item)
-            # pop left by time horizon (prefer) or soft cap
-            horizon_ns = int(self.buf_secs * 1e9)
-            cutoff = t_ns - horizon_ns
-            while self.buffer and self.buffer[0].t_ns < cutoff:
-                self.buffer.popleft()
-            if len(self.buffer) > self.soft_cap_frames:
-                self.buffer.popleft()
-
-    # ----------- request handling -----------
-    def on_request_msg(self, req: 'RecorderRequest'):
-        if self.active_session:
-            self.get_logger().warn(f"Recorder busy with session {self.active_session}, ignoring new request {req.session_id}")
-            return
-        self.active_session = req.session_id or f"sess_{int(time.time()*1000)}"
-        threading.Thread(target=self._handle_request, args=(req,), daemon=True).start()
-
-    def _handle_request(self, req: 'RecorderRequest'):
+        # Save to MP4
+        filename = f"clip_{session_id}_{window_id}.mp4"
+        filepath = os.path.join(self.save_dir, filename)
+        
+        height, width, layers = frames_to_save[0].shape
+        codec = cv2.VideoWriter_fourcc(*'mp4v')
+        
         try:
-            clip_path, ok, msg = self._write_clip(req)
+            out = cv2.VideoWriter(filepath, codec, 10.0, (width, height))
+            for frame in frames_to_save:
+                out.write(frame)
+            out.release()
+            
+            # Ensure flush
+            time.sleep(0.2)
+            
+            self.get_logger().info(f"Saved clip: {filepath}")
+
+            # Publish clip_ready
+            info = {
+                "session_id": session_id,
+                "window_id": window_id,
+                "clip_path": filepath,
+                "t_center": str(t_center),
+                "pre_secs": pre_secs,
+                "post_secs": post_secs,
+                "success": True
+            }
+            
+            msg = String()
+            msg.data = json.dumps(info)
+            self.pub_clip_ready.publish(msg)
+
         except Exception as e:
-            ok, msg, clip_path = False, f"Exception: {repr(e)}", ""
-        # publish both typed and JSON responses
-        if HAVE_IFACES:
-            m = ClipReady(session_id=req.session_id, clip_path=clip_path, success=bool(ok), message=str(msg))
-            self.pub_ready_msg.publish(m)
-        j = String()
-        j.data = ('{"session_id":"%s","clip_path":"%s","success":%s,"message":"%s"}'
-                  % (req.session_id, clip_path.replace('"','\\"'), "true" if ok else "false", str(msg).replace('"','\\"')))
-        self.pub_ready_json.publish(j)
-        self.active_session = None
-
-    # ----------- core writer -----------
-        # ----------- core writer -----------
-    def _write_clip(self, req: 'RecorderRequest'):
-        """Write a clip for the requested time window.
-
-        If there are no frames in [t_center - pre, t_center + post],
-        fall back to using the entire buffer so we never produce a 0-frame MP4.
-        """
-        if self.latest_shape is None:
-            return "", False, "no frames buffered yet"
-
-        center_ns = req.t_center.sec * 10**9 + req.t_center.nanosec
-        start_ns  = center_ns - int(req.pre_secs * 1e9)
-        end_ns    = center_ns + int(req.post_secs * 1e9)
-
-        # Take a snapshot of the buffer under lock
-        with self.buffer_lock:
-            buffer_list = list(self.buffer)
-            buf_len = len(buffer_list)
-            frames = [f for f in buffer_list if start_ns <= f.t_ns <= end_ns]
-
-        self.get_logger().info(
-            f"[{req.session_id}] recorder window: "
-            f"center={center_ns}, start={start_ns}, end={end_ns}, "
-            f"buffer_frames={buf_len}, selected_frames={len(frames)}"
-        )
-
-        if not buffer_list:
-            # Nothing at all in the buffer – we really can't write anything
-            return "", False, "buffer empty"
-
-        # Fallback: if no frames fell into the requested window, use entire buffer
-        if not frames:
-            self.get_logger().warn(
-                f"[{req.session_id}] no frames in requested window; "
-                f"falling back to entire buffer ({buf_len} frames)"
-            )
-            frames = buffer_list
-
-        # Sort frames chronologically (in case deque snapshot was mid-append)
-        frames = sorted(frames, key=lambda fi: fi.t_ns)
-
-        # Normalize ROI → pixels
-        h, w, _ = self.latest_shape
-        x_min = max(0.0, min(1.0, float(req.x_min)))
-        y_min = max(0.0, min(1.0, float(req.y_min)))
-        x_max = max(0.0, min(1.0, float(req.x_max)))
-        y_max = max(0.0, min(1.0, float(req.y_max)))
-
-        if self.write_full or x_max <= x_min or y_max <= y_min:
-            roi_px = (0, 0, w, h)
-        else:
-            X0 = int(x_min * w); Y0 = int(y_min * h)
-            X1 = int(x_max * w); Y1 = int(y_max * h)
-            # expand
-            pad_x = int((X1 - X0) * self.expand_ratio)
-            pad_y = int((Y1 - Y0) * self.expand_ratio)
-            X0 = max(0, X0 - pad_x); Y0 = max(0, Y0 - pad_y)
-            X1 = min(w, X1 + pad_x); Y1 = min(h, Y1 + pad_y)
-            roi_px = (X0, Y0, X1 - X0, Y1 - Y0)
-
-        # Optional resize target to keep output small
-        out_w, out_h = roi_px[2], roi_px[3]
-        scale = min(1.0, self.max_w / max(1, out_w), self.max_h / max(1, out_h))
-        if scale < 1.0:
-            out_w = int(out_w * scale); out_h = int(out_h * scale)
-
-        # Prepare VideoWriter
-        fourcc = cv2.VideoWriter_fourcc(*self.fourcc_name)
-        clip_name = self.filename_pat.format(session_id=req.session_id or "session")
-        save_path = os.path.join(self.out_dir, clip_name)
-        writer = cv2.VideoWriter(save_path, fourcc, self.target_fps, (out_w, out_h))
-        if not writer.isOpened():
-            return "", False, f"VideoWriter({self.fourcc_name}) failed"
-
-        try:
-            for fi in frames:
-                frame = fi.img
-                x, y, ww, hh = roi_px
-                if ww > 0 and hh > 0:
-                    crop = frame[y:y+hh, x:x+ww]
-                else:
-                    crop = frame
-                if self.blur_outside and ww > 0 and hh > 0:
-                    # Keep full frame size, blur outside ROI (privacy mode)
-                    blurred = cv2.blur(frame, (25, 25))
-                    blurred[y:y+hh, x:x+ww] = crop
-                    out = blurred
-                else:
-                    out = crop
-                if scale < 1.0:
-                    out = cv2.resize(out, (out_w, out_h), interpolation=cv2.INTER_AREA)
-                writer.write(out)
+            self.get_logger().error(f"Failed to save clip: {e}")
         finally:
-            writer.release()
+            with self.lock:
+                self.active_sessions.discard(session_id)
 
-        return save_path, True, "ok"
-
-
-def main():
-    rclpy.init()
+def main(args=None):
+    rclpy.init(args=args)
     node = RecorderNode()
-    try:
-        rclpy.spin(node)
-    finally:
-        node.destroy_node()
-        rclpy.shutdown()
+    rclpy.spin(node)
+    node.destroy_node()
+    rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

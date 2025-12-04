@@ -1,0 +1,54 @@
+/home/sayak/Downloads/optimized_training12_attn_amp.py:315: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  scaler = GradScaler(enabled=use_amp)
+Using device: cuda
+Detected input dimension: 84
+Detected input dimension: 84
+Training samples: 21634
+Validation samples: 2918
+Input dimension: 84
+
+Training on 12 classes:
+   0: IGNORE
+   1: NO_GESTURE
+   2: STOP_SIGN
+   3: PUSHING_HAND_AWAY
+   4: SWIPE_DOWN
+   5: SWIPE_LEFT
+   6: SWIPE_RIGHT
+   7: SWIPE_UP
+   8: THUMB_DOWN
+   9: THUMB_UP
+  10: ZOOM_IN
+  11: ZOOM_OUT
+Model parameters: 4,086,837
+
+🚀 Starting training with attention + AMP on 12 classes...
+Traceback (most recent call last):
+  File "/home/sayak/Downloads/optimized_training12_attn_amp.py", line 392, in <module>
+    main()
+  File "/home/sayak/Downloads/optimized_training12_attn_amp.py", line 324, in main
+    train_acc, train_loss = train_one_epoch(
+  File "/home/sayak/Downloads/optimized_training12_attn_amp.py", line 154, in train_one_epoch
+    for x, y in dl:
+  File "/home/sayak/venvs/rosgpu_isolated/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 732, in __next__
+    data = self._next_data()
+  File "/home/sayak/venvs/rosgpu_isolated/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1506, in _next_data
+    return self._process_data(data, worker_id)
+  File "/home/sayak/venvs/rosgpu_isolated/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1541, in _process_data
+    data.reraise()
+  File "/home/sayak/venvs/rosgpu_isolated/lib/python3.10/site-packages/torch/_utils.py", line 769, in reraise
+    raise exception
+ValueError: Caught ValueError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/home/sayak/venvs/rosgpu_isolated/lib/python3.10/site-packages/torch/utils/data/_utils/worker.py", line 349, in _worker_loop
+    data = fetcher.fetch(index)  # type: ignore[possibly-undefined]
+  File "/home/sayak/venvs/rosgpu_isolated/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 52, in fetch
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/home/sayak/venvs/rosgpu_isolated/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 52, in <listcomp>
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/home/sayak/Downloads/optimized_training12_attn_amp.py", line 77, in __getitem__
+    x = normalize_keypoints(raw)
+  File "/home/sayak/Downloads/optimized_training12_attn_amp.py", line 41, in normalize_keypoints
+    kp_out = np.concatenate([scaled_xy, scaled_z, vis], axis=-1)  # (T,21,4)
+ValueError: all the input arrays must have same number of dimensions, but the array at index 0 has 3 dimension(s) and the array at index 1 has 4 dimension(s)
+
