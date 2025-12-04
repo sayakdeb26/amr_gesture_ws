@@ -54,7 +54,24 @@ The launch file automatically starts RViz. You should see the robot model and ca
 - **TF**: `/AMR/tf`
 - **Lidar/Scan**: `/AMR/scan` (if equipped/simulated)
 
-## 3. Troubleshooting
+## 3. Key Configurations & Fixes
 
+### Controller Timeout Fix (gz_ros2_control)
+To prevent "Switch controller timed out" errors, this simulation uses the modern `gz_ros2_control` plugin instead of the deprecated `ign_ros2_control`.
+*   **Files Modified**: `create3.urdf.xacro` and `wheel.urdf.xacro`
+*   **Change**: Replaced `ign_ros2_control/IgnitionSystem` with `gz_ros2_control/GazeboSimSystem`.
+
+### Safety Override (Movement Fix)
+By default, the Create3 safety system prevents backward motion in simulation ("Backup limit reached").
+*   **Fix**: `safety_override` is set to `full` in `create3_nodes.launch.py`.
+*   **Effect**: Disables safety limits, allowing free movement in Gazebo.
+
+## 4. Troubleshooting
+
+*   **"Switch controller timed out"**: Ensure you have rebuilt the workspace after the URDF fixes.
+    ```bash
+    colcon build --symlink-install --packages-select irobot_create_description
+    ```
+*   **"Backup limit reached"**: Ensure `create3_nodes.launch.py` has `{'safety_override': 'full'}`.
 *   **"No module named yaml"**: Do not run the launch file with `python`. Always use `ros2 launch`.
 *   **Black Screen / No Rendering**: Ensure your GPU drivers are up to date. The launch file forces `ogre2`; if this fails, you may need to check your Ignition Gazebo installation.

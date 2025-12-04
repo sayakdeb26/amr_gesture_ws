@@ -92,7 +92,51 @@ If you are setting this up on a new device with Antigravity (Google's AI coding 
 
 It can parse this README and automate the setup steps for you.
 
-## 2. Real Robot Usage
+## 3. Full VLM Pipeline (Simulation + Gestures)
+
+This is the main demo mode. It launches:
+1.  **Gazebo Simulation**: iRobot Create3 in a warehouse environment.
+2.  **Gesture Control**: LSTM model detecting hand gestures from webcam.
+3.  **VLM Bridge**: Handles "Unknown" gestures by querying Video-LLaVA.
+4.  **UI Kiosk**: Web interface for operator confirmation.
+
+### Launch Command
+```bash
+ros2 launch vlm_ros amr_gesture_create3_sim.launch.py
+```
+
+### VLM Configuration (CPU vs GPU)
+The Video-LLaVA node is configured in `src/vlm_videollava_pkg/vlm_videollava_pkg/video_llava_node.py`.
+
+*   **CPU Mode (Default)**: Stable but slower (~40s inference).
+    *   `self.device = "cpu"`
+    *   `dtype=torch.float32`
+*   **GPU Mode**: Faster (~5s inference) but requires substantial VRAM (12GB+ recommended).
+    *   `self.device = "cuda"`
+    *   `dtype=torch.float16`
+
+*To switch modes, edit the `video_llava_node.py` file directly.*
+
+## 4. Troubleshooting
+
+### Common Issues
+
+1.  **"Switch controller timed out"**:
+    *   This usually happens if the URDFs are using the old `ign_ros2_control` plugin.
+    *   **Fix**: Ensure you have the latest code where `create3.urdf.xacro` and `wheel.urdf.xacro` use `gz_ros2_control`. Rebuild `irobot_create_description`.
+
+2.  **"Backup limit reached" (Robot won't move backward)**:
+    *   The robot's safety system prevents backward motion.
+    *   **Fix**: The launch file `create3_nodes.launch.py` sets `safety_override: full` to disable this. Ensure this parameter is set.
+
+3.  **Pipeline Not Resuming after Confirmation**:
+    *   If the robot ignores gestures after you click "Confirm" on the UI.
+    *   **Fix**: This was caused by a topic mismatch. Ensure `ui_kiosk_node.py` publishes to `/ui/confirm_reply`.
+
+4.  **VLM Returns "ERROR"**:
+    *   Check the terminal logs. If it says "Model is None", the model failed to load (likely OOM on GPU). Switch back to CPU.
+
+## 5. Real Robot Usage
 
 To control a real iRobot Create3:
 
