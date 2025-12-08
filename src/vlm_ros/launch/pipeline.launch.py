@@ -15,11 +15,11 @@ def launch_setup(context, *args, **kwargs):
     ui_port = int(LaunchConfiguration('ui_port').perform(context))
     auto_approve = LaunchConfiguration('auto_approve').perform(context).lower() == 'true'
 
-    # VLM Node - Start this first
+    # VLM Node - FastVLM (Apple's efficient VLM via HuggingFace)
     vlm_node = Node(
-        package='vlm_videollava_pkg',
-        executable='/home/sayak/amr_gesture_ws/src/vlm_videollava_pkg/vlm_videollava_pkg/video_llava_node_wrapper.sh',
-        name='video_llava_node',
+        package='vlm_ros',
+        executable='vlm_node',
+        name='vlm_node',
         output='screen'
     )
     

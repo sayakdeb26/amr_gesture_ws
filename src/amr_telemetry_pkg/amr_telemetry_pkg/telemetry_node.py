@@ -10,7 +10,7 @@ class TelemetryNode(Node):
         super().__init__('telemetry_node')
 
         # Parameters
-        self.declare_parameter('cmd_vel_topic', '/AMR/cmd_vel')
+        self.declare_parameter('cmd_vel_topic', '/cmd_vel')
         self.cmd_vel_topic = self.get_parameter('cmd_vel_topic').value
 
         # Motion mappings: gesture -> (vx, wz, duration)
@@ -18,14 +18,17 @@ class TelemetryNode(Node):
         # SWIPE_DOWN -> move backward at -0.20 m/s for 1.0s
         # SWIPE_LEFT -> rotate left +0.5 rad/s for 0.5s
         # SWIPE_RIGHT -> rotate right -0.5 rad/s for 0.5s
+        # ROLL_BACK -> 180 degree turn (pi rad at 1.0 rad/s = ~3.14s)
         self.motion_profiles = {
-            "SWIPE_UP": (0.20, 0.0, 1.0),
-            "SWIPE_DOWN": (-0.20, 0.0, 1.0),
-            "SWIPE_LEFT": (0.0, 0.5, 0.5),
-            "SWIPE_RIGHT": (0.0, -0.5, 0.5),
-            "THUMB_UP": (0.0, 0.0, 0.0), # Stop/Confirm (or maybe move forward?) - User context implies approval, maybe no motion?
-            "THUMB_DOWN": (0.0, 0.0, 0.0), # Stop/Reject
-            "STOP_SIGN": (0.0, 0.0, 0.0)   # Explicit Stop
+            "SWIPE_UP": (0.20, 0.0, 1.0),       # Forward
+            "SWIPE_DOWN": (-0.20, 0.0, 1.0),    # Backward
+            "SWIPE_LEFT": (0.0, 0.5, 0.5),      # Turn left
+            "SWIPE_RIGHT": (0.0, -0.5, 0.5),    # Turn right
+            "ROLL_BACK": (0.0, 1.0, 3.14),      # 180 degree turn
+            "ZOOM_IN": (0.0, 0.0, 0.0),         # Deactivate (no motion)
+            "ZOOM_OUT": (0.0, 0.0, 0.0),        # Activate (no motion)
+            "THUMB_UP": (0.0, 0.0, 0.0),        # Activate (no motion)
+            "THUMB_DOWN": (0.0, 0.0, 0.0),      # Deactivate (no motion)
         }
 
         # Command text mapping for TelemetryCommand
@@ -34,9 +37,11 @@ class TelemetryNode(Node):
             "SWIPE_DOWN": "move_backward_1s",
             "SWIPE_LEFT": "turn_left_15deg",
             "SWIPE_RIGHT": "turn_right_15deg",
-            "THUMB_UP": "confirm_action",
-            "THUMB_DOWN": "reject_action",
-            "STOP_SIGN": "stop_robot"
+            "ROLL_BACK": "turn_180deg",
+            "ZOOM_IN": "deactivate",
+            "ZOOM_OUT": "activate",
+            "THUMB_UP": "activate",
+            "THUMB_DOWN": "deactivate",
         }
 
         # Active motion state

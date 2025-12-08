@@ -27,7 +27,7 @@ class LSTMNode(Node):
         
         self.declare_parameter('min_frames', 30)
         self.declare_parameter('conf_threshold', 0.80)
-        self.declare_parameter('model_path', '')
+        self.declare_parameter('model_path', '/home/sayak/amr_gesture_ws/models/lstm/jester20b_12cls/final_jester_model.onnx')
         self.declare_parameter('mirror', True) # Flip input horizontally
         
         self.min_frames = self.get_parameter('min_frames').value
@@ -49,6 +49,7 @@ class LSTMNode(Node):
         self.fps = 0.0
         self.last_time = time.time()
         self.frame_count = 0
+        self.hand_moving = False  # Track if hand is in motion
         
         # Cooldown State
         self.paused = False
@@ -91,8 +92,8 @@ class LSTMNode(Node):
             "ZOOM_IN": "ZOOM_IN",
             "ZOOM_OUT": "ZOOM_OUT",
             "PUSHING_HAND_AWAY": "ZOOM_OUT", # Alias
-            "NO_GESTURE": "NO_GESTURE"    # Explicitly mapped (don't trigger VLM)
-            # "IGNORE" is NOT mapped -> becomes "UNKNOWN" -> triggers VLM
+            "NO_GESTURE": "NO_GESTURE",    # Explicitly mapped (don't trigger VLM)
+            "IGNORE": "IGNORE"             # Map to itself (don't trigger VLM)
         }
 
         # Initialize MediaPipe
@@ -107,6 +108,14 @@ class LSTMNode(Node):
         self.landmarker = vision.HandLandmarker.create_from_options(options)
         self.get_logger().info("MediaPipe HandLandmarker initialized.")
 
+        # Initialize MediaPipe Face Detection (lightweight filter for false hand detections)
+        self.face_detection = mp.solutions.face_detection.FaceDetection(
+            model_selection=0,  # 0 = short-range (< 2m), faster
+            min_detection_confidence=0.5
+        )
+        self.rejected_hand_count = 0
+        self.get_logger().info("Face detection filter enabled.")
+
         # Subs/Pubs
         self.sub_img = self.create_subscription(Image, '/image_raw', self.frame_callback, 10)
         self.sub_reply = self.create_subscription(ConfirmReply, '/ui/confirm_reply', self.on_confirm_reply, 10)
@@ -114,42 +123,100 @@ class LSTMNode(Node):
         self.pub_unknown = self.create_publisher(UnknownGesture, '/lstm/unknown', 10)
         self.pub_debug = self.create_publisher(Image, '/lstm/debug_feed', 10)
 
-    def extract_features(self, img_rgb):
+    def _get_face_bbox(self, rgb_img):
+        """Detect primary face and return its bounding box in normalized coords."""
+        results = self.face_detection.process(rgb_img)
+        if results.detections and len(results.detections) > 0:
+            det = results.detections[0]
+            bbox = det.location_data.relative_bounding_box
+            return (bbox.xmin, bbox.ymin, bbox.xmin + bbox.width, bbox.ymin + bbox.height)
+        return None
+
+    def _get_hand_bbox(self, landmarks):
+        """Calculate bounding box from hand landmarks in normalized coords."""
+        xs = [lm.x for lm in landmarks]
+        ys = [lm.y for lm in landmarks]
+        return (min(xs), min(ys), max(xs), max(ys))
+
+    def _bbox_overlap(self, b1, b2):
+        """Calculate overlap percentage of b1 with b2."""
+        ix1 = max(b1[0], b2[0])
+        iy1 = max(b1[1], b2[1])
+        ix2 = min(b1[2], b2[2])
+        iy2 = min(b1[3], b2[3])
+        inter_area = max(0, ix2 - ix1) * max(0, iy2 - iy1)
+        b1_area = (b1[2] - b1[0]) * (b1[3] - b1[1])
+        return inter_area / b1_area if b1_area > 0 else 0
+
+    def _is_invalid_hand(self, hand_bbox, face_bbox, frame_width, frame_height):
+        """
+        Check if a hand detection is invalid based on:
+        1. Face overlap > 20%
+        2. Too small (width or height < 40 pixels)
+        3. Aspect ratio < 0.2 (too compressed)
+        4. Upper-center region (y < 25% AND x between 30-70%)
+        """
+        x_min, y_min, x_max, y_max = hand_bbox
+        w_px = (x_max - x_min) * frame_width
+        h_px = (y_max - y_min) * frame_height
+        
+        # Rule 1: Too small
+        if w_px < 40 or h_px < 40:
+            return True, "too_small"
+        
+        # Rule 2: Aspect ratio too compressed
+        aspect = min(w_px, h_px) / max(w_px, h_px) if max(w_px, h_px) > 0 else 0
+        if aspect < 0.2:
+            return True, "bad_aspect"
+        
+        # Rule 3: Upper-center region (likely face)
+        center_x = (x_min + x_max) / 2
+        center_y = (y_min + y_max) / 2
+        if center_y < 0.25 and 0.30 < center_x < 0.70:
+            return True, "upper_center"
+        
+        # Rule 4: Face overlap > 20%
+        if face_bbox is not None:
+            overlap = self._bbox_overlap(hand_bbox, face_bbox)
+            if overlap > 0.20:
+                return True, "face_overlap"
+        
+        return False, ""
+
+    def extract_features(self, img_rgb, frame_width, frame_height):
         # MediaPipe inference
         mp_img = mp.Image(image_format=mp.ImageFormat.SRGB, data=img_rgb)
         result = self.landmarker.detect(mp_img)
         
-        # Extract 84 features (2 hands * 21 landmarks * 2 coords)
-        # If < 2 hands, pad with 0
-        feats = []
+        # Detect face for filtering (lightweight, ~0.5ms)
+        face_bbox = self._get_face_bbox(img_rgb)
         
-        # For visualization, store the raw landmarks
+        # Filter out invalid hand detections
+        valid_hands = []
         raw_landmarks = []
-        if result.hand_landmarks:
-            raw_landmarks = result.hand_landmarks
-
-        # Logic to flatten landmarks to 84-dim vector
-        # We need to be consistent with training data.
-        # Assuming training data is: Hand1 (x,y,x,y...) then Hand2 (x,y...)
-        # Normalized by wrist? The user snippet does normalization.
-        # Let's try to match the user snippet's normalization logic.
         
-        # User snippet logic:
-        # 1. Collect all landmarks (x,y)
-        # 2. If 1 hand, pad with 0s to 42 floats.
-        # 3. Normalize relative to wrist (landmark 0).
-        
-        # Collect raw points first
-        all_points = []
         if result.hand_landmarks:
             for hand_lms in result.hand_landmarks:
+                hand_bbox = self._get_hand_bbox(hand_lms)
+                is_invalid, reason = self._is_invalid_hand(hand_bbox, face_bbox, frame_width, frame_height)
+                
+                if is_invalid:
+                    self.rejected_hand_count += 1
+                    if self.rejected_hand_count % 100 == 1:
+                        self.get_logger().warn(f"Rejected false hand detection ({reason}) - total: {self.rejected_hand_count}")
+                else:
+                    valid_hands.append(hand_lms)
+            
+            raw_landmarks = valid_hands
+
+        # Collect raw points from valid hands only
+        all_points = []
+        if valid_hands:
+            for hand_lms in valid_hands:
                 for lm in hand_lms:
                     all_points.extend([lm.x, lm.y])
         
         # Pad to 84 (2 hands * 21 * 2)
-        # Wait, user snippet says: "If only one hand, pad second hand with zeros".
-        # And "keypoints.extend([0.0] * 42)" if len(result.hand_landmarks) == 1.
-        # What if 0 hands?
         if not all_points:
             return np.zeros(84, dtype=np.float32), raw_landmarks
             
@@ -188,8 +255,11 @@ class LSTMNode(Node):
             
             rgb_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
             
-            # Extract features
-            feats, raw_landmarks = self.extract_features(rgb_img)
+            # Get frame dimensions for face detection filter
+            H, W = cv_img.shape[:2]
+            
+            # Extract features (with face detection filtering)
+            feats, raw_landmarks = self.extract_features(rgb_img, W, H)
             self.feature_buffer.append(feats)
             self.keypoint_buffer_debug.append(raw_landmarks) # Store for drawing if needed, but we draw current frame
             
@@ -211,9 +281,23 @@ class LSTMNode(Node):
                 self.last_pred_conf = conf
             
             # Draw HUD
-            annotated_img = self.draw_interface(cv_img, raw_landmarks, self.last_pred_label, self.last_pred_conf, self.fps, self.is_active)
+            annotated_img = self.draw_interface(cv_img, raw_landmarks, self.last_pred_label, self.last_pred_conf, self.fps, self.is_active, self.hand_moving)
             
-            # Publish debug feed
+            # Show debug window (OpenCV)
+            cv2.imshow("LSTM Debug Feed", annotated_img)
+            key = cv2.waitKey(1) & 0xFF
+            
+            # Handle keyboard input
+            if key == ord('q'):
+                self.get_logger().info("Quit requested - shutting down")
+                rclpy.shutdown()
+            elif key == ord('r'):
+                self.feature_buffer.clear()
+                self.keypoint_buffer_debug.clear()
+                self.prediction_history.clear()
+                self.get_logger().info("Buffers reset")
+            
+            # Publish debug feed (for ROS visualization)
             self.pub_debug.publish(self.bridge.cv2_to_imgmsg(annotated_img, "bgr8"))
             
         except Exception as e:
@@ -242,24 +326,25 @@ class LSTMNode(Node):
             # Map to system label
             label = self.label_map.get(model_label, "UNKNOWN")
             
-            # PRIORITY: Check for ZOOM_OUT/ZOOM_IN first (bypass cooldown)
+            # PRIORITY: Check for THUMB_UP/THUMB_DOWN first (bypass cooldown)
             # These are control gestures and should ALWAYS work
-            if label == "ZOOM_OUT" and confidence > self.conf_threshold:
+            if label == "THUMB_UP" and confidence > self.conf_threshold:
                 if not self.is_active:
                     self.is_active = True
-                    self.get_logger().info("ACTIVATED Gesture Control (ZOOM_OUT detected)")
+                    self.get_logger().info("ACTIVATED Gesture Control (THUMB_UP detected)")
                     self.publish_intent(label, confidence)
                     # Clear any existing pause
                     self.paused = False
                     self.waiting_for_confirmation = False
                 return label, confidence
 
-            if label == "ZOOM_IN" and confidence > self.conf_threshold:
+            if label == "THUMB_DOWN" and confidence > self.conf_threshold:
                 if self.is_active:
                     # Don't interrupt VLM processing
                     if self.waiting_for_confirmation:
                         return "BLOCKED_VLM", 0.0
                     self.is_active = False
+                    self.get_logger().info("DEACTIVATED Gesture Control (THUMB_DOWN detected)")
                     self.publish_intent(label, confidence)
                     # Clear any existing pause
                     self.paused = False
@@ -286,25 +371,30 @@ class LSTMNode(Node):
 
             # If active, process gestures
             if confidence > self.conf_threshold:
-                if label != "UNKNOWN":
-                    self.get_logger().info(f"Detected: {label} ({confidence:.2f})")
+                # Movement gestures that trigger cooldown
+                movement_gestures = ["SWIPE_LEFT", "SWIPE_RIGHT", "SWIPE_UP", "SWIPE_DOWN", "STOP"]
+                
+                if label in movement_gestures:
+                    # Only movement gestures trigger cooldown
+                    self.get_logger().info(f"Detected movement: {label} ({confidence:.2f})")
                     self.publish_intent(label, confidence)
-                    # Set cooldown for known gestures
                     self.paused = True
                     self.pause_until_time = time.time() + self.cooldown_known
                     self.get_logger().info(f"Pausing for {self.cooldown_known}s (gesture execution)")
-                else:
-                    # Unknown gesture handling
-                    # Trigger for UNKNOWN (which includes IGNORE from model)
-                    # But NOT for NO_GESTURE (no hand detected)
-                    if model_label != "NO_GESTURE":
+                elif label not in ["NO_GESTURE", "IGNORE", "THUMB_UP", "THUMB_DOWN", "UNKNOWN"]:
+                    # Other known gestures (like ZOOM_IN, ZOOM_OUT) - publish but no cooldown
+                    self.get_logger().info(f"Detected: {label} ({confidence:.2f})")
+                    self.publish_intent(label, confidence)
+                elif label == "UNKNOWN":
+                    # Unknown gesture handling - trigger VLM
+                    if model_label not in ["NO_GESTURE", "IGNORE"]:
                         self.get_logger().info(f"Unknown gesture: {model_label} ({confidence:.2f})")
                         session_id = self.publish_unknown(model_label, confidence)
-                        # Pause until confirmation received
                         self.waiting_for_confirmation = True
                         self.current_unknown_session = session_id
                         self.pause_until_time = time.time() + self.cooldown_unknown
                         self.get_logger().info(f"Pausing for VLM confirmation (session: {session_id})")
+                # NO_GESTURE, IGNORE, THUMB_UP, THUMB_DOWN just pass through without cooldown
             
             return label, confidence
             
@@ -340,35 +430,47 @@ class LSTMNode(Node):
 
     # --- Visualization Methods ---
 
-    def draw_interface(self, image, landmarks_list, gesture_label, confidence, fps, is_active):
+    def draw_interface(self, image, landmarks_list, gesture_label, confidence, fps, is_active, hand_moving):
         h, w = image.shape[:2]
         overlay = image.copy()
-        
-        # Top bar background
         cv2.rectangle(overlay, (0, 0), (w, 140), (0, 0, 0), -1)
         cv2.addWeighted(overlay, 0.8, image, 0.2, 0, image)
 
-        # Draw landmarks
+        # Draw hand landmarks with connections
         if landmarks_list:
             self._draw_hand_landmarks(image, landmarks_list)
 
-        # Status Text
+        # Status Text based on state
         if is_active:
-            if confidence > self.conf_threshold and gesture_label not in ["IDLE", "BUFFERING", "UNKNOWN"]:
-                color = (0, 255, 0) # Green
+            if confidence > self.conf_threshold and gesture_label not in ["IDLE", "BUFFERING", "UNKNOWN", "NO_GESTURE"]:
+                color = (0, 255, 0)  # Green
                 status = "GESTURE DETECTED"
+            elif hand_moving:
+                color = (0, 200, 255)  # Yellow/Orange
+                status = "HAND MOVING"
             else:
-                color = (0, 200, 255) # Yellow/Orange
+                color = (0, 200, 255)  # Yellow/Orange
                 status = "ACTIVE - LISTENING"
         else:
-            color = (100, 100, 255) # Red/Blueish
-            status = "IDLE (ZOOM_OUT to Activate)"
+            color = (100, 100, 255)  # Red/Blueish
+            status = "IDLE (THUMB_UP to Activate)"
 
         cv2.putText(image, status, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
         cv2.putText(image, f"{gesture_label}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
         cv2.putText(image, f"Confidence: {confidence:.2f}", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
 
+        # Stats line
         cv2.putText(image, f"FPS: {fps:.1f}", (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
+        cv2.putText(image, f"Frames: {len(self.feature_buffer)}/{self.min_frames}", (100, 120), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
+        
+        motion_text = "MOVING" if hand_moving else "STATIONARY"
+        motion_color = (0, 200, 255) if hand_moving else (100, 100, 100)
+        cv2.putText(image, f"Hand: {motion_text}", (250, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.5, motion_color, 1)
+
+        # Controls hint at bottom
+        cv2.putText(image, "Q: Quit  R: Reset  Space: Info", (10, h - 10), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.4, (150, 150, 150), 1)
         
         return image
 
@@ -376,7 +478,6 @@ class LSTMNode(Node):
         h, w = image.shape[:2]
         
         # landmarks_list is a list of NormalizedLandmarkList (one per hand)
-        # We need to iterate over hands
         for hand_landmarks in landmarks_list:
             points = []
             for lm in hand_landmarks:
