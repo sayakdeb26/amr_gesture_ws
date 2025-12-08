@@ -439,17 +439,3 @@ center_y < 0.25   # Upper region threshold
 
 Apache 2.0
 
----
-
-## Credits
-
-- **iRobot Create3 Simulation:** https://github.com/iRobotEducation/create3_sim
-- **MediaPipe:** https://developers.google.com/mediapipe
-- **FastVLM:** https://huggingface.co/apple/FastVLM-1.5B
-- **Jester Dataset:** https://20bn.com/datasets/jester
-
----
-
-## Contact
-
-For issues and questions, please open an issue on the GitHub repository.
