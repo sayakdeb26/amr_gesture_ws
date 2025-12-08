@@ -18,3 +18,4 @@ __pycache__/
 *.mp4
 *.zip
 *.tar.gz
+src/ml-fastvlm/

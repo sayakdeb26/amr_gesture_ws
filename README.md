@@ -1,151 +1,235 @@
 # AMR Gesture Control Workspace
 
-This workspace contains a complete pipeline for controlling an iRobot Create3 robot using hand gestures detected by a VLM (Video-LLaVA). It supports both real hardware and Gazebo simulation.
+A complete ROS 2 Humble pipeline for controlling an iRobot Create3 robot using hand gestures. Supports both Gazebo simulation and real hardware.
 
-## 1. Simulation with iRobot Create3 + Gesture Control
+---
 
-This section explains how to set up and run the full simulation on a new machine.
+## Quick Start
 
-### A) Environment Setup
-
-1.  **Install Ubuntu 22.04 & ROS 2 Humble**
-    *   Follow the official [ROS 2 Humble installation guide](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html).
-
-2.  **Install Gazebo & Integration Packages**
-    ```bash
-    sudo apt-get update
-    sudo apt-get install ros-humble-gazebo-ros-pkgs ros-humble-ros-ign-bridge
-    ```
-    *Note: If using Gazebo Classic, install `ros-humble-gazebo-ros-pkgs`. If using Ignition/Gazebo Sim, ensure `ign` or `gz` is installed.*
-
-3.  **Install iRobot Create3 Simulation**
-    ```bash
-    # Create workspace directory
-    mkdir -p ~/amr_gesture_ws/src
-    cd ~/amr_gesture_ws/src
-    
-    # Clone repositories
-    git clone https://github.com/iRobotEducation/create3_sim.git -b humble
-    git clone https://github.com/iRobotEducation/irobot_create_msgs.git -b humble
-    
-    # Install dependencies
-    cd ~/amr_gesture_ws
-    rosdep install --from-paths src -y --ignore-src
-    ```
-
-4.  **Clone This Workspace**
-    *   Copy/clone the contents of this repo into `~/amr_gesture_ws/src`.
-
-5.  **Build Everything**
-    ```bash
-    cd ~/amr_gesture_ws
-    colcon build --symlink-install --cmake-args -DCMAKE_POLICY_VERSION_MINIMUM=3.5
-    ```
-
-### B) Paths That May Need Adjustment
-
-Some nodes use absolute paths that might need updating on a new machine:
-
-*   **VLM Model**: `src/vlm_videollava_pkg/vlm_videollava_pkg/video_llava_node.py`
-    *   Check `model_path` variable.
-*   **LSTM Model**: `src/gesture_classifiers_pkg/config/lstm_params.yaml`
-    *   Check `model_path`.
-*   **UI Kiosk Media**: `src/ui_kiosk_pkg/config/kiosk_params.yaml`
-    *   Check `media_dir` (default: `~/amr_gesture_ws/data/runtime_clips`).
-*   **Recorder Output**: `src/vlm_recorder_pkg/config/recorder_params.yaml`
-    *   Check `save_dir`.
-
-### C) Sourcing and Running
-
-**1. Source the Workspace**
-Always run this in every new terminal:
 ```bash
+# Source workspace
 source /opt/ros/humble/setup.bash
 cd ~/amr_gesture_ws
 source install/setup.bash
+
+# Run simulation + gesture control (FastVLM - faster)
+ros2 launch vlm_ros amr_gesture_create3_sim.launch.py
+
+# OR with Video-LLaVA (more accurate)
+ros2 launch vlm_ros amr_gesture_create3_sim_videollava.launch.py
 ```
 
-**2. Run JUST the Simulation**
-To verify the robot spawns in Gazebo:
+---
+
+## Supported Gestures
+
+| Gesture | Action | Description |
+|---------|--------|-------------|
+| 👍 **THUMB_UP** | Activate | Enable gesture control |
+| 👎 **THUMB_DOWN** | Deactivate | Disable gesture control |
+| ⬆️ **SWIPE_UP** | Move Forward | 0.2 m/s for 1 second |
+| ⬇️ **SWIPE_DOWN** | Move Backward | -0.2 m/s for 1 second |
+| ⬅️ **SWIPE_LEFT** | Turn Left | Rotate at +0.5 rad/s |
+| ➡️ **SWIPE_RIGHT** | Turn Right | Rotate at -0.5 rad/s |
+| 🔄 **ROLL_BACK** | 180° Turn | Full turnaround |
+
+---
+
+## VLM Options
+
+| VLM | Speed | Accuracy | Model | Launch File |
+|-----|-------|----------|-------|-------------|
+| **FastVLM** | ~1s | Good | `apple/FastVLM-1.5B` | `amr_gesture_create3_sim.launch.py` |
+| **Video-LLaVA** | ~15s | Better | `LanguageBind/Video-LLaVA-7B-hf` | `amr_gesture_create3_sim_videollava.launch.py` |
+
+---
+
+## Installation
+
+### Prerequisites
+- Ubuntu 22.04
+- ROS 2 Humble
+- Gazebo (Ignition Fortress)
+- Python 3.10+
+
+### Step 1: Install ROS 2 Humble
+Follow the official [ROS 2 Humble installation guide](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html).
+
+### Step 2: Install Gazebo & Integration Packages
+```bash
+sudo apt-get update
+sudo apt-get install ros-humble-gazebo-ros-pkgs ros-humble-ros-ign-bridge
+```
+
+### Step 3: Install iRobot Create3 Simulation
+```bash
+mkdir -p ~/amr_gesture_ws/src
+cd ~/amr_gesture_ws/src
+
+# Clone iRobot packages
+git clone https://github.com/iRobotEducation/create3_sim.git -b humble
+git clone https://github.com/iRobotEducation/irobot_create_msgs.git -b humble
+
+# Install dependencies
+cd ~/amr_gesture_ws
+rosdep install --from-paths src -y --ignore-src
+```
+
+### Step 4: Clone This Repository
+```bash
+cd ~/amr_gesture_ws/src
+git clone <this-repo-url> .
+```
+
+### Step 5: Build Everything
+```bash
+cd ~/amr_gesture_ws
+colcon build --symlink-install
+```
+
+---
+
+## Architecture
+
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   Webcam    │───▶│  LSTM Node  │───▶│  Telemetry  │───▶│  /cmd_vel   │
+└─────────────┘    └──────┬──────┘    └─────────────┘    └─────────────┘
+                          │
+                   Unknown Gesture?
+                          │
+                          ▼
+                   ┌─────────────┐    ┌─────────────┐
+                   │ VLM Bridge  │───▶│ FastVLM or  │
+                   │             │    │ Video-LLaVA │
+                   └──────┬──────┘    └─────────────┘
+                          │
+                          ▼
+                   ┌─────────────┐
+                   │  UI Kiosk   │ ◀── http://localhost:8008
+                   │(Confirmation)│
+                   └─────────────┘
+```
+
+---
+
+## Key Packages
+
+| Package | Description |
+|---------|-------------|
+| `gesture_classifiers_pkg` | LSTM gesture recognition with MediaPipe + face detection filter |
+| `vlm_ros` | FastVLM integration (HuggingFace) |
+| `vlm_videollava_pkg` | Video-LLaVA integration |
+| `vlm_bridge_pkg` | Handles unknown gestures, triggers VLM |
+| `vlm_recorder_pkg` | Records video clips for VLM analysis |
+| `amr_telemetry_pkg` | Converts gestures to robot velocities |
+| `ui_kiosk_pkg` | Web UI for operator confirmation |
+| `create3_sim_integration` | Gazebo simulation for iRobot Create3 |
+| `frame_simplifier_pkg` | Downsamples video for efficient processing |
+
+---
+
+## Models Required
+
+| Model | Path | Notes |
+|-------|------|-------|
+| **LSTM Gesture Model** | `models/lstm/jester20b_12cls/final_jester_model.onnx` | Pre-trained on Jester dataset |
+| **MediaPipe Hands** | `models/mediapipe/hand_landmarker.task` | Hand landmark detection |
+| **VLM Models** | Auto-download | Downloaded from HuggingFace on first run |
+
+---
+
+## Running Options
+
+### 1. Full Simulation + Gestures (Main Demo)
+```bash
+ros2 launch vlm_ros amr_gesture_create3_sim.launch.py
+```
+This launches:
+- Gazebo simulation with iRobot Create3
+- Webcam gesture detection
+- VLM fallback for unknown gestures
+- Web UI at http://localhost:8008
+
+### 2. Just the Simulation
 ```bash
 ros2 launch create3_sim_integration create3_gazebo_sim.launch.py
 ```
 
-**3. Run JUST the Gesture Pipeline**
-To verify camera and VLM without simulation:
+### 3. Just the Gesture Pipeline (No Sim)
 ```bash
-# Set domain ID if connecting to real robot (e.g., 95)
-# export ROS_DOMAIN_ID=95 
 ros2 launch vlm_ros pipeline.launch.py
 ```
 
-**4. Run EVERYTHING (Sim + Gestures)**
-To control the simulated robot with gestures:
+### 4. Real Robot
 ```bash
-ros2 launch vlm_ros amr_gesture_create3_sim.launch.py
+export ROS_DOMAIN_ID=95  # Match your robot's domain
+ros2 launch vlm_ros pipeline.launch.py
 ```
 
-### D) Using Antigravity
+---
 
-If you are setting this up on a new device with Antigravity (Google's AI coding assistant), you can simply ask it to:
+## Configuration
+
+### Paths That May Need Adjustment
+
+| File | Variable | Default |
+|------|----------|---------|
+| `src/vlm_videollava_pkg/.../video_llava_node.py` | `model_id` | `LanguageBind/Video-LLaVA-7B-hf` |
+| `src/vlm_ros/launch/pipeline.launch.py` | `model_path` | `/home/sayak/amr_gesture_ws/models/lstm/...` |
+| `src/vlm_recorder_pkg/.../recorder_node.py` | `save_dir` | `~/amr_gesture_ws/data/runtime_clips` |
+
+### VLM CPU vs GPU Mode
+Edit `src/vlm_videollava_pkg/vlm_videollava_pkg/video_llava_node.py`:
+
+```python
+# CPU Mode (Default) - Slower but stable
+self.device = "cpu"
+dtype = torch.float32
+
+# GPU Mode - Faster, requires 12GB+ VRAM
+self.device = "cuda"
+dtype = torch.float16
+```
+
+---
+
+## UI Kiosk
+
+Access at **http://localhost:8008** when the pipeline is running.
+
+Features:
+- Live camera feed
+- Current gesture display
+- VLM confirmation dialogs
+- Robot status indicators
+
+---
+
+## Troubleshooting
+
+| Issue | Cause | Fix |
+|-------|-------|-----|
+| **"Switch controller timed out"** | Old URDF plugin | Ensure `gz_ros2_control` in URDFs, rebuild `irobot_create_description` |
+| **Robot won't move backward** | Safety system active | Set `safety_override: full` in `create3_nodes.launch.py` |
+| **Pipeline not resuming after confirm** | Topic mismatch | Ensure `ui_kiosk_node.py` publishes to `/ui/confirm_reply` |
+| **VLM returns "ERROR"** | OOM on GPU | Switch to CPU mode |
+| **No camera feed** | Device path wrong | Check `/dev/video0` exists |
+| **Face detected as hand** | False positive | Face filter should reject - check logs |
+| **Robot doesn't respond** | Not activated | Do THUMB_UP gesture first |
+
+---
+
+## Using Antigravity AI
+
+If setting up on a new machine with Antigravity (Google's AI coding assistant):
+
 > "Fix paths, reinstall dependencies, and regenerate missing configs for this workspace."
 
-It can parse this README and automate the setup steps for you.
+Antigravity can parse this README and automate the setup.
 
-## 3. Full VLM Pipeline (Simulation + Gestures)
+---
 
-This is the main demo mode. It launches:
-1.  **Gazebo Simulation**: iRobot Create3 in a warehouse environment.
-2.  **Gesture Control**: LSTM model detecting hand gestures from webcam.
-3.  **VLM Bridge**: Handles "Unknown" gestures by querying Video-LLaVA.
-4.  **UI Kiosk**: Web interface for operator confirmation.
+## License
 
-### Launch Command
-```bash
-ros2 launch vlm_ros amr_gesture_create3_sim.launch.py
-```
-
-### VLM Configuration (CPU vs GPU)
-The Video-LLaVA node is configured in `src/vlm_videollava_pkg/vlm_videollava_pkg/video_llava_node.py`.
-
-*   **CPU Mode (Default)**: Stable but slower (~40s inference).
-    *   `self.device = "cpu"`
-    *   `dtype=torch.float32`
-*   **GPU Mode**: Faster (~5s inference) but requires substantial VRAM (12GB+ recommended).
-    *   `self.device = "cuda"`
-    *   `dtype=torch.float16`
-
-*To switch modes, edit the `video_llava_node.py` file directly.*
-
-## 4. Troubleshooting
-
-### Common Issues
-
-1.  **"Switch controller timed out"**:
-    *   This usually happens if the URDFs are using the old `ign_ros2_control` plugin.
-    *   **Fix**: Ensure you have the latest code where `create3.urdf.xacro` and `wheel.urdf.xacro` use `gz_ros2_control`. Rebuild `irobot_create_description`.
-
-2.  **"Backup limit reached" (Robot won't move backward)**:
-    *   The robot's safety system prevents backward motion.
-    *   **Fix**: The launch file `create3_nodes.launch.py` sets `safety_override: full` to disable this. Ensure this parameter is set.
-
-3.  **Pipeline Not Resuming after Confirmation**:
-    *   If the robot ignores gestures after you click "Confirm" on the UI.
-    *   **Fix**: This was caused by a topic mismatch. Ensure `ui_kiosk_node.py` publishes to `/ui/confirm_reply`.
-
-4.  **VLM Returns "ERROR"**:
-    *   Check the terminal logs. If it says "Model is None", the model failed to load (likely OOM on GPU). Switch back to CPU.
-
-## 5. Real Robot Usage
-
-To control a real iRobot Create3:
-
-1.  Connect to the same Wi-Fi network.
-2.  Set the correct Domain ID (e.g., 95):
-    ```bash
-    export ROS_DOMAIN_ID=95
-    ```
-3.  Run the pipeline:
-    ```bash
-    ros2 launch vlm_ros pipeline.launch.py
-    ```
+Apache 2.0
