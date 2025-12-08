@@ -220,16 +220,6 @@ Features:
 
 ---
 
-## Using Antigravity AI
-
-If setting up on a new machine with Antigravity (Google's AI coding assistant):
-
-> "Fix paths, reinstall dependencies, and regenerate missing configs for this workspace."
-
-Antigravity can parse this README and automate the setup.
-
----
-
 ## License
 
 Apache 2.0
