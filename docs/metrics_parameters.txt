@@ -1,6 +1,5 @@
 # Metrics Logger - Measured Parameters
 # =====================================
-# Generated for amr_gesture_ws evaluation pipeline
 
 ## IDENTIFIERS
 - episode_id      : Unique UUID for this episode
@@ -49,4 +48,3 @@ Each timestamp is stored twice: Unix (seconds float) and ISO8601 string
 ## CSV OUTPUT
 - Location: /home/sayak/amr_eval_logs/run_metrics_<run_id>.csv
 - Format: UTF-8, comma-delimited, header row included
-- Compatible with Excel, Google Sheets, pandas
