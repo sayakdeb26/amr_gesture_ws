@@ -93,7 +93,7 @@ class LSTMNode(Node):
             "ZOOM_OUT": "ZOOM_OUT",
             "PUSHING_HAND_AWAY": "ZOOM_OUT", # Alias
             "NO_GESTURE": "NO_GESTURE",    # Explicitly mapped (don't trigger VLM)
-            "IGNORE": "IGNORE"             # Map to itself (don't trigger VLM)
+            # "IGNORE" is NOT mapped → falls through to "UNKNOWN" → triggers VLM
         }
 
         # Initialize MediaPipe
@@ -387,7 +387,7 @@ class LSTMNode(Node):
                     self.publish_intent(label, confidence)
                 elif label == "UNKNOWN":
                     # Unknown gesture handling - trigger VLM
-                    if model_label not in ["NO_GESTURE", "IGNORE"]:
+                    if model_label not in ["NO_GESTURE"]:  # IGNORE now triggers VLM
                         self.get_logger().info(f"Unknown gesture: {model_label} ({confidence:.2f})")
                         session_id = self.publish_unknown(model_label, confidence)
                         self.waiting_for_confirmation = True

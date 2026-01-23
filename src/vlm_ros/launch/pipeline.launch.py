@@ -3,6 +3,7 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, OpaqueFunction, TimerAction, LogInfo
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
+from ament_index_python.packages import get_package_share_directory
 
 def launch_setup(context, *args, **kwargs):
     # Get arguments as strings
@@ -14,6 +15,12 @@ def launch_setup(context, *args, **kwargs):
     output_encoding = LaunchConfiguration('output_encoding').perform(context)
     ui_port = int(LaunchConfiguration('ui_port').perform(context))
     auto_approve = LaunchConfiguration('auto_approve').perform(context).lower() == 'true'
+    
+    # Metrics logger parameters
+    eval_mode = LaunchConfiguration('eval_mode').perform(context)
+    eval_user_id = LaunchConfiguration('eval_user_id').perform(context)
+    eval_env_id = LaunchConfiguration('eval_env_id').perform(context)
+    eval_output_dir = LaunchConfiguration('eval_output_dir').perform(context)
 
     # VLM Node - FastVLM (Apple's efficient VLM via HuggingFace)
     vlm_node = Node(
@@ -114,6 +121,22 @@ def launch_setup(context, *args, **kwargs):
         name='telemetry_node'
     )
     
+    # Metrics Logger (evaluation logging)
+    metrics_logger_node = Node(
+        package='metrics_logger_pkg',
+        executable='metrics_logger_node',
+        name='metrics_logger_node',
+        parameters=[{
+            'output_dir': eval_output_dir,
+            'mode': eval_mode,
+            'sensor_variant': 'webcam',
+            'environment_id': eval_env_id,
+            'user_id': eval_user_id,
+            'episode_timeout_s': 22.0,
+            'flush_every_n_episodes': 1
+        }]
+    )
+    
     # Start VLM first, then wait 15 seconds before starting other nodes
     # No "SYSTEM READY" message - VLM will announce when ready
     return [
@@ -128,14 +151,15 @@ def launch_setup(context, *args, **kwargs):
                 bridge_node,
                 db_node,
                 ui_node,
-                telemetry_node
+                telemetry_node,
+                metrics_logger_node
             ]
         )
     ]
 
 def generate_launch_description():
     return LaunchDescription([
-        LogInfo(msg='\n\n=== INITIALIZING GESTURE CONTROL PIPELINE ===\nLoading VLM model (takes ~15 seconds)...\nWait for "Video-LLaVA Service Ready" message\n'),
+        LogInfo(msg='\n\n=== INITIALIZING GESTURE CONTROL PIPELINE ===\nLoading FastVLM model (takes ~5 seconds)...\nWait for "VLM service ready" message\n'),
         DeclareLaunchArgument('camera_dev', default_value='/dev/video0'),
         DeclareLaunchArgument('width', default_value='640'),
         DeclareLaunchArgument('height', default_value='480'),
@@ -144,5 +168,10 @@ def generate_launch_description():
         DeclareLaunchArgument('output_encoding', default_value='rgb8'),
         DeclareLaunchArgument('ui_port', default_value='8008'),
         DeclareLaunchArgument('auto_approve', default_value='false'),
+        # Evaluation / Metrics Logger arguments
+        DeclareLaunchArgument('eval_mode', default_value='A', description='Evaluation mode (A/B/C)'),
+        DeclareLaunchArgument('eval_user_id', default_value='U1', description='User ID (U1/U2/U3)'),
+        DeclareLaunchArgument('eval_env_id', default_value='E1', description='Environment ID (E1/E2)'),
+        DeclareLaunchArgument('eval_output_dir', default_value='/home/sayak/amr_eval_logs', description='Output directory for CSV logs'),
         OpaqueFunction(function=launch_setup)
     ])

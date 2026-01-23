@@ -1,0 +1,35 @@
+# metrics_logger_params.yaml
+# Configuration for metrics_logger_node
+
+metrics_logger_node:
+  ros__parameters:
+    # Output directory for CSV files (created if not exists)
+    output_dir: "/home/sayak/amr_eval_logs"
+    
+    # Filename prefix for CSV output
+    file_prefix: "run_metrics"
+    
+    # Run identifier (leave blank for auto-generated timestamp)
+    run_id: ""
+    
+    # Evaluation mode annotation (A/B/C)
+    mode: "A"
+    
+    # Sensor variant annotation (zed/webcam)
+    sensor_variant: "webcam"
+    
+    # Environment ID annotation (E1/E2)
+    environment_id: "E1"
+    
+    # User ID annotation (U1/U2/U3)
+    user_id: "U1"
+    
+    # Time window for temporal correlation (seconds)
+    correlation_window_s: 2.0
+    
+    # Timeout for episode finalization (seconds)
+    # Should be > kiosk timeout (20s) to capture timeouts
+    episode_timeout_s: 22.0
+    
+    # Flush CSV to disk every N episodes (1 = immediate)
+    flush_every_n_episodes: 1

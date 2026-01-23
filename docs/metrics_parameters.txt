@@ -1,0 +1,52 @@
+# Metrics Logger - Measured Parameters
+# =====================================
+# Generated for amr_gesture_ws evaluation pipeline
+
+## IDENTIFIERS
+- episode_id      : Unique UUID for this episode
+- session_id      : LSTM-generated session ID (links all events in an episode)
+- window_id       : LSTM window number
+
+## RUN ANNOTATIONS (for grouping/filtering)
+- mode            : Evaluation mode (A/B/C)
+- sensor_variant  : Camera type (zed/webcam)
+- environment_id  : Test environment (E1/E2)
+- user_id         : Participant ID (U1/U2/U3)
+- run_id          : Auto-generated timestamp
+
+## RAW TIMESTAMPS
+Each timestamp is stored twice: Unix (seconds float) and ISO8601 string
+
+- t_lstm_out_unix / t_lstm_out_iso           : When LSTM made prediction
+- t_escalate_trigger_unix / t_escalate_trigger_iso : When escalation started
+- t_vlm_out_unix / t_vlm_out_iso             : When VLM returned result
+- t_kiosk_request_unix / t_kiosk_request_iso : When kiosk received request
+- t_kiosk_reply_unix / t_kiosk_reply_iso     : When operator responded
+
+## MODEL OUTPUTS
+- lstm_label          : LSTM prediction (e.g., SWIPE_LEFT, STOP, IGNORE)
+- lstm_conf           : LSTM confidence (0.0 - 1.0)
+- escalated           : Was VLM called? (0 = no, 1 = yes)
+- escalation_reason   : Reason for escalation (low_conf / unknown)
+- vlm_label           : VLM prediction
+- vlm_conf            : VLM confidence (0.0 - 1.0)
+- vlm_status          : VLM result status (ok / timeout / unknown / low_conf / processing)
+
+## HUMAN-IN-THE-LOOP (HITL)
+- operator_decision   : Operator action (approve / reject / timeout)
+- final_label         : Confirmed gesture label after human verification
+- timed_out           : Did kiosk timer expire? (0 = no, 1 = yes)
+
+## DERIVED LATENCY METRICS (seconds)
+- hitl_latency_s      : Operator response time (t_kiosk_reply - t_kiosk_request)
+- time_to_escalate_s  : LSTM to escalation delay (t_escalate_trigger - t_lstm_out)
+- vlm_latency_s       : VLM inference time (t_vlm_out - t_escalate_trigger)
+- end_to_end_s        : Total pipeline time (t_kiosk_reply - t_lstm_out for escalated, 0 for direct)
+
+## CONTEXT
+- clip_path           : Absolute path to recorded video clip
+
+## CSV OUTPUT
+- Location: /home/sayak/amr_eval_logs/run_metrics_<run_id>.csv
+- Format: UTF-8, comma-delimited, header row included
+- Compatible with Excel, Google Sheets, pandas
