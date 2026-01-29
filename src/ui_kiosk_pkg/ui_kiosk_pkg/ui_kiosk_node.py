@@ -37,6 +37,7 @@ class State:
         self.time_recv_ms = 0
         self.last_command = ""
         self.last_command_ts = 0
+        self.latest_debug_jpg = None  # For MJPEG stream
         
 
 
@@ -87,6 +88,7 @@ class UiKiosk(Node):
         # Subscribers
         self.sub_req = self.create_subscription(ConfirmRequest, "/vlm/confirm_request", self.on_confirm_request, 10)
         self.sub_telemetry = self.create_subscription(TelemetryCommand, "/telemetry/command", self.on_telemetry, 10)
+        self.sub_debug = self.create_subscription(Image, "/lstm/debug_feed", self.on_debug_feed, 10)
 
         # Publisher for reply
         self.pub_reply = self.create_publisher(ConfirmReply, "/ui/confirm_reply", 10)
@@ -95,6 +97,16 @@ class UiKiosk(Node):
         with self.state.lock:
             self.state.last_command = msg.command_text
             self.state.last_command_ts = utc_ts()
+
+    def on_debug_feed(self, msg: Image):
+        try:
+            cv_img = self.bridge.imgmsg_to_cv2(msg, "bgr8")
+            # Compress to JPEG
+            _, jpg = cv2.imencode('.jpg', cv_img, [int(cv2.IMWRITE_JPEG_QUALITY), 60])
+            with self.state.lock:
+                self.state.latest_debug_jpg = jpg.tobytes()
+        except Exception:
+            pass
 
     def _html_index(self):
         # We serve the static index.html from disk
@@ -154,6 +166,37 @@ class UiKiosk(Node):
             handler._send(200, {"Content-Type":ctype}, content)
         except Exception as e:
             handler._send(500, {}, str(e).encode("utf-8"))
+
+    def _serve_stream(self, handler:BaseHTTPRequestHandler):
+        # MJPEG stream
+        handler.send_response(200)
+        handler.send_header('Content-Type', 'multipart/x-mixed-replace; boundary=frame')
+        handler.end_headers()
+        
+        try:
+            while True:
+                jpg_data = None
+                with self.state.lock:
+                    jpg_data = self.state.latest_debug_jpg
+                
+                if jpg_data:
+                    handler.wfile.write(b'--frame\r\n')
+                    handler.wfile.write(b'Content-Type: image/jpeg\r\n\r\n')
+                    handler.wfile.write(jpg_data)
+                    handler.wfile.write(b'\r\n')
+                else:
+                    # If no data yet, send a 1x1 black pixel or wait
+                    # Minimal black pixel jpeg
+                    handler.wfile.write(b'--frame\r\n')
+                    handler.wfile.write(b'Content-Type: image/jpeg\r\n\r\n')
+                    # 1x1 black
+                    # handler.wfile.write(b'\xFF\xD8...') 
+                    # Just wait a bit instead of spamming junk
+                    pass
+
+                time.sleep(0.1) # Max 10 FPS
+        except Exception:
+            pass # Client disconnected
 
 
     def _serve_state(self, handler:BaseHTTPRequestHandler):
@@ -415,6 +458,8 @@ class KioskHandler(BaseHTTPRequestHandler):
             return node_ref._serve_state(self)
         elif self.path.startswith("/media/"):
             return node_ref._serve_media(self)
+        elif self.path.startswith("/stream"):
+            return node_ref._serve_stream(self)
         else:
             return self._send(404, {"Content-Type":"text/plain"}, b"not found")
 

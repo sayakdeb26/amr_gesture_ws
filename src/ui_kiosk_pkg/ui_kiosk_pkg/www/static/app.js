@@ -96,6 +96,23 @@ document.addEventListener("DOMContentLoaded", () => {
       document.exitFullscreen();
     }
   });
+
+  // Debug Toggle
+  const dbgToggle = el("debug-toggle");
+  const dbgBox = el("debug-box");
+  const dbgImg = el("debug-img");
+
+  if (dbgToggle && dbgBox && dbgImg) {
+    dbgToggle.addEventListener("change", () => {
+      if (dbgToggle.checked) {
+        dbgBox.style.display = "block";
+        dbgImg.src = "/stream?" + Date.now(); // bust cache
+      } else {
+        dbgBox.style.display = "none";
+        dbgImg.removeAttribute("src");
+      }
+    });
+  }
 });
 
 // Poll /state
