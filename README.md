@@ -180,12 +180,12 @@ mkdir -p ~/amr_gesture_ws/models/mediapipe
 ## Debug Window
 
 The LSTM node displays a real-time debug feed with:
-- ✅ Hand landmarks with connection lines
-- ✅ Gesture label and confidence
-- ✅ FPS counter
-- ✅ Frame buffer status (Frames: X/30)
-- ✅ Motion status (Hand: MOVING/STATIONARY)
-- ✅ Activation status (ACTIVE/IDLE)
+-  Hand landmarks with connection lines
+-  Gesture label and confidence
+-  FPS counter
+-  Frame buffer status (Frames: X/30)
+-  Motion status (Hand: MOVING/STATIONARY)
+-  Activation status (ACTIVE/IDLE)
 
 **Keyboard Controls:**
 - `Q` - Quit node
@@ -371,11 +371,11 @@ fuser -k 8008/tcp
 Access at **http://localhost:8008** when pipeline is running.
 
 ### Features
-- 📹 Live camera feed preview
-- 🎯 Current detected gesture display
-- ✅ VLM confirmation dialogs for unknown gestures
-- 📊 System status indicators
-- ⏱️ 30-second countdown timer for operator response
+-  Live camera feed preview
+-  Current detected gesture display
+-  VLM confirmation dialogs for unknown gestures
+-  System status indicators
+-  30-second countdown timer for operator response
 
 ### Configuration
 Edit `src/vlm_ros/launch/pipeline.launch.py`:
